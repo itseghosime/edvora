@@ -15,6 +15,13 @@ export default function SettingsAdminPage() {
   const { data: summary } = useSchoolSummaryQuery();
   const { data: pupils = [] } = usePupilsQuery();
   const { data: payments = [] } = usePaymentsQuery();
+  const [activeTab, setActiveTab] = useState<"identity" | "academic" | "staff" | "integrations" | "audit">("identity");
+  const [savedToast, setSavedToast] = useState(false);
+
+  const handleSave = () => {
+    setSavedToast(true);
+    setTimeout(() => setSavedToast(false), 3000);
+  };
 
   return (
     <div className="space-y-6">
@@ -43,36 +50,38 @@ export default function SettingsAdminPage() {
 <span aria-hidden="true" className="material-symbols-outlined text-[18px]">history</span>
 <span className="">View Change Log</span>
 </button>
-<button className="px-space-lg py-space-sm rounded-lg bg-primary hover:bg-primary-container text-on-primary shadow-sm transition-all font-label-lg text-label-lg flex items-center gap-space-xs" type="button">
+<button onClick={handleSave} className="px-space-lg py-space-sm rounded-lg bg-primary hover:bg-primary-container text-on-primary shadow-sm transition-all font-label-lg text-label-lg flex items-center gap-space-xs" type="button">
 <span aria-hidden="true" className="material-symbols-outlined text-[18px]">verified</span>
 <span className="">Save Changes</span>
 </button>
 </div>
 </div>
+{savedToast && (
+  <div className="p-3 bg-primary/10 border border-primary/30 rounded-xl text-primary text-xs font-semibold flex items-center gap-2">
+    <span aria-hidden="true" className="material-symbols-outlined text-[18px]">check_circle</span>
+    <span>Governance &amp; integration settings saved successfully!</span>
+  </div>
+)}
 {/* Internal Tabs Navigation */}
 <div className="bg-surface-container-lowest p-space-xs rounded-xl shadow-[0_2px_8px_rgba(28,52,56,0.04)] overflow-x-auto">
 <nav aria-label="Settings Tabs" className="flex items-center gap-space-xs min-w-max">
-<button className="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-primary text-on-primary font-title-md text-title-md transition-colors shadow-sm">
+<button onClick={() => setActiveTab("identity")} className={`flex items-center gap-space-xs px-space-md py-space-sm rounded-lg font-title-md text-title-md transition-colors shadow-sm ${activeTab === "identity" ? "bg-primary text-on-primary" : "text-on-surface-variant hover:bg-surface-container-high"}`}>
 <span aria-hidden="true" className="material-symbols-outlined text-[18px]">account_balance</span>
 <span className="">School Identity &amp; Contact</span>
 </button>
-<button className="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-md text-body-md transition-colors">
+<button onClick={() => setActiveTab("academic")} className={`flex items-center gap-space-xs px-space-md py-space-sm rounded-lg text-body-md transition-colors ${activeTab === "academic" ? "bg-primary text-on-primary font-bold" : "text-on-surface-variant hover:bg-surface-container-high"}`}>
 <span aria-hidden="true" className="material-symbols-outlined text-[18px]">date_range</span>
 <span className="">Academic Session &amp; Classes</span>
 </button>
-<button className="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-md text-body-md transition-colors">
+<button onClick={() => setActiveTab("staff")} className={`flex items-center gap-space-xs px-space-md py-space-sm rounded-lg text-body-md transition-colors ${activeTab === "staff" ? "bg-primary text-on-primary font-bold" : "text-on-surface-variant hover:bg-surface-container-high"}`}>
 <span aria-hidden="true" className="material-symbols-outlined text-[18px]">shield_person</span>
 <span className="">Staff Roles &amp; Permissions</span>
 </button>
-<button className="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-md text-body-md transition-colors">
-<span aria-hidden="true" className="material-symbols-outlined text-[18px]">do_not_disturb_on</span>
-<span className="">Guardian Preferences &amp; Quiet Hours</span>
-</button>
-<button className="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-md text-body-md transition-colors">
+<button onClick={() => setActiveTab("integrations")} className={`flex items-center gap-space-xs px-space-md py-space-sm rounded-lg text-body-md transition-colors ${activeTab === "integrations" ? "bg-primary text-on-primary font-bold" : "text-on-surface-variant hover:bg-surface-container-high"}`}>
 <span aria-hidden="true" className="material-symbols-outlined text-[18px]">hub</span>
 <span className="">Integration Status</span>
 </button>
-<button className="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface font-body-md text-body-md transition-colors">
+<button onClick={() => setActiveTab("audit")} className={`flex items-center gap-space-xs px-space-md py-space-sm rounded-lg text-body-md transition-colors ${activeTab === "audit" ? "bg-primary text-on-primary font-bold" : "text-on-surface-variant hover:bg-surface-container-high"}`}>
 <span aria-hidden="true" className="material-symbols-outlined text-[18px]">menu_book</span>
 <span className="">Audit Ledger</span>
 </button>
