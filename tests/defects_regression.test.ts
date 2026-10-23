@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { NextRequest } from 'next/server';
 import { createSessionToken } from '../src/lib/auth/session';
 import { POST as loginRoute } from '../src/app/api/auth/login/route';
@@ -10,9 +10,14 @@ import { POST as paymentsVerifyRoute } from '../src/app/api/payments/verify/rout
 import { initializePayment, verifyPayment, processPaystackWebhookEvent } from '../src/lib/services/paymentsService';
 import { mapTermiiProviderStatus, canTransitionAttemptStatus } from '../src/lib/services/smsStatus';
 import { store } from '../src/lib/db/store';
+import { db } from '../src/lib/db/supabaseRepository';
 import { config } from '../src/lib/config';
 
 describe('Codex Defect Regressions', () => {
+  beforeAll(() => {
+    config.paystack.secretKey = 'sk_test_mock_paystack_secret_2026';
+    config.automationServiceKey = 'test_automation_service_key_2026';
+  });
   const pupilId = '77777777-7777-7777-7777-000000000001'; // Osasere Ehigiator
   const termId = '22222222-2222-2222-2222-222222222222';
   const adminStaffId = '44444444-4444-4444-4444-000000000001';
@@ -64,6 +69,113 @@ describe('Codex Defect Regressions', () => {
   // Defect 1: Verified Sessions & Client Spoofing Prevention
   // ============================================================================
   describe('1. Server-Side Verified Sessions & Client Spoofing Prevention', () => {
+    it('rejects staff login with correct email but missing password with HTTP 401', async () => {
+      const req = new NextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'staff',
+          email: 'admin@edvora.ng',
+        }),
+      });
+
+      const res = await loginRoute(req);
+      expect(res.status).toBe(401);
+      const json = await res.json();
+      expect(json.error).toMatch(/Password is required/i);
+    });
+
+    it('rejects staff login with correct email but wrong password with HTTP 401', async () => {
+      const req = new NextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'staff',
+          email: 'admin@edvora.ng',
+          password: 'wrong_password',
+        }),
+      });
+
+      const res = await loginRoute(req);
+      expect(res.status).toBe(401);
+      const json = await res.json();
+      expect(json.error).toMatch(/Invalid staff email or password/i);
+    });
+
+    it('authenticates staff login with valid credentials and issues signed session cookie', async () => {
+      const req = new NextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'staff',
+          email: 'admin@edvora.ng',
+          password: 'admin_secure_password_2026',
+        }),
+      });
+
+      const res = await loginRoute(req);
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.success).toBe(true);
+      expect(json.user.role).toBe('admin');
+      expect(json.token).toBeDefined();
+
+      const cookieHeader = res.headers.get('set-cookie');
+      expect(cookieHeader).toMatch(/edvora_session=/);
+    });
+
+    it('rejects student login with admission number alone when credentials (DOB) are missing with HTTP 401', async () => {
+      const req = new NextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'student',
+          admissionNumber: 'EDV/2024/0042',
+        }),
+      });
+
+      const res = await loginRoute(req);
+      expect(res.status).toBe(401);
+      const json = await res.json();
+      expect(json.error).toMatch(/Date of birth is required/i);
+    });
+
+    it('rejects student login with correct admission number but wrong date of birth with HTTP 401', async () => {
+      const req = new NextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'student',
+          admissionNumber: 'EDV/2024/0042',
+          dateOfBirth: '2020-01-01', // Incorrect
+        }),
+      });
+
+      const res = await loginRoute(req);
+      expect(res.status).toBe(401);
+      const json = await res.json();
+      expect(json.error).toMatch(/Date of birth does not match/i);
+    });
+
+    it('authenticates student login with valid admission number and matching date of birth', async () => {
+      const req = new NextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'student',
+          admissionNumber: 'EDV/2024/0042',
+          dateOfBirth: '2018-05-14', // Valid matching DOB
+        }),
+      });
+
+      const res = await loginRoute(req);
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.success).toBe(true);
+      expect(json.user.role).toBe('student');
+      expect(json.token).toBeDefined();
+    });
+
     it('rejects unauthenticated result publishing with HTTP 401 even if body contains actorRole: admin', async () => {
       const req = new NextRequest('http://localhost:3000/api/results/publish', {
         method: 'POST',
@@ -384,6 +496,56 @@ describe('Codex Defect Regressions', () => {
 
       const afterBalance = store.getAuthoritativeBalance(pupilId, termId);
       expect(afterBalance).toBe(beforeBalance - 1000000);
+    });
+
+    it('creates payment intent in database repository and verifies it through the real payments service without memory-store fallback', async () => {
+      // 1. Create intent directly in persisted database repository
+      const intent = await db.createPaymentIntent({
+        pupilId,
+        termId,
+        amountMinor: 1500000, // ₦15,000
+        payerEmail: 'guardian.ehigiator@gmail.com',
+      });
+
+      expect(intent.reference).toBeDefined();
+
+      // Verify intent exists in database repository
+      const dbIntent = await db.getPaymentIntentByReference(intent.reference);
+      expect(dbIntent).not.toBeNull();
+      expect(dbIntent?.amountMinor).toBe(1500000);
+
+      const beforeBalance = await db.getAuthoritativeBalance(pupilId, termId);
+
+      // Mock Paystack verification API
+      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: true,
+          data: {
+            status: 'success',
+            reference: intent.reference,
+            amount: 1500000,
+            currency: 'NGN',
+            domain: 'test',
+            channel: 'bank_transfer',
+            id: 889900,
+          },
+        }),
+      } as any);
+
+      // Verify payment through real service
+      const verifyResult = await verifyPayment(intent.reference);
+      expect(verifyResult.success).toBe(true);
+      expect(verifyResult.amount_minor).toBe(1500000);
+      expect(verifyResult.receipt_number).toBeDefined();
+
+      // Verify that database repository reflects the credit
+      const updatedIntent = await db.getPaymentIntentByReference(intent.reference);
+      expect(updatedIntent?.status).toBe('successful');
+
+      const afterBalance = await db.getAuthoritativeBalance(pupilId, termId);
+      expect(afterBalance).toBe(beforeBalance - 1500000);
     });
   });
 

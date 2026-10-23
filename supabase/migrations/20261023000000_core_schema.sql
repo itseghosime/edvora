@@ -36,7 +36,11 @@ CREATE TABLE IF NOT EXISTS school_classes (
 );
 
 -- 3. Staff Profiles & Role Assignments
-CREATE TYPE staff_role AS ENUM ('admin', 'bursar', 'teacher');
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'staff_role') THEN
+        CREATE TYPE staff_role AS ENUM ('admin', 'bursar', 'teacher');
+    END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS staff_profiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -134,7 +138,7 @@ CREATE TABLE IF NOT EXISTS payment_intents (
     status VARCHAR(16) NOT NULL DEFAULT 'initialized' CHECK (status IN ('initialized', 'processing', 'successful', 'failed', 'abandoned')),
     payer_email VARCHAR(128) NOT NULL,
     payer_name VARCHAR(128),
-    expires_at TIMESTAMPTZ NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '30 minutes'),
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -333,11 +337,22 @@ ALTER TABLE receipts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE academic_results ENABLE ROW LEVEL SECURITY;
 
 -- Service Role Policy (Automation service key bypasses all RLS)
+DROP POLICY IF EXISTS service_role_all ON pupils;
 CREATE POLICY service_role_all ON pupils FOR ALL TO service_role USING (true);
+
+DROP POLICY IF EXISTS service_role_all_guardians ON guardians;
 CREATE POLICY service_role_all_guardians ON guardians FOR ALL TO service_role USING (true);
+
+DROP POLICY IF EXISTS service_role_all_fees ON fee_assignments;
 CREATE POLICY service_role_all_fees ON fee_assignments FOR ALL TO service_role USING (true);
+
+DROP POLICY IF EXISTS service_role_all_ledger ON fee_ledger_entries;
 CREATE POLICY service_role_all_ledger ON fee_ledger_entries FOR ALL TO service_role USING (true);
+
+DROP POLICY IF EXISTS service_role_all_receipts ON receipts;
 CREATE POLICY service_role_all_receipts ON receipts FOR ALL TO service_role USING (true);
+
+DROP POLICY IF EXISTS service_role_all_results ON academic_results;
 CREATE POLICY service_role_all_results ON academic_results FOR ALL TO service_role USING (true);
 
 -- Indexes for performance and high-concurrency lookups

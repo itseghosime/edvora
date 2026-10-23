@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyPayment } from '@/lib/services/paymentsService';
 import { getSession } from '@/lib/auth/session';
-import { store } from '@/lib/db/store';
+import { db } from '@/lib/db/supabaseRepository';
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
 
     // Security check: if student session, verify the reference belongs to this pupil
     if (session.type === 'student') {
-      const intent = store.paymentIntents.find((i) => i.reference === reference);
+      const intent = await db.getPaymentIntentByReference(reference);
       if (intent && intent.pupilId !== session.pupilId) {
         return NextResponse.json(
           { error: 'Forbidden: You cannot verify payment for another pupil' },
@@ -35,3 +35,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status });
   }
 }
+

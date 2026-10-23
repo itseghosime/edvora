@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll } from 'vitest';
 import { store } from '../src/lib/db/store';
 import { config } from '../src/lib/config';
 import { initializePayment, verifyPayment, verifyPaystackWebhookSignature } from '../src/lib/services/paymentsService';
@@ -6,6 +6,10 @@ import { initializePayment, verifyPayment, verifyPaystackWebhookSignature } from
 describe('Payment & Ledger Integrity', () => {
   const pupilId = '77777777-7777-7777-7777-000000000001'; // Osasere Ehigiator
   const termId = '22222222-2222-2222-2222-222222222222';
+
+  beforeAll(() => {
+    config.paystack.secretKey = 'sk_test_mock_paystack_secret_2026';
+  });
 
   it('correctly calculates authoritative balance from records in integer minor kobo units', () => {
     // Initial: ₦120,000 (12,000,000 kobo) charges - ₦70,000 (7,000,000 kobo) paid = ₦50,000 (5,000,000 kobo)

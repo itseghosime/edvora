@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/supabaseRepository';
-import { store } from '@/lib/db/store';
 import { getSession, requireStaffSession } from '@/lib/auth/session';
 
 export async function GET(req: NextRequest) {
@@ -12,47 +11,17 @@ export async function GET(req: NextRequest) {
 
     if (session.type === 'student') {
       // Student session can only access their own record
-      const pupil = store.pupils.find((p) => p.id === session.pupilId);
-      if (!pupil) {
+      const pupils = await db.listPupils({ pupilId: session.pupilId });
+      if (pupils.length === 0) {
         return NextResponse.json({ error: 'Pupil record not found' }, { status: 404 });
       }
-      const balanceMinor = store.getAuthoritativeBalance(pupil.id, '22222222-2222-2222-2222-222222222222');
-      const guardian = store.guardians.find((g) => g.id === pupil.guardianId);
-      return NextResponse.json({
-        pupils: [
-          {
-            ...pupil,
-            guardianName: guardian?.fullName || 'Not linked',
-            guardianPhone: guardian?.phoneNumber || '',
-            telegramLinked: Boolean(guardian?.telegramChatId),
-            balanceMinor,
-            balanceFormatted: `₦${(balanceMinor / 100).toLocaleString()}`,
-          },
-        ],
-      });
+      return NextResponse.json({ pupils });
     }
 
     // Staff session
-    let pupils = store.pupils;
-    if (session.role === 'teacher') {
-      // Teachers can only view pupils in their assigned classes
-      pupils = pupils.filter((p) => session.assignedClassIds.includes(p.classId));
-    }
-
-    const pupilsWithBalances = pupils.map((p) => {
-      const balanceMinor = store.getAuthoritativeBalance(p.id, '22222222-2222-2222-2222-222222222222');
-      const guardian = store.guardians.find((g) => g.id === p.guardianId);
-      return {
-        ...p,
-        guardianName: guardian?.fullName || 'Not linked',
-        guardianPhone: guardian?.phoneNumber || '',
-        telegramLinked: Boolean(guardian?.telegramChatId),
-        balanceMinor,
-        balanceFormatted: `₦${(balanceMinor / 100).toLocaleString()}`,
-      };
-    });
-
-    return NextResponse.json({ pupils: pupilsWithBalances });
+    const filter = session.role === 'teacher' ? { classIds: session.assignedClassIds } : undefined;
+    const pupils = await db.listPupils(filter);
+    return NextResponse.json({ pupils });
   } catch (err: any) {
     const status = err.statusCode || 500;
     return NextResponse.json({ error: err.message }, { status });

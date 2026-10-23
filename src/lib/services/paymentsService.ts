@@ -44,7 +44,13 @@ export async function initializePayment(params: {
   let authorizationUrl = `${config.appUrl}/student/payments?verify=${intent.reference}`;
   let accessCode = `acc_${intent.reference}`;
 
-  if (config.paystack.secretKey && !config.paystack.secretKey.includes('sample')) {
+  if (
+    process.env.NODE_ENV !== 'test' &&
+    !process.env.VITEST &&
+    config.paystack.secretKey &&
+    !config.paystack.secretKey.includes('sample') &&
+    !config.paystack.secretKey.includes('mock')
+  ) {
     try {
       const response = await fetch('https://api.paystack.co/transaction/initialize', {
         method: 'POST',
@@ -53,6 +59,7 @@ export async function initializePayment(params: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(paystackPayload),
+        signal: AbortSignal.timeout(5000),
       });
 
       if (response.ok) {
@@ -78,8 +85,8 @@ export async function initializePayment(params: {
 }
 
 export async function verifyPayment(reference: string) {
-  // 1. Locate the authoritative original payment intent
-  const intent = store.paymentIntents.find((i) => i.reference === reference);
+  // 1. Locate the authoritative original payment intent from database repository
+  const intent = await db.getPaymentIntentByReference(reference);
   if (!intent) {
     return {
       success: false,
@@ -88,11 +95,11 @@ export async function verifyPayment(reference: string) {
     };
   }
 
-  // 2. If intent is already credited and successful, return idempotent receipt record
+  // 2. If intent is already credited and successful, return idempotent receipt record from database
   if (intent.status === 'successful') {
-    const existingTx = store.paymentTransactions.find((tx) => tx.reference === reference);
-    const existingReceipt = store.receipts.find((r) => r.transactionId === existingTx?.id);
-    const currentBalance = store.getAuthoritativeBalance(intent.pupilId, intent.termId);
+    const existingTx = await db.getPaymentTransactionByReference(reference);
+    const existingReceipt = existingTx ? await db.getReceiptByTransactionId(existingTx.id) : null;
+    const currentBalance = await db.getAuthoritativeBalance(intent.pupilId, intent.termId);
 
     return {
       success: true,
@@ -246,8 +253,8 @@ export async function processPaystackWebhookEvent(event: {
 
   const { reference, amount, currency, domain, channel, id } = event.data;
 
-  // Verify against original intent before crediting
-  const intent = store.paymentIntents.find((i) => i.reference === reference);
+  // Verify against original intent in database repository before crediting
+  const intent = await db.getPaymentIntentByReference(reference);
   if (!intent) {
     return { processed: false, reason: `Original payment intent not found for reference: ${reference}` };
   }

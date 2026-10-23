@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeAll } from 'vitest';
 import { NextRequest } from 'next/server';
 import { POST as publishRoute } from '../src/app/api/results/publish/route';
 import { POST as remindersClaimRoute } from '../src/app/api/automation/reminders/claim/route';
@@ -8,6 +8,10 @@ import { createSessionToken } from '../src/lib/auth/session';
 import { config } from '../src/lib/config';
 
 describe('Route-Level Authorization & Security Boundaries', () => {
+  beforeAll(() => {
+    config.automationServiceKey = 'test_automation_service_key_valid_2026';
+    config.termii.webhookSecret = 'test_termii_webhook_secret_2026';
+  });
   const bursarToken = createSessionToken({
     type: 'staff',
     userId: '44444444-4444-4444-4444-000000000002',
@@ -103,6 +107,7 @@ describe('Route-Level Authorization & Security Boundaries', () => {
       body: JSON.stringify({
         type: 'student',
         admissionNumber: 'NON_EXISTENT_ID',
+        dateOfBirth: '2020-01-01',
       }),
     });
 

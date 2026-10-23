@@ -11,12 +11,6 @@ import { config } from '../config';
 const SESSION_COOKIE_NAME = 'edvora_session';
 const SESSION_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
-// Secure signing secret derived from environment
-const SESSION_SECRET =
-  process.env.SESSION_SECRET ||
-  config.supabase.serviceRoleKey ||
-  'edvora-production-secure-session-signing-secret-key-32b';
-
 export interface StaffSessionActor {
   type: 'staff';
   userId: string;
@@ -41,8 +35,19 @@ export interface StudentSessionActor {
 
 export type SessionActor = StaffSessionActor | StudentSessionActor;
 
+function getSessionSecret(): string {
+  const secret = process.env.SESSION_SECRET || config.supabase.serviceRoleKey;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'test') {
+      return 'test-environment-ephemeral-session-secret-key-32b';
+    }
+    throw new Error('FATAL: SESSION_SECRET or SUPABASE_SERVICE_ROLE_KEY must be configured in environment. Insecure session signing fallback is forbidden.');
+  }
+  return secret;
+}
+
 function signPayload(payloadStr: string): string {
-  return crypto.createHmac('sha256', SESSION_SECRET).update(payloadStr).digest('base64url');
+  return crypto.createHmac('sha256', getSessionSecret()).update(payloadStr).digest('base64url');
 }
 
 /**
@@ -192,3 +197,4 @@ export async function requireStudentOrStaffSession(
 
   return session;
 }
+

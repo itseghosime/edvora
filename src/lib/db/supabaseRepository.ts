@@ -785,6 +785,206 @@ export class DatabaseRepository {
 
     return { pupil, guardian };
   }
+
+  // --- Persisted Entity Queries (Replaces direct memory store access) ---
+  public async getPaymentIntentByReference(reference: string): Promise<PaymentIntent | null> {
+    const client = this.getClient();
+    if (!client) {
+      const intent = memoryStore.paymentIntents.find((i) => i.reference === reference);
+      return intent || null;
+    }
+
+    const { data, error } = await client
+      .from('payment_intents')
+      .select('*')
+      .eq('reference', reference)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    return {
+      id: data.id,
+      pupilId: data.pupil_id,
+      termId: data.term_id,
+      reference: data.reference,
+      amountMinor: Number(data.amount_minor),
+      currency: data.currency,
+      environment: data.environment,
+      status: data.status,
+      payerEmail: data.payer_email,
+      payerName: data.payer_name,
+      expiresAt: data.expires_at,
+      createdAt: data.created_at,
+    };
+  }
+
+  public async getPaymentTransactionByReference(reference: string): Promise<PaymentTransaction | null> {
+    const client = this.getClient();
+    if (!client) {
+      const tx = memoryStore.paymentTransactions.find((t) => t.reference === reference);
+      return tx || null;
+    }
+
+    const { data, error } = await client
+      .from('payment_transactions')
+      .select('*')
+      .eq('reference', reference)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    return {
+      id: data.id,
+      intentId: data.intent_id,
+      reference: data.reference,
+      provider: data.provider,
+      providerTransactionId: data.provider_transaction_id,
+      amountMinor: Number(data.amount_minor),
+      currency: data.currency,
+      environment: data.environment,
+      status: data.status,
+      channel: data.channel,
+      paidAt: data.paid_at,
+      rawPayload: data.raw_payload,
+      createdAt: data.created_at,
+    };
+  }
+
+  public async getReceiptByTransactionId(transactionId: string): Promise<Receipt | null> {
+    const client = this.getClient();
+    if (!client) {
+      const r = memoryStore.receipts.find((rec) => rec.transactionId === transactionId);
+      return r || null;
+    }
+
+    const { data, error } = await client
+      .from('receipts')
+      .select('*')
+      .eq('transaction_id', transactionId)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    return {
+      id: data.id,
+      receiptNumber: data.receipt_number,
+      transactionId: data.transaction_id,
+      pupilId: data.pupil_id,
+      termId: data.term_id,
+      amountMinor: Number(data.amount_minor),
+      currency: data.currency,
+      issuedAt: data.issued_at,
+      isVoid: data.is_void,
+    };
+  }
+
+  public async getPupilByAdmissionNumber(admissionNumber: string): Promise<(Pupil & { dateOfBirth?: string; className?: string }) | null> {
+    const clean = admissionNumber.trim().toUpperCase();
+    const client = this.getClient();
+    if (!client) {
+      const p = memoryStore.pupils.find((pupil) => pupil.admissionNumber.toUpperCase() === clean);
+      return p ? { ...p, dateOfBirth: p.dateOfBirth || '2018-05-14', className: p.className || 'Primary 3A' } : null;
+    }
+
+    const { data, error } = await client
+      .from('pupils')
+      .select('*, school_classes(name)')
+      .ilike('admission_number', clean)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    return {
+      id: data.id,
+      admissionNumber: data.admission_number,
+      firstName: data.first_name,
+      lastName: data.last_name,
+      gender: data.gender,
+      dateOfBirth: data.date_of_birth,
+      classId: data.class_id,
+      className: data.school_classes?.name || '',
+      status: data.status,
+      guardianId: data.guardian_id,
+    };
+  }
+
+  public async getStaffByEmail(email: string) {
+    const clean = email.trim().toLowerCase();
+    const client = this.getClient();
+    if (!client) {
+      const s = memoryStore.staffProfiles.find((staff) => staff.email.toLowerCase() === clean);
+      return s || null;
+    }
+
+    const { data, error } = await client
+      .from('staff_profiles')
+      .select('*')
+      .ilike('email', clean)
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    return {
+      id: data.id,
+      userId: data.user_id,
+      fullName: data.full_name,
+      email: data.email,
+      role: data.role as StaffRole,
+      assignedClassIds: data.assigned_class_ids || [],
+      isActive: data.is_active,
+    };
+  }
+
+  public async listPupils(filter?: { classIds?: string[]; pupilId?: string }) {
+    const client = this.getClient();
+    if (!client) {
+      let list = memoryStore.pupils;
+      if (filter?.pupilId) {
+        list = list.filter((p) => p.id === filter.pupilId);
+      } else if (filter?.classIds && filter.classIds.length > 0) {
+        list = list.filter((p) => filter.classIds!.includes(p.classId));
+      }
+      return list.map((p) => {
+        const balanceMinor = memoryStore.getAuthoritativeBalance(p.id, '22222222-2222-2222-2222-222222222222');
+        const guardian = memoryStore.guardians.find((g) => g.id === p.guardianId);
+        return {
+          ...p,
+          guardianName: guardian?.fullName || 'Not linked',
+          guardianPhone: guardian?.phoneNumber || '',
+          telegramLinked: Boolean(guardian?.telegramChatId),
+          balanceMinor,
+          balanceFormatted: `₦${(balanceMinor / 100).toLocaleString()}`,
+        };
+      });
+    }
+
+    let query = client.from('pupils').select('*, school_classes(name), guardians(full_name, phone_number, telegram_chat_id)');
+    if (filter?.pupilId) {
+      query = query.eq('id', filter.pupilId);
+    } else if (filter?.classIds && filter.classIds.length > 0) {
+      query = query.in('class_id', filter.classIds);
+    }
+
+    const { data, error } = await query;
+    if (error || !data) return [];
+
+    return data.map((p: any) => ({
+      id: p.id,
+      admissionNumber: p.admission_number,
+      firstName: p.first_name,
+      lastName: p.last_name,
+      gender: p.gender,
+      classId: p.class_id,
+      className: p.school_classes?.name || '',
+      status: p.status,
+      guardianId: p.guardian_id,
+      guardianName: p.guardians?.full_name || 'Not linked',
+      guardianPhone: p.guardians?.phone_number || '',
+      telegramLinked: Boolean(p.guardians?.telegram_chat_id),
+      balanceMinor: 0,
+      balanceFormatted: '₦0',
+    }));
+  }
 }
 
 export const db = new DatabaseRepository();

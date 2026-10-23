@@ -4,18 +4,26 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 
-describe('Real PostgreSQL Migrations & Stored Procedures (via pg-mem)', () => {
+describe('In-Memory PostgreSQL Schema DDL, Relation & Constraint Verification (pg-mem)', () => {
+  // NOTE: pg-mem emulates PostgreSQL DDL, foreign keys, unique constraints, and check constraints.
+  // Full RLS policies, PL/pgSQL stored procedures, and concurrency locks are tested against actual PostgreSQL in real_postgres_integration.test.ts.
   const schemaSql = fs.readFileSync(
     path.join(__dirname, '../supabase/migrations/20261023000000_core_schema.sql'),
     'utf-8'
   );
 
-  // Filter out statements that pg-mem parser does not implement (RLS policies)
+  // Filter out statements that pg-mem parser does not implement (RLS policies, PL/pgSQL DO blocks)
   // while testing all actual tables, columns, constraints, enums, checks, and foreign keys.
-  const ddlStatements = schemaSql
+  const cleanedSql = schemaSql
+    .replace(/DO \$\$[\s\S]*?\$\$;/g, '')
+    .replace(/ALTER TABLE [\s\S]*?ENABLE ROW LEVEL SECURITY;/g, '')
+    .replace(/DROP POLICY [\s\S]*?;/g, '')
+    .replace(/CREATE POLICY [\s\S]*?;/g, '');
+
+  const ddlStatements = cleanedSql
     .split(';')
     .map((s) => s.trim())
-    .filter((s) => s.length > 0 && !s.includes('ROW LEVEL SECURITY') && !s.includes('CREATE POLICY'));
+    .filter((s) => s.length > 0);
 
   function createTestDb() {
     const memDb = newDb();
@@ -24,6 +32,7 @@ describe('Real PostgreSQL Migrations & Stored Procedures (via pg-mem)', () => {
       impure: true,
       implementation: () => crypto.randomUUID(),
     });
+    memDb.public.none("CREATE TYPE staff_role AS ENUM ('admin', 'bursar', 'teacher');");
     for (const stmt of ddlStatements) {
       memDb.public.none(stmt);
     }

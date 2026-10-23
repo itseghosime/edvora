@@ -51,7 +51,20 @@ BEGIN
         RAISE EXCEPTION 'Payment intent not found for reference %', p_reference;
     END IF;
 
-    -- 3. Verify amount in minor units
+    -- 3. If intent has already been credited (e.g. concurrent execution), return idempotent response
+    IF v_intent.status = 'successful' THEN
+        SELECT * INTO v_existing_tx FROM payment_transactions WHERE reference = p_reference LIMIT 1;
+        SELECT id, receipt_number INTO v_receipt_id, v_receipt_number FROM receipts WHERE transaction_id = v_existing_tx.id LIMIT 1;
+        RETURN jsonb_build_object(
+            'success', true,
+            'duplicate', true,
+            'transaction_id', v_existing_tx.id,
+            'receipt_number', v_receipt_number,
+            'message', 'Transaction already credited'
+        );
+    END IF;
+
+    -- 4. Verify amount in minor units
     IF v_intent.amount_minor <> p_amount_minor THEN
         UPDATE payment_intents SET status = 'failed' WHERE id = v_intent.id;
         RAISE EXCEPTION 'Amount mismatch: expected % minor units, got %', v_intent.amount_minor, p_amount_minor;
