@@ -1,7 +1,7 @@
 -- ==============================================================================
 -- Edvora Nursery & Primary School — Atomic Transaction Functions & Procedures
 -- Guarantees single-credit payment integrity, concurrent claim locking (SKIP LOCKED),
--- and atomic receipt enqueuing.
+-- atomic receipt enqueuing, and restricted execution to service_role.
 -- ==============================================================================
 
 -- 1. Atomic Payment Credit & Ledger Entry Procedure
@@ -15,6 +15,7 @@ CREATE OR REPLACE FUNCTION credit_payment_intent(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_intent RECORD;
@@ -24,14 +25,14 @@ DECLARE
     v_receipt_id UUID;
     v_previous_balance BIGINT;
     v_new_balance BIGINT;
-    v_pupil RECORD;
+    v_guardian_id UUID;
 BEGIN
     -- 1. Check for duplicate transaction or reference (Idempotent replay)
     SELECT * INTO v_existing_tx FROM payment_transactions 
     WHERE reference = p_reference OR provider_transaction_id = p_provider_tx_id;
     
     IF FOUND THEN
-        SELECT * INTO v_receipt_id, v_receipt_number FROM receipts WHERE transaction_id = v_existing_tx.id;
+        SELECT id, receipt_number INTO v_receipt_id, v_receipt_number FROM receipts WHERE transaction_id = v_existing_tx.id;
         RETURN jsonb_build_object(
             'success', true,
             'duplicate', true,
@@ -94,12 +95,17 @@ BEGIN
     ) RETURNING id INTO v_receipt_id;
 
     -- 9. Enqueue transactional notification for guardian in same transaction
-    SELECT * INTO v_pupil FROM pupils WHERE id = v_intent.pupil_id;
-    IF FOUND AND v_pupil.guardian_id IS NOT NULL THEN
+    SELECT COALESCE(p.guardian_id, pg.guardian_id) INTO v_guardian_id
+    FROM pupils p
+    LEFT JOIN pupil_guardians pg ON pg.pupil_id = p.id AND pg.is_primary = true
+    WHERE p.id = v_intent.pupil_id
+    LIMIT 1;
+
+    IF v_guardian_id IS NOT NULL THEN
         INSERT INTO notification_jobs (
             event_type, source_event_id, recipient_type, recipient_id, channel, status
         ) VALUES 
-        ('payment_receipt', v_receipt_id, 'guardian', v_pupil.guardian_id, 'sms', 'pending')
+        ('payment_receipt', v_receipt_id, 'guardian', v_guardian_id, 'sms', 'pending')
         ON CONFLICT (event_type, source_event_id, recipient_id, channel) DO NOTHING;
     END IF;
 
@@ -125,6 +131,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
     RETURN QUERY
@@ -140,6 +147,7 @@ BEGIN
         UPDATE reminder_jobs r
         SET 
             status = 'claimed',
+            claimed_by_run_id = p_run_id,
             claim_token = 'clm-' || extract(epoch from now())::bigint || '-' || md5(random()::text),
             claimed_at = now(),
             lease_expires_at = now() + (p_lease_seconds || ' seconds')::interval
@@ -163,6 +171,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
     RETURN QUERY
@@ -178,6 +187,7 @@ BEGIN
         UPDATE notification_jobs n
         SET 
             status = 'claimed',
+            claimed_by_run_id = p_run_id,
             claim_token = 'notif-clm-' || extract(epoch from now())::bigint || '-' || md5(random()::text),
             claimed_at = now(),
             lease_expires_at = now() + (p_lease_seconds || ' seconds')::interval
@@ -189,3 +199,13 @@ BEGIN
 END;
 $$;
 
+-- 4. Restrict Execution Privileges on Privileged Functions
+-- Prohibit unauthorized execution from public, anon, or authenticated web clients
+REVOKE ALL ON FUNCTION credit_payment_intent(VARCHAR, VARCHAR, BIGINT, VARCHAR, JSONB) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION credit_payment_intent(VARCHAR, VARCHAR, BIGINT, VARCHAR, JSONB) TO service_role;
+
+REVOKE ALL ON FUNCTION claim_reminder_jobs(VARCHAR, INTEGER, INTEGER) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION claim_reminder_jobs(VARCHAR, INTEGER, INTEGER) TO service_role;
+
+REVOKE ALL ON FUNCTION claim_notification_jobs(VARCHAR, INTEGER, INTEGER) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION claim_notification_jobs(VARCHAR, INTEGER, INTEGER) TO service_role;

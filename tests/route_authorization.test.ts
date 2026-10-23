@@ -4,36 +4,59 @@ import { POST as publishRoute } from '../src/app/api/results/publish/route';
 import { POST as remindersClaimRoute } from '../src/app/api/automation/reminders/claim/route';
 import { POST as authLoginRoute } from '../src/app/api/auth/login/route';
 import { POST as termiiWebhookRoute } from '../src/app/api/webhooks/termii/route';
+import { createSessionToken } from '../src/lib/auth/session';
 import { config } from '../src/lib/config';
 
 describe('Route-Level Authorization & Security Boundaries', () => {
+  const bursarToken = createSessionToken({
+    type: 'staff',
+    userId: '44444444-4444-4444-4444-000000000002',
+    staffId: '44444444-4444-4444-4444-000000000002',
+    role: 'bursar',
+    email: 'bursar@edvora.edu.ng',
+    name: 'Mr. Jude Okafor',
+    assignedClassIds: [],
+  });
+
+  const adminToken = createSessionToken({
+    type: 'staff',
+    userId: '44444444-4444-4444-4444-000000000001',
+    staffId: '44444444-4444-4444-4444-000000000001',
+    role: 'admin',
+    email: 'admin@edvora.edu.ng',
+    name: 'Dr. Stella Efe',
+    assignedClassIds: [],
+  });
+
   it('blocks Bursars from publishing results at the API route level', async () => {
     const req = new NextRequest('http://localhost:3000/api/results/publish', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${bursarToken}`,
+      },
       body: JSON.stringify({
         resultId: 'dddddddd-dddd-dddd-dddd-000000000001',
         status: 'published',
-        actorRole: 'bursar',
-        actorId: '44444444-4444-4444-4444-000000000002',
       }),
     });
 
     const res = await publishRoute(req);
     expect(res.status).toBe(403);
     const json = await res.json();
-    expect(json.error).toMatch(/Forbidden|Bursars are not permitted/i);
+    expect(json.error).toMatch(/Forbidden|Bursars|not permitted/i);
   });
 
   it('allows School Administrators to publish results at the API route level', async () => {
     const req = new NextRequest('http://localhost:3000/api/results/publish', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${adminToken}`,
+      },
       body: JSON.stringify({
         resultId: 'dddddddd-dddd-dddd-dddd-000000000001',
         status: 'published',
-        actorRole: 'admin',
-        actorId: '44444444-4444-4444-4444-000000000001',
       }),
     });
 

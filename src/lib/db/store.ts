@@ -4,6 +4,7 @@
 // ==============================================================================
 
 import { config } from '../config';
+import { mapTermiiProviderStatus, canTransitionAttemptStatus } from '../services/smsStatus';
 import {
   StaffRole,
   StaffProfile,
@@ -560,7 +561,7 @@ class EdvoraStore {
       currency: 'NGN',
       active: true,
       paused: false,
-      consented: true,
+      consented: job.channel === 'sms' ? Boolean(guardian.consentSms) : Boolean(guardian.consentTelegram),
       lease_expires_at: job.leaseExpiresAt,
     };
   }
@@ -616,20 +617,8 @@ class EdvoraStore {
   // --- Automation: SMS Delivery (WF03) ---
   public ingestTermiiWebhook(rawPayload: Record<string, unknown>, authenticated: boolean) {
     const providerMessageId = (rawPayload.message_id || rawPayload.id || `msg-${Date.now()}`) as string;
-    const rawStatus = String(rawPayload.status || '').toLowerCase();
-
-    let mappedStatus: 'sent' | 'delivered' | 'failed' | 'expired' | 'rejected' | 'unknown' = 'unknown';
-    if (rawStatus.includes('deliver') || rawStatus === 'success') {
-      mappedStatus = 'delivered';
-    } else if (rawStatus.includes('sent') || rawStatus === 'accepted') {
-      mappedStatus = 'sent';
-    } else if (rawStatus.includes('fail') || rawStatus === 'undelivered') {
-      mappedStatus = 'failed';
-    } else if (rawStatus.includes('expir')) {
-      mappedStatus = 'expired';
-    } else if (rawStatus.includes('reject')) {
-      mappedStatus = 'rejected';
-    }
+    const rawStatus = String(rawPayload.status || '');
+    const mappedStatus = mapTermiiProviderStatus(rawStatus);
 
     const event: SMSDeliveryInboxEvent = {
       id: `inbox-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
@@ -681,18 +670,26 @@ class EdvoraStore {
     // Match to reminder attempt or notification attempt
     const reminderAtt = this.reminderAttempts.find((a) => a.providerMessageId === params.provider_message_id);
     if (reminderAtt) {
-      // Do not downgrade delivered
-      if (reminderAtt.status !== 'delivered') {
-        if (params.status === 'delivered') reminderAtt.status = 'delivered';
-        else if (params.status === 'failed') reminderAtt.status = 'failed';
+      // Check state transition validity: never overwrite delivered
+      if (canTransitionAttemptStatus(reminderAtt.status, params.status)) {
+        reminderAtt.status = params.status === 'delivered' ? 'delivered' : params.status === 'sent' ? 'accepted' : 'failed';
+        const job = this.reminderJobs.find((j) => j.id === reminderAtt.jobId);
+        if (job) {
+          if (params.status === 'delivered') job.status = 'delivered';
+          else if (params.status === 'failed' && job.status !== 'delivered') job.status = 'failed';
+        }
       }
     }
 
     const notifAtt = this.notificationAttempts.find((a) => a.providerMessageId === params.provider_message_id);
     if (notifAtt) {
-      if (notifAtt.status !== 'delivered') {
-        if (params.status === 'delivered') notifAtt.status = 'delivered';
-        else if (params.status === 'failed') notifAtt.status = 'failed';
+      if (canTransitionAttemptStatus(notifAtt.status, params.status)) {
+        notifAtt.status = params.status === 'delivered' ? 'delivered' : params.status === 'sent' ? 'accepted' : 'failed';
+        const job = this.notificationJobs.find((j) => j.id === notifAtt.jobId);
+        if (job) {
+          if (params.status === 'delivered') job.status = 'delivered';
+          else if (params.status === 'failed' && job.status !== 'delivered') job.status = 'failed';
+        }
       }
     }
 
@@ -820,14 +817,30 @@ class EdvoraStore {
 
     let recipient = '';
     let message = '';
+    let consented = true;
 
     if (job.recipientType === 'guardian') {
       const guardian = this.guardians.find((g) => g.id === job.recipientId);
       if (!guardian) {
         job.status = 'skipped';
-        return { authorized: false, job_id: jobId, reason: 'Guardian not found' };
+        return { authorized: false, job_id: jobId, reason: 'Guardian record not found' };
       }
-      recipient = job.channel === 'sms' ? guardian.phoneNumber.replace(/[^0-9]/g, '') : String(guardian.telegramChatId || '');
+
+      if (job.channel === 'sms') {
+        if (!guardian.consentSms || !guardian.phoneNumber) {
+          job.status = 'skipped';
+          return { authorized: false, job_id: jobId, reason: 'SMS consent not granted or phone missing' };
+        }
+        consented = Boolean(guardian.consentSms);
+        recipient = guardian.phoneNumber.replace(/[^0-9]/g, '');
+      } else if (job.channel === 'telegram') {
+        if (!guardian.consentTelegram || !guardian.telegramChatId) {
+          job.status = 'skipped';
+          return { authorized: false, job_id: jobId, reason: 'Telegram consent not granted or chat ID missing' };
+        }
+        consented = Boolean(guardian.consentTelegram);
+        recipient = String(guardian.telegramChatId);
+      }
 
       if (job.eventType === 'payment_receipt') {
         const receipt = this.receipts.find((r) => r.id === job.sourceEventId);
@@ -845,6 +858,7 @@ class EdvoraStore {
       const staff = this.staffProfiles.find((s) => s.id === job.recipientId);
       recipient = '12345678'; // Pre-configured authorized staff telegram chat ID
       message = `[EDVORA ALERT] Operational failure detected in workflow. Please inspect Admin Settings -> Incidents.`;
+      consented = true;
     }
 
     const attemptId = `notif-att-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -874,7 +888,7 @@ class EdvoraStore {
       message,
       active: true,
       paused: false,
-      consented: true,
+      consented,
       lease_expires_at: job.leaseExpiresAt,
     };
   }

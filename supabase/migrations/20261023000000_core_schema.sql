@@ -50,18 +50,6 @@ CREATE TABLE IF NOT EXISTS staff_profiles (
 );
 
 -- 4. Pupils & Guardians
-CREATE TABLE IF NOT EXISTS pupils (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    admission_number VARCHAR(32) NOT NULL UNIQUE, -- e.g. "EDV/2024/0042"
-    first_name VARCHAR(64) NOT NULL,
-    last_name VARCHAR(64) NOT NULL,
-    gender VARCHAR(8) CHECK (gender IN ('male', 'female')),
-    date_of_birth DATE,
-    class_id UUID NOT NULL REFERENCES school_classes(id),
-    status VARCHAR(16) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'graduated', 'withdrawn', 'suspended')),
-    created_at TIMESTAMPTZ DEFAULT now()
-);
-
 CREATE TABLE IF NOT EXISTS guardians (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID UNIQUE, -- Linked to auth.users if parent logs in via user account
@@ -73,6 +61,19 @@ CREATE TABLE IF NOT EXISTS guardians (
     consent_sms BOOLEAN DEFAULT true,
     consent_telegram BOOLEAN DEFAULT true,
     is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS pupils (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    admission_number VARCHAR(32) NOT NULL UNIQUE, -- e.g. "EDV/2024/0042"
+    first_name VARCHAR(64) NOT NULL,
+    last_name VARCHAR(64) NOT NULL,
+    gender VARCHAR(8) CHECK (gender IS NULL OR gender IN ('male', 'female')),
+    date_of_birth DATE,
+    class_id UUID NOT NULL REFERENCES school_classes(id),
+    guardian_id UUID REFERENCES guardians(id) ON DELETE SET NULL, -- Primary authoritative guardian
+    status VARCHAR(16) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'graduated', 'withdrawn', 'suspended')),
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -199,7 +200,8 @@ CREATE TABLE IF NOT EXISTS reminder_jobs (
     guardian_id UUID NOT NULL REFERENCES guardians(id),
     channel VARCHAR(16) NOT NULL CHECK (channel IN ('sms', 'telegram')),
     balance_at_creation_minor BIGINT NOT NULL,
-    status VARCHAR(16) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'claimed', 'authorized', 'sent', 'delivered', 'failed', 'skipped')),
+    status VARCHAR(16) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'claimed', 'authorized', 'sent', 'delivered', 'failed', 'skipped', 'expired', 'review_required')),
+    claimed_by_run_id VARCHAR(64),
     claim_token VARCHAR(64),
     claimed_at TIMESTAMPTZ,
     lease_expires_at TIMESTAMPTZ,
@@ -216,7 +218,7 @@ CREATE TABLE IF NOT EXISTS reminder_attempts (
     recipient VARCHAR(64) NOT NULL, -- phone or telegram_chat_id
     message TEXT NOT NULL,
     provider_message_id VARCHAR(64),
-    status VARCHAR(16) NOT NULL DEFAULT 'started' CHECK (status IN ('started', 'accepted', 'delivered', 'failed', 'skipped', 'review_required')),
+    status VARCHAR(16) NOT NULL DEFAULT 'started' CHECK (status IN ('started', 'accepted', 'delivered', 'failed', 'skipped', 'review_required', 'sent', 'expired', 'rejected')),
     error_message TEXT,
     created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -268,7 +270,8 @@ CREATE TABLE IF NOT EXISTS notification_jobs (
     recipient_type VARCHAR(16) NOT NULL CHECK (recipient_type IN ('guardian', 'staff')),
     recipient_id UUID NOT NULL, -- references guardians(id) or staff_profiles(id)
     channel VARCHAR(16) NOT NULL CHECK (channel IN ('sms', 'telegram')),
-    status VARCHAR(16) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'claimed', 'authorized', 'sent', 'delivered', 'failed', 'skipped')),
+    status VARCHAR(16) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'claimed', 'authorized', 'sent', 'delivered', 'failed', 'skipped', 'expired', 'review_required')),
+    claimed_by_run_id VARCHAR(64),
     claim_token VARCHAR(64),
     claimed_at TIMESTAMPTZ,
     lease_expires_at TIMESTAMPTZ,
@@ -285,7 +288,7 @@ CREATE TABLE IF NOT EXISTS notification_attempts (
     recipient VARCHAR(64) NOT NULL,
     message TEXT NOT NULL,
     provider_message_id VARCHAR(64),
-    status VARCHAR(16) NOT NULL DEFAULT 'started' CHECK (status IN ('started', 'accepted', 'delivered', 'failed', 'skipped', 'review_required')),
+    status VARCHAR(16) NOT NULL DEFAULT 'started' CHECK (status IN ('started', 'accepted', 'delivered', 'failed', 'skipped', 'review_required', 'sent', 'expired', 'rejected')),
     error_message TEXT,
     created_at TIMESTAMPTZ DEFAULT now()
 );

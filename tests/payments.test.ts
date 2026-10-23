@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { store } from '../src/lib/db/store';
 import { config } from '../src/lib/config';
 import { initializePayment, verifyPayment, verifyPaystackWebhookSignature } from '../src/lib/services/paymentsService';
@@ -43,6 +43,24 @@ describe('Payment & Ledger Integrity', () => {
     });
 
     expect(init.reference).toBeDefined();
+
+    // Mock Paystack verification response
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        status: true,
+        data: {
+          status: 'success',
+          reference: init.reference,
+          amount: 2000000,
+          currency: 'NGN',
+          domain: 'test',
+          channel: 'card',
+          id: 778899,
+        },
+      }),
+    } as any);
 
     // Verify payment
     const verification = await verifyPayment(init.reference);

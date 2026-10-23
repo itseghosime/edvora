@@ -21,6 +21,7 @@ export interface Pupil {
   firstName: string;
   lastName: string;
   gender: 'male' | 'female';
+  dateOfBirth?: string;
   classId: string;
   className?: string;
   status: 'active' | 'graduated' | 'withdrawn' | 'suspended';

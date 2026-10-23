@@ -6,6 +6,7 @@ export const config = {
     process.env.AUTOMATION_SERVICE_KEY ||
     'edv_sec_7f9c2d8e4b1a0f3e5d8c6b4a2e9f1d7c0b3a5e8d2c4f6a9b1e3d5c7f0a2b4e6d',
   paystack: {
+    environment: (process.env.PAYSTACK_ENVIRONMENT || 'test') as 'test' | 'live',
     publicKey: process.env.PAYSTACK_PUBLIC_KEY || 'pk_test_edvora_sample_public_key',
     // Paystack uses the secret key (sk_test_...) directly for HMAC-SHA512 webhook signature verification
     secretKey: process.env.PAYSTACK_SECRET_KEY || 'sk_test_edvora_sample_secret_key',

@@ -4,7 +4,9 @@
 // ==============================================================================
 
 import { getSupabaseAdmin } from '../supabase/client';
+import { config } from '../config';
 import { store as memoryStore } from './store';
+import { mapTermiiProviderStatus, canTransitionAttemptStatus } from '../services/smsStatus';
 import {
   StaffRole,
   PaymentIntent,
@@ -242,7 +244,7 @@ export class DatabaseRepository {
       currency: 'NGN',
       active: true,
       paused: false,
-      consented: true,
+      consented: job.channel === 'sms' ? Boolean(guardian.consent_sms) : Boolean(guardian.consent_telegram),
       lease_expires_at: job.lease_expires_at,
     };
   }
@@ -311,14 +313,8 @@ export class DatabaseRepository {
     }
 
     const providerMessageId = (rawPayload.message_id || rawPayload.id || `msg-${Date.now()}`) as string;
-    const rawStatus = String(rawPayload.status || '').toLowerCase();
-    let mappedStatus: 'sent' | 'delivered' | 'failed' | 'expired' | 'rejected' | 'unknown' = 'unknown';
-
-    if (rawStatus.includes('deliver') || rawStatus === 'success') mappedStatus = 'delivered';
-    else if (rawStatus.includes('sent') || rawStatus === 'accepted') mappedStatus = 'sent';
-    else if (rawStatus.includes('fail') || rawStatus === 'undelivered') mappedStatus = 'failed';
-    else if (rawStatus.includes('expir')) mappedStatus = 'expired';
-    else if (rawStatus.includes('reject')) mappedStatus = 'rejected';
+    const rawStatus = String(rawPayload.status || '');
+    const mappedStatus = mapTermiiProviderStatus(rawStatus);
 
     const { data, error } = await client
       .from('sms_delivery_inbox')
@@ -374,10 +370,39 @@ export class DatabaseRepository {
       return memoryStore.applySmsDeliveryEvent(params);
     }
 
-    await client
+    // 1. Check reminder_attempts
+    const { data: reminderAtt } = await client
       .from('reminder_attempts')
-      .update({ status: params.status === 'delivered' ? 'delivered' : 'failed' })
-      .eq('provider_message_id', params.provider_message_id);
+      .select('id, job_id, status')
+      .eq('provider_message_id', params.provider_message_id)
+      .maybeSingle();
+
+    if (reminderAtt && canTransitionAttemptStatus(reminderAtt.status, params.status)) {
+      const newStatus = params.status === 'delivered' ? 'delivered' : params.status === 'sent' ? 'accepted' : 'failed';
+      await client.from('reminder_attempts').update({ status: newStatus }).eq('id', reminderAtt.id);
+      if (params.status === 'delivered') {
+        await client.from('reminder_jobs').update({ status: 'delivered' }).eq('id', reminderAtt.job_id);
+      } else if (params.status === 'failed') {
+        await client.from('reminder_jobs').update({ status: 'failed' }).eq('id', reminderAtt.job_id);
+      }
+    }
+
+    // 2. Check notification_attempts
+    const { data: notifAtt } = await client
+      .from('notification_attempts')
+      .select('id, job_id, status')
+      .eq('provider_message_id', params.provider_message_id)
+      .maybeSingle();
+
+    if (notifAtt && canTransitionAttemptStatus(notifAtt.status, params.status)) {
+      const newStatus = params.status === 'delivered' ? 'delivered' : params.status === 'sent' ? 'accepted' : 'failed';
+      await client.from('notification_attempts').update({ status: newStatus }).eq('id', notifAtt.id);
+      if (params.status === 'delivered') {
+        await client.from('notification_jobs').update({ status: 'delivered' }).eq('id', notifAtt.job_id);
+      } else if (params.status === 'failed') {
+        await client.from('notification_jobs').update({ status: 'failed' }).eq('id', notifAtt.job_id);
+      }
+    }
 
     await client
       .from('sms_delivery_inbox')
@@ -505,19 +530,72 @@ export class DatabaseRepository {
       }
     }
 
+    let recipient = '';
+    let message = '';
+    let consented = true;
+
+    if (job.recipient_type === 'guardian') {
+      const { data: guardian } = await client
+        .from('guardians')
+        .select('*')
+        .eq('id', job.recipient_id)
+        .maybeSingle();
+
+      if (!guardian || !guardian.is_active) {
+        await client.from('notification_jobs').update({ status: 'skipped' }).eq('id', jobId);
+        return { authorized: false, job_id: jobId, reason: 'Guardian record not found or inactive' };
+      }
+
+      if (job.channel === 'sms') {
+        if (!guardian.consent_sms || !guardian.phone_number) {
+          await client.from('notification_jobs').update({ status: 'skipped' }).eq('id', jobId);
+          return { authorized: false, job_id: jobId, reason: 'SMS consent not granted or phone missing' };
+        }
+        consented = Boolean(guardian.consent_sms);
+        recipient = guardian.phone_number.replace(/[^0-9]/g, '');
+      } else if (job.channel === 'telegram') {
+        if (!guardian.consent_telegram || !guardian.telegram_chat_id) {
+          await client.from('notification_jobs').update({ status: 'skipped' }).eq('id', jobId);
+          return { authorized: false, job_id: jobId, reason: 'Telegram consent not granted or chat ID missing' };
+        }
+        consented = Boolean(guardian.consent_telegram);
+        recipient = String(guardian.telegram_chat_id);
+      }
+
+      if (job.event_type === 'payment_receipt') {
+        const { data: receipt } = await client
+          .from('receipts')
+          .select('receipt_number, amount_minor')
+          .eq('id', job.source_event_id)
+          .maybeSingle();
+
+        message = `Dear ${guardian.full_name}, payment of ₦${(((receipt?.amount_minor || 0) as number) / 100).toLocaleString()} received. Receipt: ${receipt?.receipt_number}. Thank you! View: ${config.appUrl}/student/payments`;
+      } else if (job.event_type === 'results_published') {
+        message = `Dear ${guardian.full_name}, First Term academic report cards have been published! Please view via the student portal: ${config.appUrl}/student/results`;
+      }
+    } else if (job.recipient_type === 'staff') {
+      recipient = '12345678';
+      message = `[EDVORA ALERT] Operational failure detected in workflow. Please inspect Admin Settings -> Incidents.`;
+      consented = true;
+    }
+
     const attemptToken = `notif-atkn-${Date.now()}`;
-    const { data: attempt } = await client
+    const { data: attempt, error: attErr } = await client
       .from('notification_attempts')
       .insert({
         job_id: jobId,
         attempt_token: attemptToken,
         channel: job.channel,
-        recipient: '2348031234567',
-        message: 'Notification from Edvora School',
+        recipient,
+        message,
         status: 'started',
       })
       .select()
       .single();
+
+    if (attErr) throw new Error(`Failed to record notification attempt: ${attErr.message}`);
+
+    await client.from('notification_jobs').update({ status: 'authorized' }).eq('id', jobId);
 
     return {
       authorized: true,
@@ -527,11 +605,11 @@ export class DatabaseRepository {
       event_type: job.event_type,
       source_event_id: job.source_event_id,
       channel: job.channel,
-      recipient: '2348031234567',
-      message: 'Notification from Edvora School',
+      recipient,
+      message,
       active: true,
       paused: false,
-      consented: true,
+      consented,
       lease_expires_at: job.lease_expires_at,
     };
   }
