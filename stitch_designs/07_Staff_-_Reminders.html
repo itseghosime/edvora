@@ -1,0 +1,862 @@
+<!DOCTYPE html><html lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary": "#004f46", "on-secondary-fixed-variant": "#633f00", "secondary": "#825504", "error": "#ba1a1a", "tertiary": "#3b4944", "primary-container": "#14695d", "surface-tint": "#166a5e", "on-tertiary-fixed": "#111e1a", "on-error": "#ffffff", "on-surface-variant": "#3f4946", "on-tertiary-fixed-variant": "#3c4a44", "on-primary-fixed-variant": "#005046", "secondary-container": "#ffc16c", "on-tertiary": "#ffffff", "primary-fixed-dim": "#89d4c5", "surface-container-low": "#def8fd", "surface-bright": "#edfcff", "inverse-surface": "#1c3438", "on-primary-fixed": "#00201b", "on-primary": "#ffffff", "on-surface": "#051f23", "inverse-on-surface": "#dbf6fa", "surface-container-highest": "#cde7ec", "error-container": "#ffdad6", "inverse-primary": "#89d4c5", "on-background": "#051f23", "secondary-fixed": "#ffddb5", "secondary-fixed-dim": "#f9bb67", "on-tertiary-container": "#cbdbd3", "outline-variant": "#bec9c5", "surface-dim": "#c5dfe4", "on-secondary-fixed": "#2a1800", "tertiary-fixed-dim": "#bacac3", "surface-variant": "#cde7ec", "background": "#edfcff", "tertiary-fixed": "#d6e6de", "on-error-container": "#93000a", "on-primary-container": "#9ae5d6", "surface-container": "#d8f3f8", "outline": "#6f7976", "primary-fixed": "#a5f1e1", "surface": "#edfcff", "surface-container-lowest": "#ffffff", "surface-container-high": "#d3edf2", "on-secondary": "#ffffff", "on-secondary-container": "#784d00", "tertiary-container": "#52615b" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.5rem", "space-xs": "0.25rem", "space-lg": "1.5rem", "space-md": "1rem", "margin-mobile": "1rem", "gutter": "1.5rem", "margin": "2.5rem", "gutter-mobile": "1rem", "space-xl": "2rem" }, "fontFamily": { "display-lg": [ "Plus Jakarta Sans" ], "label-lg": [ "Inter" ], "label-sm": [ "Inter" ], "headline-lg": [ "Plus Jakarta Sans" ], "headline-md": [ "Plus Jakarta Sans" ], "title-md": [ "Plus Jakarta Sans" ], "headline-lg-mobile": [ "Plus Jakarta Sans" ], "body-lg": [ "Inter" ], "body-md": [ "Inter" ], "label-md": [ "Inter" ], "body-sm": [ "Inter" ], "headline-sm": [ "Plus Jakarta Sans" ], "display-lg-mobile": [ "Plus Jakarta Sans" ] }, "fontSize": { "display-lg": [ "48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "label-lg": [ "14px", { "lineHeight": "20px", "fontWeight": "500" } ], "label-sm": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" } ], "headline-lg": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "headline-md": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "title-md": [ "16px", { "lineHeight": "24px", "fontWeight": "600" } ], "headline-lg-mobile": [ "26px", { "lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "body-lg": [ "16px", { "lineHeight": "26px", "fontWeight": "400" } ], "body-md": [ "14px", { "lineHeight": "22px", "fontWeight": "400" } ], "label-md": [ "12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" } ], "body-sm": [ "13px", { "lineHeight": "18px", "fontWeight": "400" } ], "headline-sm": [ "20px", { "lineHeight": "28px", "fontWeight": "600" } ], "display-lg-mobile": [ "34px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700" } ] } } } };</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="h-24 px-gutter flex items-center gap-space-sm"><div class="flex items-center gap-space-xs"><span class="font-headline-md text-headline-md text-primary tracking-tight">edvora<span class="text-secondary">.</span></span></div><span class="px-space-sm py-space-xs rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Staff Dashboard</span></div><nav class="flex flex-col gap-space-xs px-gutter" data-active-classes="bg-primary text-on-primary font-title-md"><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="overview" href="#"><span class="material-symbols-outlined text-[20px]">space_dashboard</span><span class="">Overview</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="pupils-and-guardians" href="#"><span class="material-symbols-outlined text-[20px]">group</span><span class="">Pupils &amp; Guardians</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="fees" href="#"><span class="material-symbols-outlined text-[20px]">account_balance_wallet</span><span class="">Fees</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payment-ledger" href="#"><span class="material-symbols-outlined text-[20px]">receipt_long</span><span class="">Payment Ledger</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg hover:text-on-surface transition-colors font-body-md text-body-md bg-primary text-on-primary font-title-md" data-path="reminders" href="#"><span class="material-symbols-outlined text-[20px]">notifications_active</span><span class="">Reminders</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="results" href="#"><span class="material-symbols-outlined text-[20px]">school</span><span class="">Results</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span class="">Settings</span></a></nav></div><div class="p-gutter flex flex-col gap-space-sm bg-surface-container-low"><div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md"><span class="material-symbols-outlined text-[18px] text-primary">support_agent</span><span class="">Support Desk (Mon-Fri)</span></div><div class="flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm"><span class="">+234 800 EDVORA</span><span class="font-label-sm text-label-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface"></span></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 z-40 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="w-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm px-gutter py-space-xs flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-[16px] text-secondary">bolt</span><span class="">2026/2027 · First Term</span></div><span class="font-body-sm text-body-sm text-on-secondary-fixed"></span></div><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><span class="font-title-md text-title-md text-on-surface">Edvora Nursery &amp; Primary School</span><span class="text-outline-variant font-body-sm text-body-sm">/</span><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded-lg text-primary font-label-md text-label-md"><span class="material-symbols-outlined text-[16px]">calendar_month</span><span class="">2026/2027 First Term</span><span class="material-symbols-outlined text-[16px]">expand_more</span></div></div><div class="flex items-center gap-space-lg"><span class="px-space-md py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Bursar &amp; Admin</span><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><a class="text-on-surface-variant hover:text-error transition-colors font-label-md text-label-md flex items-center gap-space-xs" data-path="staff-sign-out" href="#"><span class="material-symbols-outlined text-[16px]">logout</span><span class="">Sign Out</span></a></div></div></div></header><main class="w-full pt-24 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<div class="px-gutter py-space-lg flex flex-col gap-space-lg">
+<!-- Top Action & Navigation Status Bar -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div>
+<div class="flex items-center gap-space-xs text-secondary font-label-sm text-label-sm uppercase tracking-wider mb-1">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+<span class="">Deterministic Dispatch Pipeline · Lagos Route #04</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Automated Advisory &amp; Fee Reminders</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl mt-1">
+          Deterministic one-way SMS and WhatsApp notification schedules. Zero group spam, zero public broadcast noise, strictly transactional.
+        </p>
+</div>
+<!-- Quick Command Group -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<button class="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-container-highest transition-colors font-label-lg text-label-lg shadow-sm" id="pause-all-btn">
+<span class="material-symbols-outlined text-secondary text-[20px]">pause_circle</span>
+<span class="">Pause All Dispatches</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-primary text-on-primary hover:bg-primary-container transition-all font-label-lg text-label-lg shadow-md" id="test-advisory-btn">
+<span class="material-symbols-outlined text-[20px]">send_time_extension</span>
+<span class="">Preview Reminder</span>
+</button>
+</div>
+</div>
+<!-- Zero-Debt Guarantee Callout Banner -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-md shadow-sm">
+<div class="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-secondary-fixed/20 blur-2xl pointer-events-none"></div>
+<div class="flex items-start gap-space-md relative z-10">
+<div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center flex-shrink-0 text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[22px]">policy</span>
+</div>
+<div class="flex flex-col gap-1 pr-6">
+<div class="flex items-center gap-space-sm">
+<span class="font-title-md text-title-md text-primary font-semibold">Zero-Debt Reminder Suppression Guarantee</span>
+<span class="px-space-sm py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm uppercase">Active Rule #SYS-01</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface">
+<strong class="font-semibold text-on-surface">Integrity Rule:</strong> Reminders are strictly suppressed when pupil ledger balance is ₦0. Families with completed settlements never receive debt notifications, eliminating awkward billing confusion.
+          </p>
+</div>
+</div>
+</div>
+<!-- Delivery Telemetry KPI Cards -->
+<div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-space-md">
+<!-- Scheduled -->
+<div class="flex flex-col justify-between p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="">SCHEDULED</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">schedule</span>
+</div>
+<div class="mt-space-md">
+<div class="font-display-lg text-display-lg text-on-surface">24</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-2">Armed for upcoming Tranche 2 due dates</p>
+</div>
+<div class="mt-space-sm pt-space-xs text-secondary font-label-sm text-label-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Week 7 Window
+        </div>
+</div>
+<!-- Accepted -->
+<div class="flex flex-col justify-between p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="">GATEWAY ACCEPTED</span>
+<span class="material-symbols-outlined text-primary text-[18px]">cloud_sync</span>
+</div>
+<div class="mt-space-md">
+<div class="font-display-lg text-display-lg text-primary">18</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-2">Queued with telco aggregators</p>
+</div>
+<div class="mt-space-sm pt-space-xs text-on-surface-variant font-label-sm text-label-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-fixed-dim"></span> MTN / Airtel Direct
+        </div>
+</div>
+<!-- Transmitted -->
+<div class="flex flex-col justify-between p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="">TRANSMITTED</span>
+<span class="material-symbols-outlined text-primary-container text-[18px]">outbox</span>
+</div>
+<div class="mt-space-md">
+<div class="font-display-lg text-display-lg text-on-surface">144</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-2">Dispatched via SMPP / WhatsApp Cloud</p>
+</div>
+<div class="mt-space-sm pt-space-xs text-on-surface-variant font-label-sm text-label-sm flex items-center gap-1">
+<span class="">100% Rate Compliant</span>
+</div>
+</div>
+<!-- Handset Delivered -->
+<div class="flex flex-col justify-between p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="">DELIVERED</span>
+<span class="material-symbols-outlined text-primary text-[18px]">done_all</span>
+</div>
+<div class="mt-space-md">
+<div class="font-display-lg text-display-lg text-primary">140</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-2">97.2% confirmed delivery receipts</p>
+</div>
+<div class="mt-space-sm pt-space-xs text-primary font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> Sub-second ACK
+        </div>
+</div>
+<!-- Failed / Unreachable -->
+<div class="flex flex-col justify-between p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="">FAILED / RETRY</span>
+<span class="material-symbols-outlined text-error text-[18px]">error</span>
+</div>
+<div class="mt-space-md">
+<div class="font-display-lg text-display-lg text-error">4</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-2">Safe retry active; check recipient numbers</p>
+</div>
+<div class="mt-space-sm pt-space-xs text-error font-label-sm text-label-sm flex items-center gap-1">
+<span class="">3 in Retry Backoff</span>
+</div>
+</div>
+<!-- Paused / Dispute Held -->
+<div class="flex flex-col justify-between p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="">PAUSED (HELD)</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">pause_presentation</span>
+</div>
+<div class="mt-space-md">
+<div class="font-display-lg text-display-lg text-secondary">2</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-2">Temporarily suppressed per bursar audit</p>
+</div>
+<div class="mt-space-sm pt-space-xs text-secondary font-label-sm text-label-sm flex items-center gap-1">
+<span class="">Under Manual Review</span>
+</div>
+</div>
+</div>
+<!-- Main Content Grid: Workspace & Side Information Drawer -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Left 8.5 Columns: Tabs, Action Bar & Detailed Table -->
+<div class="lg:col-span-8 flex flex-col gap-space-md">
+<!-- Channels & Navigation Tabs -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm bg-surface-container-lowest p-space-xs rounded-xl shadow-sm">
+<div class="flex items-center gap-1" id="channel-tabs">
+<button class="tab-button px-space-md py-space-xs rounded-lg font-label-lg text-label-lg bg-primary text-on-primary font-semibold transition-all" data-tab="all">All Dispatches (144)</button>
+<button class="tab-button px-space-md py-space-xs rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-tab="sms">SMS Dispatches (92)</button>
+<button class="tab-button px-space-md py-space-xs rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-tab="whatsapp">WhatsApp Notifications (52)</button>
+<button class="tab-button px-space-md py-space-xs rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-tab="schedule">Automated Schedule Rules</button>
+<button class="tab-button px-space-md py-space-xs rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-tab="audit">Delivery Audit Logs</button>
+</div>
+<div class="flex items-center gap-space-xs px-space-sm text-on-surface-variant font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="">Telco Gateway: Live Sync</span>
+</div>
+</div>
+<!-- Filter & Search Control Ribbon -->
+<div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-space-sm bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface text-on-surface rounded-lg font-body-md text-body-md placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all" id="guardian-search" placeholder="Search Guardian Contact (+234...), Ward, or Receipt Ref..." type="text">
+</div>
+<div class="flex items-center gap-space-xs flex-shrink-0">
+<div class="relative">
+<select class="appearance-none bg-surface-container-low text-on-surface font-label-md text-label-md pl-3 pr-8 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer" id="class-filter">
+<option value="all">Filter by Class: All Classes</option>
+<option value="pri1">Primary 1 (A/B)</option>
+<option value="pri2">Primary 2 (A/B)</option>
+<option value="pri3">Primary 3 (A/B)</option>
+<option value="pri4">Primary 4</option>
+<option value="pri5">Primary 5 (A/B)</option>
+<option value="nur">Nursery Section</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-2 top-2 text-[18px] text-on-surface-variant">arrow_drop_down</span>
+</div>
+<div class="relative">
+<select class="appearance-none bg-surface-container-low text-on-surface font-label-md text-label-md pl-3 pr-8 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer" id="status-filter">
+<option value="all">Status: All</option>
+<option value="Scheduled">Scheduled</option>
+<option value="Delivered">Delivered</option>
+<option value="Failed">Failed / Retrying</option>
+</select>
+<span class="material-symbols-outlined pointer-events-none absolute right-2 top-2 text-[18px] text-on-surface-variant">arrow_drop_down</span>
+</div>
+<button class="p-2 rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface transition-colors" title="Export Dispatch Ledger">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+</div>
+</div>
+<!-- Dispatch Log Table Panel -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-md text-body-md border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-space-sm px-space-md">Guardian &amp; Pupil Ward</th>
+<th class="py-space-sm px-space-md">Channel</th>
+<th class="py-space-sm px-space-md">Notification Message Type</th>
+<th class="py-space-sm px-space-md">Delivery Status</th>
+<th class="py-space-sm px-space-md text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y-0" id="dispatch-rows">
+<!-- Row 1: Dr. Osasere Senior -->
+<tr class="hover:bg-surface-container-high/40 transition-colors" data-channel="whatsapp" data-class="pri3" data-status="Scheduled">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center font-title-md text-title-md flex-shrink-0">
+                        O
+                      </div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Dr. Osasere Senior</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Guardian to Osasere E. · Pri 3A</span>
+<span class="font-label-sm text-label-sm text-primary tracking-tight">+234 803 411 9042</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">chat</span> WhatsApp
+                    </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="font-label-lg text-label-lg text-on-surface font-medium">Tranche 2 Reminder</div>
+<div class="font-body-sm text-body-sm text-secondary font-semibold">₦50,000 due Wk 7 (Nov 04)</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Template: #FEE_TR2_EXPEDITED</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-secondary font-semibold">
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span> Scheduled
+                      </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Nov 04, 08:00 AM</span>
+<span class="font-label-sm text-label-sm text-outline">Queue ID: WAPP-9082</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-1 rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" onclick="togglePauseRow(this)">
+                        Pause
+                      </button>
+<button class="px-space-sm py-1 rounded bg-primary-fixed text-on-primary-fixed hover:bg-primary-fixed-dim transition-colors font-label-md text-label-md" onclick="openPreviewModal('Dr. Osasere Senior', 'Tranche 2 Reminder', 'Dear Dr. Osasere Senior, this is an automated bursary advisory from Cedar Primary Demonstration. Your Tranche 2 fee balance of ₦50,000 for Osasere E. (Pri 3A) is scheduled for Week 7 (Monday, Nov 4). View payment options via portal.', 'WhatsApp Direct')">
+                        Preview
+                      </button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Alhaji Mustapha Bello -->
+<tr class="hover:bg-surface-container-high/40 transition-colors" data-channel="sms" data-class="pri2" data-status="Delivered">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container text-on-surface flex items-center justify-center font-title-md text-title-md flex-shrink-0">
+                        M
+                      </div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Alhaji Mustapha Bello</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Guardian to Amina B. · Pri 2A</span>
+<span class="font-label-sm text-label-sm text-primary tracking-tight">+234 802 994 0100</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">sms</span> SMS Direct
+                    </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="font-label-lg text-label-lg text-on-surface font-medium">Overdue Term Fee Notice</div>
+<div class="font-body-sm text-body-sm text-error font-semibold">₦115,000 Outstanding</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Template: #DEBT_OVERDUE_WARN</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold">
+<span class="material-symbols-outlined text-[16px]">done_all</span> Delivered
+                      </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Receipt #SMS-90214</span>
+<span class="font-label-sm text-label-sm text-outline">MTN Nigeria ACK</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-1 rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" onclick="openPayloadModal('Alhaji Mustapha Bello', 'SMS Payload #SMS-90214', 'SMPP Gateway 1.4: CedarDemo: Remind notice for Amina Bello (Pri 2A). Outstanding fees ₦115,000 overdue. Remit via Moniepoint Virtual Acct 1029384756.', 'Telco Delivered (0.42s)')">
+                        Inspect
+                      </button>
+<button class="px-space-sm py-1 rounded bg-surface-container-high text-on-surface hover:bg-surface-container transition-colors font-label-md text-label-md" onclick="triggerSafeRetry('Alhaji Mustapha Bello')">
+                        Retry
+                      </button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Pastor Biodun Adeyemi -->
+<tr class="hover:bg-surface-container-high/40 transition-colors" data-channel="sms" data-class="nur" data-status="Delivered">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-low text-primary flex items-center justify-center font-title-md text-title-md flex-shrink-0">
+                        B
+                      </div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Pastor Biodun Adeyemi</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Guardian to Folake A. · Nur 2B</span>
+<span class="font-label-sm text-label-sm text-primary tracking-tight">+234 809 112 5589</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">sms</span> SMS Direct
+                    </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="font-label-lg text-label-lg text-on-surface font-medium">Settlement Receipt Acknowledgment</div>
+<div class="font-body-sm text-body-sm text-primary font-semibold">Ref: EDV-8838 (₦65,000)</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Template: #RECEIPT_PAID_ACK</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold">
+<span class="material-symbols-outlined text-[16px]">done_all</span> Delivered
+                      </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Oct 30, 04:12 PM</span>
+<span class="font-label-sm text-label-sm text-outline">Balance: ₦0 (Suppressed)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-1 rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" onclick="openPayloadModal('Pastor Biodun Adeyemi', 'Settlement ACK Payload', 'Payment of ₦65,000 received with thanks for Folake Adeyemi (Nur 2B). Receipt EDV-8838 validated. Current balance is ₦0.', 'Receipt Authenticated')">
+                        Inspect Payload
+                      </button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Barr. Joy Okonkwo -->
+<tr class="hover:bg-surface-container-high/40 transition-colors" data-channel="whatsapp" data-class="pri5" data-status="Delivered">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-secondary-fixed-dim text-on-secondary-fixed flex items-center justify-center font-title-md text-title-md flex-shrink-0">
+                        J
+                      </div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Barr. Joy Okonkwo</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Guardian to Chinedu O. · Pri 5B</span>
+<span class="font-label-sm text-label-sm text-primary tracking-tight">+234 803 777 4412</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">chat</span> WhatsApp
+                    </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="font-label-lg text-label-lg text-on-surface font-medium">CA Scores Signed Off &amp; Ready</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant font-medium">Mid-Term Assessment Release</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Template: #ACAD_CA_AVAILABLE</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold">
+<span class="material-symbols-outlined text-[16px]">done_all</span> Delivered
+                      </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Oct 28, 11:30 AM</span>
+<span class="font-label-sm text-label-sm text-outline">Portal Token Embedded</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-1 rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" onclick="openPayloadModal('Barr. Joy Okonkwo', 'Academic Notification Payload', 'Greetings Barr. Joy. Continuous Assessment (CA) scores for Chinedu Okonkwo (Pri 5B) are certified by Mrs. Adeleke. Tap secure token to inspect.', 'WAPP Cloud 200 OK')">
+                        Inspect Payload
+                      </button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Engr. Tunde Agbaje -->
+<tr class="hover:bg-surface-container-high/40 transition-colors" data-channel="sms" data-class="pri4" data-status="Delivered">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center font-title-md text-title-md flex-shrink-0">
+                        T
+                      </div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Engr. Tunde Agbaje</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Guardian to Kome A. · Pri 4</span>
+<span class="font-label-sm text-label-sm text-primary tracking-tight">+234 805 321 8890</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">sms</span> SMS Direct
+                    </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="font-label-lg text-label-lg text-on-surface font-medium">Tranche 2 Part Reminder</div>
+<div class="font-body-sm text-body-sm text-secondary font-semibold">₦40,000 balance remaining</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Template: #FEE_PARTIAL_PROMPT</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold">
+<span class="material-symbols-outlined text-[16px]">done_all</span> Delivered
+                      </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Receipt #SMS-89102</span>
+<span class="font-label-sm text-label-sm text-outline">Airtel DLR Success</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-1 rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" onclick="openPayloadModal('Engr. Tunde Agbaje', 'SMS Partial Tranche Payload', 'Cedar Primary: Part payment recorded for Kome Agbaje. Remaining Tranche 2 is ₦40,000 due prior to exams.', 'Telco Confirmed')">
+                        Inspect Payload
+                      </button>
+</div>
+</td>
+</tr>
+<!-- Row 6: Chief Emeka Okonkwo -->
+<tr class="hover:bg-surface-container-high/40 transition-colors" data-channel="whatsapp" data-class="pri3" data-status="Delivered">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center font-title-md text-title-md flex-shrink-0">
+                        E
+                      </div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Chief Emeka Okonkwo</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Guardian to Ifeanyi O. · Pri 3B</span>
+<span class="font-label-sm text-label-sm text-primary tracking-tight">+234 803 200 4811</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">chat</span> WhatsApp
+                    </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="font-label-lg text-label-lg text-on-surface font-medium">Academic Term Calendar Update</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant font-medium">Mid-Term Break Schedule</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Template: #GEN_CALENDAR_CIRCULAR</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-primary font-semibold">
+<span class="material-symbols-outlined text-[16px]">done_all</span> Delivered
+                      </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Oct 26, 09:15 AM</span>
+<span class="font-label-sm text-label-sm text-outline">Double Blue ACK</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-1 rounded bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md" onclick="openPayloadModal('Chief Emeka Okonkwo', 'WhatsApp Circular Advisory', 'Cedar Primary Notice: First Term Mid-term break commences Nov 06 through Nov 08. Resumption classes on Monday Nov 11 at 07:45 AM prompt.', 'Delivered')">
+                        Inspect Payload
+                      </button>
+</div>
+</td>
+</tr>
+<!-- Row 7: Test Unregistered / Error Case -->
+<tr class="hover:bg-surface-container-high/40 transition-colors" data-channel="sms" data-class="nur" data-status="Failed">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-error-container text-error flex items-center justify-center font-title-md text-title-md flex-shrink-0">
+                        !
+                      </div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Unverified contact</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Guardian</span>
+<span class="font-label-sm text-label-sm text-error tracking-tight">+234 800 000 0099</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-space-sm py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">sms</span> SMS Direct
+                    </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="font-label-lg text-label-lg text-on-surface font-medium">Tranche 1 Reminder</div>
+<div class="font-body-sm text-body-sm text-error font-semibold">Delivery needs review</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Template: #FEE_TR1_GENERIC</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="inline-flex items-center gap-1 font-label-md text-label-md text-error font-semibold">
+<span class="material-symbols-outlined text-[16px]">error_outline</span> Failed
+                      </span>
+<span class="font-body-sm text-body-sm text-error">Telco Timeout (Err 504)</span>
+<span class="font-label-sm text-label-sm text-outline">Safe Retry Armed (2/3)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-1 rounded bg-primary text-on-primary hover:bg-primary-container transition-colors font-label-md text-label-md" onclick="triggerSafeRetry('Test Unregistered (+234 800 000 0099)')">
+                        Safe Retry
+                      </button>
+<button class="px-space-sm py-1 rounded bg-error-container text-on-error-container hover:bg-surface-container-high transition-colors font-label-md text-label-md" onclick="openPayloadModal('Test Unregistered', 'Gateway Failure Trace', 'Error Code: TELCO_AGGREGATOR_TIMEOUT. The subscriber number +2348000000099 was rejected by the Nigerian mobile network operator test route.', 'HTTP 504 Gateway Expired')">
+                        Diagnostic
+                      </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer Pagination -->
+<div class="p-space-md bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Showing 7 of 144 registered advisory dispatches</span>
+<div class="flex items-center gap-1 font-label-md text-label-md">
+<button class="px-3 py-1 rounded bg-surface-container-lowest text-on-surface-variant hover:text-on-surface disabled:opacity-50" disabled="">Previous</button>
+<button class="px-3 py-1 rounded bg-primary text-on-primary font-semibold">1</button>
+<button class="px-3 py-1 rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high">2</button>
+<button class="px-3 py-1 rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high">3</button>
+<button class="px-3 py-1 rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-high">Next</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Right 4 Columns: Side Drawer / Info Panel -->
+<div class="lg:col-span-4 flex flex-col gap-space-md">
+<!-- Configured Dispatch Rules Panel -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">tune</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Configured Dispatch Rules</h2>
+</div>
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Automated</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Rules execute deterministically without staff intervention based on calendar triggers and live fee ledgers.
+          </p>
+<div class="flex flex-col gap-space-sm">
+<!-- Rule 1: Resumption -->
+<div class="p-space-md rounded-lg bg-surface-container-low flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Tranche 1 Resumption Reminder</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">T-Minus 7 Days</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Dispatches at 08:00 AM WAT exactly 7 calendar days before term resumption to unpaid ledgers.
+              </p>
+<div class="flex items-center justify-between mt-2 pt-2 border-t-0 text-on-surface-variant font-label-sm text-label-sm">
+<span class="">Channel: Dual (SMS + WhatsApp)</span>
+<span class="text-primary font-medium">Auto-suppress if ₦0</span>
+</div>
+</div>
+<!-- Rule 2: Mid-Term -->
+<div class="p-space-md rounded-lg bg-surface-container-low flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Mid-Term Warning (Tranche 2)</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">Term Day 42</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Triggers mid-term advisory for households carrying open balances prior to midterm break release.
+              </p>
+<div class="flex items-center justify-between mt-2 pt-2 border-t-0 text-on-surface-variant font-label-sm text-label-sm">
+<span class="">Channel: WhatsApp Preferred</span>
+<span class="text-secondary font-medium">Bursar Alert Sync</span>
+</div>
+</div>
+<!-- Rule 3: CA Scores -->
+<div class="p-space-md rounded-lg bg-surface-container-low flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Continuous Assessment Publish Ping</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">Event Driven</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Fires in under 120 seconds once headteacher digitally signs off the classroom results register.
+              </p>
+<div class="flex items-center justify-between mt-2 pt-2 border-t-0 text-on-surface-variant font-label-sm text-label-sm">
+<span class="">Channel: WhatsApp with Link</span>
+<span class="text-primary font-medium">Zero Debt Required</span>
+</div>
+</div>
+</div>
+<button class="w-full py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-lg text-label-lg transition-colors flex items-center justify-center gap-space-xs" onclick="openRuleDrawer()">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span class="">Define New Schedule Rule</span>
+</button>
+</div>
+<!-- Telco Aggregator Routing Box -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Telco Gateway Status</span>
+<span class="px-space-sm py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">Healthy</span>
+</div>
+<div class="flex flex-col gap-space-xs mt-1">
+<div class="flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Active Pipeline:</span>
+<span class="font-medium text-on-surface">SMS delivery route</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">SMPP Throughput:</span>
+<span class="font-medium text-on-surface">45 SMS / second</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Meta Cloud API:</span>
+<span class="font-medium text-primary">Connected (Verified Tier-2)</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface-variant">Bypass NDNC Filter:</span>
+<span class="font-medium text-on-surface">Transactional Exemption</span>
+</div>
+</div>
+<!-- Inline Telemetry Visual SVG -->
+<div class="mt-space-sm p-space-sm rounded-lg bg-surface-container-low flex flex-col gap-2">
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="">Delivery Latency (Past 60m)</span>
+<span class="text-primary font-semibold">0.68s avg</span>
+</div>
+<svg class="w-full h-12 text-primary overflow-visible" viewBox="0 0 200 40">
+<path d="M 0 30 Q 25 15, 50 25 T 100 10 T 150 20 T 200 8" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+<circle cx="200" cy="8" fill="currentColor" r="4"></circle>
+</svg>
+</div>
+</div>
+<!-- Strict Transactional Protocol Disclaimer Card -->
+<div class="p-space-md rounded-xl bg-surface-container-high flex flex-col gap-2">
+<div class="flex items-center gap-space-xs text-on-surface font-title-md text-title-md font-semibold">
+<span class="material-symbols-outlined text-secondary text-[20px]">mark_email_unread</span>
+<span class="">No Email Relays &amp; No Chat Box</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            In compliance with Edvora South-West Nigeria Academy Standards, communications are strictly outbound advisory notifications. Parents cannot reply with unsolicited chit-chat; queries are routed via the Bursary Helpdesk hotline.
+          </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Modal: Preview Message -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden items-center justify-center p-gutter" id="preview-modal">
+<div class="bg-surface-container-lowest max-w-lg w-full rounded-2xl shadow-xl p-space-xl flex flex-col gap-space-md relative">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[24px]">visibility</span>
+<span class="font-headline-sm text-headline-sm text-on-surface" id="modal-title">Message Payload Preview</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface" onclick="closeModals()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="flex flex-col gap-space-xs p-space-md rounded-xl bg-surface-container-low">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase" id="modal-recipient-label">RECIPIENT</span>
+<span class="font-title-md text-title-md text-on-surface font-semibold" id="modal-recipient-name">Dr. Osasere Senior</span>
+<span class="font-label-md text-label-md text-primary font-medium" id="modal-channel-type">Channel: WhatsApp Direct</span>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant">TRANSMISSION CONTENT:</span>
+<div class="p-space-md rounded-xl bg-surface text-on-surface font-body-md text-body-md whitespace-pre-wrap shadow-inner leading-relaxed" id="modal-body-content">
+          Sample content
+        </div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="font-label-sm text-label-sm text-secondary font-medium">Simulated via Lagos-Direct Gateway</span>
+<button class="px-space-lg py-2 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg hover:bg-primary-container transition-colors" onclick="closeModals()">
+          Dismiss Preview
+        </button>
+</div>
+</div>
+</div>
+<!-- Interactive Modal: Send Protected Test Advisory -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden items-center justify-center p-gutter" id="test-modal">
+<div class="bg-surface-container-lowest max-w-md w-full rounded-2xl shadow-xl p-space-xl flex flex-col gap-space-md relative">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[24px]">send_time_extension</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Protected Test Advisory</span>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface" onclick="closeModals()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+        Send a non-billable test advisory to verify telco carrier routing. This will not trigger external parent alerts.
+      </p>
+<div class="flex flex-col gap-space-sm">
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface mb-1">Select Delivery Channel</label>
+<select class="w-full bg-surface-container-low p-2 rounded-lg text-on-surface font-body-md text-body-md focus:outline-none">
+<option>SMS (Nigeria DND Bypassed)</option>
+<option>WhatsApp Direct (Meta Business Cloud)</option>
+</select>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface mb-1">Test Recipient Phone</label>
+<input class="w-full bg-surface p-2 rounded-lg text-on-surface font-body-md text-body-md border-0 focus:ring-1 focus:ring-primary" type="text" value="+234 800 000 0099">
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface mb-1">Template Preset</label>
+<select class="w-full bg-surface-container-low p-2 rounded-lg text-on-surface font-body-md text-body-md focus:outline-none">
+<option>#FEE_TR2_EXPEDITED (Tranche 2 Reminder)</option>
+<option>#ACAD_CA_AVAILABLE (CA Scores Notice)</option>
+<option>#RECEIPT_PAID_ACK (Settlement Receipt)</option>
+</select>
+</div>
+</div>
+<div class="flex items-center justify-end gap-space-sm pt-space-xs">
+<button class="px-space-md py-2 rounded-lg text-on-surface-variant hover:bg-surface-container font-label-md text-label-md" onclick="closeModals()">
+          Cancel
+        </button>
+<button class="px-space-lg py-2 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg hover:bg-primary-container transition-colors flex items-center gap-1" id="dispatch-test-btn" onclick="executeTestDispatch()">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+<span class="">Fire Protected Test</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Notification Toast -->
+<div class="fixed bottom-6 right-6 z-50 bg-inverse-surface text-inverse-on-surface px-space-md py-space-sm rounded-lg shadow-xl flex items-center gap-space-sm transition-transform duration-300 translate-y-24 opacity-0 pointer-events-none" id="toast-notification">
+<span class="material-symbols-outlined text-primary-fixed" id="toast-icon">check_circle</span>
+<span class="font-body-md text-body-md" id="toast-message">Action executed successfully.</span>
+</div>
+<!-- Client-side Logic for Screen Interactions -->
+<script>
+    // Highlight active sidebar navigation element for Reminders
+    document.addEventListener("DOMContentLoaded", function() {
+      const navLinks = document.querySelectorAll("aside nav a");
+      navLinks.forEach(link => {
+        if (link.getAttribute("data-path") === "reminders") {
+          link.classList.remove("text-on-surface-variant", "hover:bg-surface-container-high");
+          link.classList.add("bg-primary", "text-on-primary", "font-title-md");
+        }
+      });
+    });
+
+    // Pause all toggle
+    const pauseAllBtn = document.getElementById("pause-all-btn");
+    let isPausedAll = false;
+    pauseAllBtn.addEventListener("click", () => {
+      isPausedAll = !isPausedAll;
+      if (isPausedAll) {
+        pauseAllBtn.innerHTML = `<span class="material-symbols-outlined text-primary text-[20px]">play_circle</span><span>Resume Dispatches</span>`;
+        showToast("All automated SMS & WhatsApp schedules paused temporarily.", "pause_circle");
+      } else {
+        pauseAllBtn.innerHTML = `<span class="material-symbols-outlined text-secondary text-[20px]">pause_circle</span><span>Pause All Dispatches</span>`;
+        showToast("Automated dispatches resumed on normal schedule.", "play_circle");
+      }
+    });
+
+    // Modals
+    const previewModal = document.getElementById("preview-modal");
+    const testModal = document.getElementById("test-modal");
+    const testBtn = document.getElementById("test-advisory-btn");
+
+    testBtn.addEventListener("click", () => {
+      testModal.classList.remove("hidden");
+      testModal.classList.add("flex");
+    });
+
+    function closeModals() {
+      previewModal.classList.add("hidden");
+      previewModal.classList.remove("flex");
+      testModal.classList.add("hidden");
+      testModal.classList.remove("flex");
+    }
+
+    function openPreviewModal(recipient, subject, body, channel) {
+      document.getElementById("modal-recipient-name").textContent = recipient;
+      document.getElementById("modal-title").textContent = subject;
+      document.getElementById("modal-body-content").textContent = body;
+      document.getElementById("modal-channel-type").textContent = channel;
+      previewModal.classList.remove("hidden");
+      previewModal.classList.add("flex");
+    }
+
+    function openPayloadModal(recipient, title, payload, status) {
+      openPreviewModal(recipient, title, payload, "Diagnostics: " + status);
+    }
+
+    function togglePauseRow(btn) {
+      if (btn.textContent.trim() === "Pause") {
+        btn.textContent = "Resume";
+        btn.classList.add("bg-secondary-fixed", "text-on-secondary-fixed");
+        showToast("Schedule paused for recipient.", "pause");
+      } else {
+        btn.textContent = "Pause";
+        btn.classList.remove("bg-secondary-fixed", "text-on-secondary-fixed");
+        showToast("Schedule armed and active.", "check");
+      }
+    }
+
+    function triggerSafeRetry(recipient) {
+      showToast("Safe retry queued for " + recipient + " via Lagos SMPP route.", "sync");
+    }
+
+    function executeTestDispatch() {
+      closeModals();
+      showToast("Test payload dispatched to +234 800 000 0099. Gateway accepted (0.24s).", "send");
+    }
+
+    function openRuleDrawer() {
+      showToast("Schedule rule designer will open in next deployment.", "info");
+    }
+
+    // Tab Filtering
+    const tabs = document.querySelectorAll("#channel-tabs .tab-button");
+    const rows = document.querySelectorAll("#dispatch-rows tr");
+
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        tabs.forEach(t => {
+          t.classList.remove("bg-primary", "text-on-primary", "font-semibold");
+          t.classList.add("text-on-surface-variant");
+        });
+        tab.classList.add("bg-primary", "text-on-primary", "font-semibold");
+        tab.classList.remove("text-on-surface-variant");
+
+        const target = tab.getAttribute("data-tab");
+        rows.forEach(row => {
+          if (target === "all") {
+            row.style.display = "";
+          } else if (target === "sms" || target === "whatsapp") {
+            row.style.display = row.getAttribute("data-channel") === target ? "" : "none";
+          } else {
+            row.style.display = "";
+          }
+        });
+      });
+    });
+
+    // Search and Class Filters
+    const searchInput = document.getElementById("guardian-search");
+    const classFilter = document.getElementById("class-filter");
+    const statusFilter = document.getElementById("status-filter");
+
+    function applyFilters() {
+      const term = searchInput.value.toLowerCase();
+      const selectedClass = classFilter.value;
+      const selectedStatus = statusFilter.value;
+
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const rowClass = row.getAttribute("data-class");
+        const rowStatus = row.getAttribute("data-status");
+
+        const matchesTerm = text.includes(term);
+        const matchesClass = selectedClass === "all" || rowClass === selectedClass;
+        const matchesStatus = selectedStatus === "all" || rowStatus === selectedStatus;
+
+        if (matchesTerm && matchesClass && matchesStatus) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    }
+
+    searchInput.addEventListener("input", applyFilters);
+    classFilter.addEventListener("change", applyFilters);
+    statusFilter.addEventListener("change", applyFilters);
+
+    // Toast Utility
+    function showToast(message, icon = "check_circle") {
+      const toast = document.getElementById("toast-notification");
+      const toastMsg = document.getElementById("toast-message");
+      const toastIcon = document.getElementById("toast-icon");
+
+      toastMsg.textContent = message;
+      toastIcon.textContent = icon;
+      toast.classList.remove("translate-y-24", "opacity-0", "pointer-events-none");
+
+      setTimeout(() => {
+        toast.classList.add("translate-y-24", "opacity-0", "pointer-events-none");
+      }, 3500);
+    }
+  </script>
+</div></main></div>
+
+</body></html>

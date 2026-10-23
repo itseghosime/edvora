@@ -1,0 +1,190 @@
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+interface StaffShellProps {
+  children: React.ReactNode;
+}
+
+export default function StaffShell({ children }: StaffShellProps) {
+  const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentRole, setCurrentRole] = useState<"Administrator" | "Bursar" | "Teacher">("Bursar");
+
+  const navItems = [
+    { label: "Overview", href: "/admin", icon: "space_dashboard" },
+    { label: "Pupils & Guardians", href: "/admin/pupils", icon: "group" },
+    { label: "Fees & Billing", href: "/admin/fees", icon: "credit_card" },
+    { label: "Payment Ledger", href: "/admin/payments", icon: "receipt_long" },
+    { label: "Reminders & Notice", href: "/admin/reminders", icon: "notifications_active" },
+    { label: "Results & Grading", href: "/admin/results", icon: "assignment_turned_in" },
+    { label: "School Settings", href: "/admin/settings", icon: "settings" },
+  ];
+
+  return (
+    <div className="portal-shell min-h-screen bg-surface font-body-md text-on-surface">
+      {/* Desktop Fixed Sidebar */}
+      <aside className="hidden lg:flex fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] select-none">
+        <div className="flex flex-col">
+          {/* Logo Header */}
+          <div className="h-24 px-gutter flex items-center justify-between border-b border-outline-variant/20">
+            <Link href="/" className="flex items-center gap-space-xs">
+              <span className="font-headline-md text-headline-md text-primary tracking-tight font-bold">
+                edvora<span className="text-secondary">.</span>
+              </span>
+            </Link>
+            <span className="px-space-sm py-space-xs rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+              Staff Dashboard
+            </span>
+          </div>
+
+          {/* Navigation Links */}
+          <nav className="flex flex-col gap-space-xs px-gutter mt-4">
+            {navItems.map((item) => {
+              const isActive =
+                item.href === "/admin"
+                  ? pathname === "/admin"
+                  : pathname.startsWith(item.href);
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-space-md px-space-md py-space-sm rounded-lg transition-colors font-label-lg text-label-lg ${
+                    isActive
+                      ? "bg-primary text-on-primary font-bold shadow-sm"
+                      : "text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface"
+                  }`}
+                >
+                  <span aria-hidden="true" className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Sidebar Bottom Controls */}
+        <div className="p-gutter border-t border-outline-variant/20 space-y-3 bg-surface-container-lowest">
+          <div className="p-3 bg-surface-container-low rounded-xl text-xs space-y-1">
+            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline block">
+              Active Permission
+            </span>
+            <select
+              value={currentRole}
+              onChange={(e) => setCurrentRole(e.target.value as any)}
+              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-2 py-1 text-xs font-semibold text-primary focus:outline-none"
+            >
+              <option value="Administrator">Administrator (Superuser)</option>
+              <option value="Bursar">Bursar (Financials)</option>
+              <option value="Teacher">Class Teacher (Scores)</option>
+            </select>
+          </div>
+
+          <Link
+            href="/login"
+            className="flex items-center gap-2 text-xs font-semibold text-error hover:underline px-2"
+          >
+            <span aria-hidden="true" className="material-symbols-outlined text-[18px]">logout</span>
+            <span>Sign Out Workstation</span>
+          </Link>
+        </div>
+      </aside>
+
+      {/* Main Staff Content Wrapper */}
+      <div className="lg:pl-72 flex flex-col min-h-screen">
+        {/* Top Fixed Header */}
+        <header className="sticky top-0 z-40 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-outline-variant/20">
+          {/* Top Session Ribbon */}
+          <div className="w-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm px-4 sm:px-gutter py-space-xs flex items-center justify-between">
+            <div className="flex items-center gap-space-xs">
+              <span aria-hidden="true" className="material-symbols-outlined text-[16px] text-secondary">bolt</span>
+              <span>Edvora Internal School Operations Desk · Session 2026/2027</span>
+            </div>
+            <span className="font-body-sm text-body-sm text-on-secondary-fixed hidden sm:inline">
+              Collection Target: ₦21,600,000
+            </span>
+          </div>
+
+          {/* Sub Header */}
+          <div className="h-16 px-4 sm:px-gutter flex items-center justify-between">
+            <div className="flex items-center gap-space-md">
+              <button
+                type="button"
+                aria-label="Toggle navigation"
+              aria-expanded={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden p-1.5 text-on-surface hover:bg-surface-container-low rounded-lg mr-1"
+              >
+                <span aria-hidden="true" className="material-symbols-outlined text-[24px]">menu</span>
+              </button>
+              <span className="font-title-md text-title-md text-on-surface font-semibold hidden xl:inline">
+                Edvora Nursery &amp; Primary School
+              </span>
+              <span className="text-outline-variant font-body-sm text-body-sm hidden xl:inline">
+                /
+              </span>
+              <div className="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded-lg text-primary font-label-md text-label-md">
+                <span aria-hidden="true" className="material-symbols-outlined text-[16px]">calendar_month</span>
+                <span>2026/2027 First Term</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 sm:gap-space-lg">
+              <span className="px-space-md py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+                {currentRole} Role
+              </span>
+              <div className="flex items-center gap-space-sm">
+                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-xs">
+                  AD
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Mobile Nav */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-surface-container-lowest border-b border-outline-variant/20 p-4 space-y-2 shadow-lg">
+            <nav className="space-y-1">
+              {navItems.map((item) => {
+                const isActive =
+                  item.href === "/admin"
+                    ? pathname === "/admin"
+                    : pathname.startsWith(item.href);
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-medium ${
+                      isActive
+                        ? "bg-primary text-on-primary font-bold"
+                        : "text-on-surface-variant hover:bg-surface-container-low"
+                    }`}
+                  >
+                    <span aria-hidden="true" className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="pt-2 border-t border-outline-variant/20 flex justify-end">
+              <Link href="/login" className="text-xs font-semibold text-error">
+                Sign Out Workstation
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Main Content Area */}
+        <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}

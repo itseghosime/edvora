@@ -1,0 +1,541 @@
+<!DOCTYPE html><html lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>STU-01 — Student Dashboard Overview · Edvora</title>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; }
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #c5dfe4; border-radius: 9999px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#14695D",
+            "primary-dark": "#004F46",
+            "primary-container": "#14695D",
+            "on-primary": "#ffffff",
+            "on-primary-container": "#9ae5d6",
+            "primary-fixed": "#a5f1e1",
+            "primary-fixed-dim": "#89d4c5",
+            "on-primary-fixed-variant": "#005046",
+            "secondary": "#825504",
+            "secondary-ochre": "#E5AA58",
+            "secondary-container": "#ffc16c",
+            "secondary-fixed": "#ffddb5",
+            "on-secondary-fixed-variant": "#633f00",
+            "surface": "#F8FAF9",
+            "surface-dim": "#c5dfe4",
+            "surface-bright": "#edfcff",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#edf8f9",
+            "surface-container": "#e1f3f5",
+            "surface-container-high": "#d3edf2",
+            "surface-container-highest": "#cde7ec",
+            "on-surface": "#051f23",
+            "on-surface-variant": "#3f4946",
+            "outline": "#6f7976",
+            "outline-variant": "#bec9c5",
+            "tertiary": "#3b4944",
+            "background": "#F8FAF9"
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            display: ["Plus Jakarta Sans", "sans-serif"],
+            headline: ["Plus Jakarta Sans", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-surface font-sans text-on-surface antialiased min-h-screen flex">
+<!-- PERSISTENT LEFT SIDEBAR (~240px wide) -->
+<aside class="w-60 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col justify-between shrink-0 fixed inset-y-0 left-0 z-40 select-none">
+<!-- Top Branding & Navigation -->
+<div class="flex flex-col">
+<!-- School / System Logo Header -->
+<div class="h-20 px-6 flex flex-col justify-center border-b border-outline-variant/20">
+<a class="flex items-baseline gap-0.5" href="/student">
+<span class="font-display font-bold text-2xl tracking-tight text-[#14695D]">edvora<span class="text-[#E5AA58]">.</span></span>
+</a>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-[#14695D]"></span>
+<span class="text-[11px] font-semibold uppercase tracking-wider text-on-surface-variant/80">Student Portal</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="p-3 space-y-1.5 mt-2">
+<!-- Overview (Active) -->
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg bg-[#14695D] text-white font-medium text-sm shadow-sm transition-colors" href="/student">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &quot;FILL&quot; 1;">dashboard</span>
+<span class="">Overview</span>
+</a>
+<!-- Fees & Payments -->
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-medium text-sm transition-colors" href="/student/payments">
+<span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+<span class="">Fees &amp; Payments</span>
+</a>
+<!-- Results -->
+<a class="flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low font-medium text-sm transition-colors" href="/student/results">
+<span class="material-symbols-outlined text-[20px]">history_edu</span>
+<span class="">Results</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer -->
+<div class="p-4 border-t border-outline-variant/20 space-y-3 bg-surface-container-lowest">
+<!-- School Office Desk Quick Info -->
+<div class="rounded-xl bg-surface-container-low p-3 space-y-1.5">
+<div class="flex items-center gap-1.5 text-primary text-xs font-semibold">
+<span class="material-symbols-outlined text-[16px]">call</span>
+<span class="">School Office</span>
+</div>
+<p class="text-[11px] text-on-surface-variant leading-tight">Support &amp; Desk Queries:</p>
+<a class="block text-xs font-semibold text-on-surface hover:text-primary transition-colors tracking-tight" href="tel:+23452250000">Contact school office</a>
+<div class="text-[10px] text-outline font-medium">Mon–Fri · 8:00 AM – 4:00 PM</div>
+</div>
+<!-- Help link & Sign Out -->
+<div class="pt-1 flex items-center justify-between text-xs">
+<a class="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1" href="/student/support">
+<span class="material-symbols-outlined text-[16px]">help_outline</span>
+<span class="">Help Desk</span>
+</a>
+<a class="text-on-surface-variant hover:text-error transition-colors flex items-center gap-1" href="/sign-in" title="Sign Out">
+<span class="material-symbols-outlined text-[16px]">logout</span>
+<span class="">Sign Out</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- MAIN WRAPPER (Offset by sidebar width 240px / 15rem) -->
+<div class="flex-1 ml-60 flex flex-col min-w-0">
+<!-- Top Bar Header -->
+<header class="h-20 bg-surface-container-lowest border-b border-outline-variant/20 px-8 flex items-center justify-between sticky top-0 z-30 shadow-[0_1px_4px_rgba(28,52,56,0.02)]">
+<!-- Left: Breadcrumb / Status -->
+<div class="flex items-center gap-2.5">
+<div class="w-2 h-2 rounded-full bg-[#14695D]"></div>
+<div class="flex items-center gap-2 text-xs md:text-sm font-medium text-on-surface">
+<span class="font-display font-semibold text-primary">Edvora Nursery &amp; Primary School</span>
+<span class="text-outline-variant">·</span>
+<span class="text-on-surface-variant">2026/2027 First Term</span>
+</div>
+</div>
+<!-- Right: Sibling Switcher & Profile Dropdown -->
+<div class="flex items-center gap-4">
+<!-- Interactive Sibling Selector Pill -->
+<div class="relative group">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-low hover:bg-surface-container border border-outline-variant/30 text-on-surface transition-all text-left" type="button">
+<span class="w-2 h-2 rounded-full bg-[#14695D]"></span>
+<span class="text-xs font-medium">Viewing: <strong class="text-primary font-semibold">Osasere Ehigiator · Pri 3A</strong></span>
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span>
+</button>
+<!-- Dropdown Menu -->
+<div class="absolute right-0 mt-1.5 w-72 bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant/30 py-2 hidden group-hover:block hover:block z-50">
+<div class="px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-outline">Household Pupils</div>
+<button class="w-full px-3.5 py-2 flex items-center justify-between bg-primary/5 hover:bg-primary/10 text-left transition-colors">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-xs">OE</div>
+<div>
+<div class="text-xs font-semibold text-on-surface">Osasere Ehigiator</div>
+<div class="text-[11px] text-primary">Primary 3A · Active Selection</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+</button>
+<button class="w-full px-3.5 py-2 flex items-center justify-between hover:bg-surface-container-low text-left transition-colors">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-full bg-surface-container text-tertiary flex items-center justify-center font-bold text-xs">EE</div>
+<div>
+<div class="text-xs font-medium text-on-surface">Efe Ehigiator</div>
+<div class="text-[11px] text-on-surface-variant">Nursery 1B · Sibling</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[16px]">swap_horiz</span>
+</button>
+</div>
+</div>
+<!-- User Avatar & Mini Profile -->
+<div class="flex items-center gap-2.5 pl-2 border-l border-outline-variant/30">
+<div class="w-9 h-9 rounded-full bg-[#14695D] text-white flex items-center justify-center font-semibold text-xs shadow-sm">
+            DO
+          </div>
+<div class="hidden sm:block text-left">
+<div class="text-xs font-semibold text-on-surface leading-tight">Dr. Osasere Senior</div>
+<div class="text-[11px] text-on-surface-variant">Guardian Account</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Scrollable Content -->
+<main class="flex-1 p-6 lg:p-8 space-y-6 max-w-7xl w-full mx-auto">
+<!-- Welcome Banner & Household Pupil Selector Ribbon -->
+<section class="bg-surface-container-lowest rounded-2xl p-6 lg:p-7 shadow-[0_2px_12px_rgba(28,52,56,0.03)] border border-outline-variant/20 relative overflow-hidden">
+<div class="absolute -right-10 -top-10 w-64 h-64 rounded-full bg-surface-container-high/30 pointer-events-none blur-3xl"></div>
+<div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div class="space-y-1.5">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#14695D]"></span>
+<span class="text-xs font-semibold uppercase tracking-wider text-[#14695D]">Academic Session 2026/2027 · First Term</span>
+</div>
+<h1 class="font-display font-bold text-2xl lg:text-3xl text-on-surface tracking-tight">
+              Welcome, <span class="text-[#14695D]">Dr. Osasere Senior</span> <span class="text-sm font-normal text-on-surface-variant">(Guardian)</span>
+</h1>
+<p class="text-sm text-on-surface-variant flex flex-wrap items-center gap-x-2 gap-y-1 pt-0.5">
+<span class="">Student: <strong class="text-on-surface font-semibold">Osasere Ehigiator</strong></span>
+<span class="text-outline-variant">·</span>
+<span class="">Primary 3A (Cedar West)</span>
+<span class="text-outline-variant">·</span>
+<span class="font-mono text-xs bg-surface-container-low px-2 py-0.5 rounded border border-outline-variant/30 text-tertiary">EDP-2026-042</span>
+</p>
+</div>
+<!-- Sibling Quick Switch Tabs -->
+<div class="bg-surface-container-low p-1.5 rounded-xl flex flex-col sm:flex-row gap-1.5 self-start lg:self-center border border-outline-variant/20">
+<button class="flex items-center gap-3 px-3.5 py-2 rounded-lg bg-surface-container-lowest text-primary shadow-[0_1px_4px_rgba(28,52,56,0.05)] text-left transition-all" type="button">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                OE
+              </div>
+<div>
+<div class="text-xs font-semibold text-on-surface">Osasere Ehigiator</div>
+<div class="text-[11px] text-primary font-medium">Primary 3A · Enrolled (Active)</div>
+</div>
+<span class="material-symbols-outlined text-primary text-[18px] ml-1" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+</button>
+<button class="flex items-center gap-3 px-3.5 py-2 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high/50 text-left transition-all group" type="button">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-tertiary font-bold text-xs group-hover:bg-primary-fixed">
+                EE
+              </div>
+<div>
+<div class="text-xs font-medium text-on-surface-variant group-hover:text-on-surface">Efe Ehigiator</div>
+<div class="text-[11px] text-outline">Nursery 1B · Sibling Record</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[16px] ml-1">swap_horiz</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Main Row: Financial Summary & Academic Progress -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+<!-- Financial Summary Card (7 cols) -->
+<section class="lg:col-span-7 bg-surface-container-lowest rounded-2xl shadow-[0_2px_12px_rgba(28,52,56,0.03)] border border-outline-variant/20 overflow-hidden flex flex-col">
+<!-- Card Header -->
+<div class="bg-surface-container-low/70 px-6 py-4 flex items-center justify-between border-b border-outline-variant/20">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[22px]">account_balance_wallet</span>
+<h2 class="font-display font-semibold text-base text-on-surface">Term Financial Balance &amp; Ledger</h2>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#ffddb5] text-[#633f00] text-xs font-semibold uppercase tracking-wide">
+              Tranche 2 Pending
+            </span>
+</div>
+<div class="p-6 space-y-6">
+<!-- Key Metrics Trio -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+<div class="p-4 rounded-xl bg-surface-container-low/80 border border-outline-variant/20">
+<span class="text-xs font-medium text-on-surface-variant uppercase tracking-wider">Total Charges</span>
+<div class="mt-2">
+<div class="font-display font-bold text-2xl text-on-surface tabular-nums">₦120,000</div>
+<div class="text-xs text-outline mt-0.5">Tuition &amp; Materials</div>
+</div>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low/80 border border-outline-variant/20">
+<span class="text-xs font-semibold text-primary uppercase tracking-wider">Verified Paid</span>
+<div class="mt-2">
+<div class="font-display font-bold text-2xl text-primary tabular-nums">₦70,000</div>
+<div class="text-xs text-on-surface-variant mt-0.5">Tranche 1 Settled</div>
+</div>
+</div>
+<div class="p-4 rounded-xl bg-[#ffddb5]/30 border border-[#ffddb5]/60">
+<span class="text-xs font-semibold text-secondary uppercase tracking-wider">Balance Due</span>
+<div class="mt-2">
+<div class="font-display font-bold text-2xl text-secondary tabular-nums">₦50,000</div>
+<div class="text-xs text-secondary mt-0.5 font-medium">Due: Nov 04, 2026</div>
+</div>
+</div>
+</div>
+<!-- Progress Gauge -->
+<div class="space-y-2">
+<div class="flex justify-between items-center text-xs font-medium">
+<span class="text-on-surface-variant">Term Settlement: <strong class="text-on-surface">58.3% Completed</strong></span>
+<span class="text-secondary font-semibold">₦50,000 remaining for Full Clearance</span>
+</div>
+<div class="w-full h-3 rounded-full bg-surface-container overflow-hidden p-0.5">
+<div class="h-full rounded-full bg-[#14695D] transition-all duration-700 ease-out" style="width: 58.33%;"></div>
+</div>
+<div class="flex justify-between text-xs text-outline pt-0.5">
+<span class="">Tranche 1 Resumption (Settled Oct 14)</span>
+<span class="">Tranche 2 (Mid-Term Week 7)</span>
+</div>
+</div>
+<!-- Direct Payment Action Box -->
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+<div class="flex items-start gap-2.5">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">verified_user</span>
+<div class="text-xs text-on-surface-variant leading-relaxed">
+<strong class="text-on-surface">Bursary Clearance:</strong> Instant official payment receipt issued immediately upon confirmation.
+                </div>
+</div>
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#14695D] hover:bg-primary-dark text-white text-xs font-semibold rounded-lg shadow-sm transition-all flex-shrink-0" href="/student/payments">
+<span class="">Make Payment</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</section>
+<!-- Academic Progress Card (5 cols) -->
+<section class="lg:col-span-5 bg-surface-container-lowest rounded-2xl shadow-[0_2px_12px_rgba(28,52,56,0.03)] border border-outline-variant/20 overflow-hidden flex flex-col justify-between">
+<div>
+<!-- Header -->
+<div class="bg-surface-container-low/70 px-6 py-4 flex items-center justify-between border-b border-outline-variant/20">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[22px]">history_edu</span>
+<h2 class="font-display font-semibold text-base text-on-surface">Academic Results · Term 1</h2>
+</div>
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant text-xs font-medium">
+                Drafting Phase
+              </span>
+</div>
+<div class="p-6 space-y-4">
+<div class="flex items-center justify-between">
+<span class="font-display font-semibold text-sm text-on-surface">Continuous Assessment (CA)</span>
+<span class="text-xs text-primary font-semibold bg-surface-container px-2.5 py-0.5 rounded-full">4 of 6 Subjects Logged</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                Class teachers have published current scores for Mathematics, English Diction, General Sciences, and Civic Studies. Cultural Arts and ICT pending Week 6 assessments.
+              </p>
+<!-- Mini Subject Breakdown Visuals -->
+<div class="space-y-2.5 pt-1">
+<div>
+<div class="flex justify-between items-center text-xs pb-1">
+<span class="text-on-surface font-medium">Mathematics (Num. &amp; Logic)</span>
+<span class="text-primary font-semibold tabular-nums">18 / 20 (90%)</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-[#14695D] rounded-full" style="width: 90%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center text-xs pb-1">
+<span class="text-on-surface font-medium">English Studies &amp; Phonics</span>
+<span class="text-primary font-semibold tabular-nums">17 / 20 (85%)</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-[#14695D] rounded-full" style="width: 85%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center text-xs pb-1">
+<span class="text-on-surface font-medium">Basic Science &amp; Nature</span>
+<span class="text-primary font-semibold tabular-nums">19 / 20 (95%)</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-[#14695D] rounded-full" style="width: 95%;"></div>
+</div>
+</div>
+</div>
+<!-- Non-Blocking Institutional Guarantee Policy -->
+<div class="p-3.5 rounded-xl bg-surface-container-high/40 border border-outline-variant/20 flex items-start gap-2.5 mt-3">
+<span class="material-symbols-outlined text-[#14695D] text-[18px] mt-0.5">policy</span>
+<p class="text-xs text-on-surface-variant leading-relaxed"><font color="#051f23"><strong>Published academic results remain accessible even when fees are outstanding.</strong></font></p>
+</div>
+</div>
+</div>
+<div class="p-6 pt-0">
+<a class="inline-flex items-center justify-between w-full px-4 py-2.5 bg-surface-container hover:bg-surface-container-high text-primary rounded-lg transition-colors text-xs font-semibold" href="/student/results">
+<span class="">View Full Academic Report</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</section>
+</div>
+<!-- Bottom Split: Verified Ledger History & School Office Desk -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+<!-- Verified Receipts Register (7 cols) -->
+<section class="lg:col-span-7 bg-surface-container-lowest rounded-2xl shadow-[0_2px_12px_rgba(28,52,56,0.03)] border border-outline-variant/20 p-6 flex flex-col justify-between">
+<div class="space-y-4">
+<div class="flex items-center justify-between pb-2">
+<div>
+<h2 class="font-display font-semibold text-lg text-on-surface tracking-tight">Recent Verified Payments</h2>
+<p class="text-xs text-on-surface-variant">Verified payments and receipts for the selected pupil.</p>
+</div>
+<a class="text-xs text-primary hover:underline flex items-center gap-1 font-semibold" href="/student/payments">
+                All Receipts <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+<!-- Receipt Cards -->
+<div class="space-y-3">
+<!-- Item 1: Verified ₦70,000 -->
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary shadow-sm flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">receipt_long</span>
+</div>
+<div>
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-display font-bold text-on-surface text-base tabular-nums">₦70,000</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: &quot;FILL&quot; 1;">check</span> Verified
+                      </span>
+</div>
+<div class="text-xs text-on-surface-variant mt-0.5">
+                      Tranche 1 Resumption · Ref: <code class="text-primary font-mono font-medium">EDV-8842</code>
+</div>
+<div class="text-[11px] text-outline mt-0.5">
+                      Settled Oct 14, 2026 · Official Receipt Stamped
+                    </div>
+</div>
+</div>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface text-xs font-medium border border-outline-variant/30 shadow-sm transition-all flex-shrink-0" onclick="alert('Downloading official digitally signed PDF receipt for EDV-8842...')" type="button">
+<span class="material-symbols-outlined text-primary text-[16px]">file_download</span>
+<span class="">Download PDF</span>
+</button>
+</div>
+<!-- Item 2: Books & Uniform Archived -->
+<div class="p-4 rounded-xl bg-surface-container-low/50 border border-outline-variant/10 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-lowest/70 flex items-center justify-center text-outline flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">inventory_2</span>
+</div>
+<div>
+<div class="text-xs font-semibold text-on-surface">Previous term · ₦35,000</div>
+<div class="text-[11px] text-outline">Ref: EDV-7109 · Verified Sep 03, 2026</div>
+</div>
+</div>
+<span class="text-xs text-outline px-2 py-0.5 rounded bg-surface-container">Archived</span>
+</div>
+</div>
+</div>
+<div class="pt-4 flex items-center gap-2 text-on-surface-variant text-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">verified</span>
+<span class="">Keep verified payment receipts for your records.</span>
+</div>
+</section>
+<!-- School Office & Queries (5 cols) -->
+<section class="lg:col-span-5 bg-surface-container-lowest rounded-2xl shadow-[0_2px_12px_rgba(28,52,56,0.03)] border border-outline-variant/20 p-6 flex flex-col justify-between">
+<div class="space-y-3">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">support_agent</span>
+</div>
+<h2 class="font-display font-semibold text-lg text-on-surface tracking-tight">School Office &amp; Queries</h2>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+              Need clarity on fee tranches, transportation routes, or learning evaluations? Our campus administrative desk provides structured personal assistance.
+            </p>
+<!-- Channels -->
+<div class="space-y-2.5 pt-1">
+<div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/20 flex items-start gap-2.5">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">call</span>
+<div>
+<div class="text-[11px] text-outline uppercase tracking-wider font-semibold">Direct Desk Telephone</div>
+<div class="text-xs font-semibold text-on-surface mt-0.5">Contact school office</div>
+<div class="text-[11px] text-on-surface-variant">Monday – Friday · 8:00 AM – 4:00 PM WAT</div>
+</div>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-low border border-outline-variant/20 flex items-start gap-2.5">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">location_on</span>
+<div>
+<div class="text-[11px] text-outline uppercase tracking-wider font-semibold">Campus Administration</div>
+<div class="text-xs font-semibold text-on-surface mt-0.5">Edvora Nursery &amp; Primary School</div>
+<div class="text-[11px] text-on-surface-variant">Contact the school office for directions.</div>
+</div>
+</div>
+</div>
+<!-- Classroom Dignity Policy -->
+<div class="p-3 rounded-xl bg-[#ffddb5]/25 border border-[#ffddb5]/50 flex items-start gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px] mt-0.5">notifications_off</span>
+<p class="text-xs text-[#633f00] leading-snug">
+<strong>Classroom Focus Policy:</strong> Direct unstructured instant messaging during school hours is disabled. All inquiries route through the Administrative Desk.
+              </p>
+</div>
+</div>
+<div class="pt-4">
+<a class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold transition-colors" href="/student/support">
+<span class="material-symbols-outlined text-[16px]">help_outline</span>
+<span class="">School FAQs</span>
+</a>
+</div>
+</section>
+</div>
+<!-- Teacher Developmental Observations for Osasere -->
+<section class="bg-surface-container-lowest rounded-2xl p-6 shadow-[0_2px_12px_rgba(28,52,56,0.03)] border border-outline-variant/20">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-outline-variant/20">
+<div>
+<span class="text-xs font-semibold uppercase tracking-wider text-primary">Portal Help</span>
+<h3 class="font-display font-semibold text-base text-on-surface">Student Account Guide</h3>
+</div>
+<span class="text-xs text-outline font-medium">Manage the selected child’s account</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+<!-- Reading & Diction -->
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 flex flex-col justify-between">
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-secondary uppercase">Fees &amp; Payments</span>
+<span class="text-[11px] text-outline">Yesterday</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">View the term fee breakdown, check your balance and make an instalment payment.</p>
+</div>
+<div class="pt-3 flex items-center gap-1.5 text-primary text-xs font-semibold">
+<span class="material-symbols-outlined text-[16px]">menu_book</span>
+<span class="">View fees</span>
+</div>
+</div>
+<!-- STEM & Logic -->
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 flex flex-col justify-between">
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-secondary uppercase">Academic Results</span>
+<span class="text-[11px] text-outline">Oct 18</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">View results after the school publishes them for the selected child and term.</p>
+</div>
+<div class="pt-3 flex items-center gap-1.5 text-primary text-xs font-semibold">
+<span class="material-symbols-outlined text-[16px]">calculate</span>
+<span class="">View results</span>
+</div>
+</div>
+<!-- Habits & Conduct -->
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/20 flex flex-col justify-between">
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-secondary uppercase">School Support</span>
+<span class="text-[11px] text-outline">Oct 16</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">Contact the school office if you need help with a payment or account record.</p>
+</div>
+<div class="pt-3 flex items-center gap-1.5 text-primary text-xs font-semibold">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span class="">Contact office</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Portal Footer -->
+<footer class="pt-4 pb-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-on-surface-variant border-t border-outline-variant/20">
+<div class="flex items-center gap-2">
+<span class="font-display font-semibold text-primary">edvora.</span>
+<span class="">© 2026 Edvora Administrative Systems. All rights reserved.</span>
+</div>
+<div class="flex items-center gap-4">
+<a class="hover:text-primary transition-colors" href="/student/support">School Office Help Desk</a>
+<span class="text-outline-variant">·</span>
+<a class="hover:text-primary transition-colors" href="/student/privacy">Data Privacy &amp; Records</a>
+</div>
+</footer>
+</main>
+</div>
+
+
+</body></html>

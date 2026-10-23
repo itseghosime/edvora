@@ -1,0 +1,836 @@
+<!DOCTYPE html><html lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary": "#004f46", "on-secondary-fixed-variant": "#633f00", "secondary": "#825504", "error": "#ba1a1a", "tertiary": "#3b4944", "primary-container": "#14695d", "surface-tint": "#166a5e", "on-tertiary-fixed": "#111e1a", "on-error": "#ffffff", "on-surface-variant": "#3f4946", "on-tertiary-fixed-variant": "#3c4a44", "on-primary-fixed-variant": "#005046", "secondary-container": "#ffc16c", "on-tertiary": "#ffffff", "primary-fixed-dim": "#89d4c5", "surface-container-low": "#def8fd", "surface-bright": "#edfcff", "inverse-surface": "#1c3438", "on-primary-fixed": "#00201b", "on-primary": "#ffffff", "on-surface": "#051f23", "inverse-on-surface": "#dbf6fa", "surface-container-highest": "#cde7ec", "error-container": "#ffdad6", "inverse-primary": "#89d4c5", "on-background": "#051f23", "secondary-fixed": "#ffddb5", "secondary-fixed-dim": "#f9bb67", "on-tertiary-container": "#cbdbd3", "outline-variant": "#bec9c5", "surface-dim": "#c5dfe4", "on-secondary-fixed": "#2a1800", "tertiary-fixed-dim": "#bacac3", "surface-variant": "#cde7ec", "background": "#edfcff", "tertiary-fixed": "#d6e6de", "on-error-container": "#93000a", "on-primary-container": "#9ae5d6", "surface-container": "#d8f3f8", "outline": "#6f7976", "primary-fixed": "#a5f1e1", "surface": "#edfcff", "surface-container-lowest": "#ffffff", "surface-container-high": "#d3edf2", "on-secondary": "#ffffff", "on-secondary-container": "#784d00", "tertiary-container": "#52615b" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.5rem", "space-xs": "0.25rem", "space-lg": "1.5rem", "space-md": "1rem", "margin-mobile": "1rem", "gutter": "1.5rem", "margin": "2.5rem", "gutter-mobile": "1rem", "space-xl": "2rem" }, "fontFamily": { "display-lg": [ "Plus Jakarta Sans" ], "label-lg": [ "Inter" ], "label-sm": [ "Inter" ], "headline-lg": [ "Plus Jakarta Sans" ], "headline-md": [ "Plus Jakarta Sans" ], "title-md": [ "Plus Jakarta Sans" ], "headline-lg-mobile": [ "Plus Jakarta Sans" ], "body-lg": [ "Inter" ], "body-md": [ "Inter" ], "label-md": [ "Inter" ], "body-sm": [ "Inter" ], "headline-sm": [ "Plus Jakarta Sans" ], "display-lg-mobile": [ "Plus Jakarta Sans" ] }, "fontSize": { "display-lg": [ "48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "label-lg": [ "14px", { "lineHeight": "20px", "fontWeight": "500" } ], "label-sm": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" } ], "headline-lg": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "headline-md": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "title-md": [ "16px", { "lineHeight": "24px", "fontWeight": "600" } ], "headline-lg-mobile": [ "26px", { "lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "body-lg": [ "16px", { "lineHeight": "26px", "fontWeight": "400" } ], "body-md": [ "14px", { "lineHeight": "22px", "fontWeight": "400" } ], "label-md": [ "12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" } ], "body-sm": [ "13px", { "lineHeight": "18px", "fontWeight": "400" } ], "headline-sm": [ "20px", { "lineHeight": "28px", "fontWeight": "600" } ], "display-lg-mobile": [ "34px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700" } ] } } } };</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="h-24 px-gutter flex items-center gap-space-sm"><div class="flex items-center gap-space-xs"><span class="font-headline-md text-headline-md text-primary tracking-tight">edvora<span class="text-secondary">.</span></span></div><span class="px-space-sm py-space-xs rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Staff Dashboard</span></div><nav class="flex flex-col gap-space-xs px-gutter" data-active-classes="bg-primary text-on-primary font-title-md"><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="overview" href="#"><span class="material-symbols-outlined text-[20px]">space_dashboard</span><span class="">Overview</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="pupils-and-guardians" href="#"><span class="material-symbols-outlined text-[20px]">group</span><span class="">Pupils &amp; Guardians</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="fees" href="#"><span class="material-symbols-outlined text-[20px]">account_balance_wallet</span><span class="">Fees</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg hover:text-on-surface transition-colors font-body-md text-body-md bg-primary text-on-primary font-title-md shadow-sm" data-path="payment-ledger" href="#"><span class="material-symbols-outlined text-[20px]" style="font-variation-settings: &quot;FILL&quot; 1;">receipt_long</span><span class="">Payment Ledger</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="reminders" href="#"><span class="material-symbols-outlined text-[20px]">notifications_active</span><span class="">Reminders</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="results" href="#"><span class="material-symbols-outlined text-[20px]">school</span><span class="">Results</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span class="">Settings</span></a></nav></div><div class="p-gutter flex flex-col gap-space-sm bg-surface-container-low"><div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md"><span class="material-symbols-outlined text-[18px] text-primary">support_agent</span><span class="">Support Desk (Mon-Fri)</span></div><div class="flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm"><span class="">+234 800 EDVORA</span><span class="font-label-sm text-label-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface"></span></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 z-40 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="w-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm px-gutter py-space-xs flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-[16px] text-secondary">bolt</span><span class="">2026/2027 · First Term</span></div><span class="font-body-sm text-body-sm text-on-secondary-fixed"></span></div><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><span class="font-title-md text-title-md text-on-surface">Edvora Nursery &amp; Primary School</span><span class="text-outline-variant font-body-sm text-body-sm">/</span><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded-lg text-primary font-label-md text-label-md"><span class="material-symbols-outlined text-[16px]">calendar_month</span><span class="">2026/2027 First Term</span><span class="material-symbols-outlined text-[16px]">expand_more</span></div></div><div class="flex items-center gap-space-lg"><span class="px-space-md py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Bursar &amp; Admin</span><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><a class="text-on-surface-variant hover:text-error transition-colors font-label-md text-label-md flex items-center gap-space-xs" data-path="staff-sign-out" href="#"><span class="material-symbols-outlined text-[16px]">logout</span><span class="">Sign Out</span></a></div></div></div></header><main class="w-full pt-24 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Active Sidebar Nav State Sync Script -->
+<script>
+    (function() {
+      const ledgerLink = document.querySelector('aside nav a[data-path="payment-ledger"]');
+      if (ledgerLink) {
+        ledgerLink.classList.remove('text-on-surface-variant', 'hover:bg-surface-container-high');
+        ledgerLink.classList.add('bg-primary', 'text-on-primary', 'font-title-md', 'shadow-sm');
+        const icon = ledgerLink.querySelector('.material-symbols-outlined');
+        if (icon) icon.style.fontVariationSettings = "'FILL' 1";
+      }
+    })();
+  </script>
+<!-- Main Content Space Container -->
+<div class="px-margin py-gutter flex flex-col gap-space-lg max-w-[1440px] mx-auto w-full">
+<!-- Top Headline Section with Status Ticker -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs max-w-2xl">
+<div class="flex items-center gap-space-sm">
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm tracking-wider uppercase">Institutional Treasury</span>
+<span class="text-outline-variant">•</span>
+<span class="text-on-surface-variant font-label-md text-label-md flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+            Webhook Ingress Active (Port 443 TLS)
+          </span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Payment Ledger &amp; Settlement Audit</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Strict chronological record of verified Paystack test transactions, simulated checkout events, and cryptographic ledger reconciliation flags.
+        </p>
+</div>
+<!-- Action Cluster -->
+<div class="flex items-center gap-space-sm flex-wrap">
+<button class="flex items-center gap-space-xs px-space-md h-10 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-lg text-label-lg transition-colors shadow-sm" id="btnSimulateWebhook" onclick="simulateWebhookPing()">
+<span class="material-symbols-outlined text-[18px] text-secondary">bolt</span>
+<span class="">Simulate Webhook Ping</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md h-10 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-lg text-label-lg transition-all shadow-sm" onclick="triggerLedgerExport()">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span class="">Export Ledger (CSV)</span>
+</button>
+</div>
+</div>
+<!-- Reconciliation Cryptographic Security Callout Banner -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md shadow-sm">
+<div class="flex items-start sm:items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[22px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-title-md text-title-md text-primary">Paystack Test Webhook Verification Protocol</span>
+<span class="font-label-sm text-label-sm px- space-xs py-0.5 rounded bg-primary-fixed text-on-primary-fixed uppercase tracking-wider">HMAC SHA512</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Payments update pupil ledger balances once and only once upon cryptographic SHA512 signature validation. No manual cash bypass.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0 bg-surface-container-lowest px-space-sm py-1 rounded-lg">
+<span class="material-symbols-outlined text-secondary text-[16px]">lock</span>
+<span class="font-label-sm text-label-sm text-on-surface"></span>
+</div>
+</div>
+<!-- 4 Summary Metrics Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Total Verified -->
+<div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col justify-between hover:translate-y-[-2px] transition-transform">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Verified Collections</span>
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[16px]" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-headline-md text-headline-md text-on-surface tracking-tight">₦12,600,000</span>
+<div class="flex items-center gap-1.5 text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[14px]">event_available</span>
+<span class="">105 successful webhook events</span>
+</div>
+</div>
+<!-- Progress Sparkline Micro-visual -->
+<div class="w-full bg-surface-container mt-space-md rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 96%"></div>
+</div>
+</div>
+<!-- Pending Webhooks -->
+<div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col justify-between hover:translate-y-[-2px] transition-transform">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Pending Webhooks</span>
+<div class="w-7 h-7 rounded-lg bg-secondary-fixed/50 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-[16px]">sync</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-headline-md text-headline-md text-on-surface tracking-tight">₦350,000</span>
+<div class="flex items-center gap-1.5 text-secondary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[14px]">pending</span>
+<span class="">3 transactions in verification transit</span>
+</div>
+</div>
+<div class="w-full bg-surface-container mt-space-md rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary-container h-full rounded-full" style="width: 3%"></div>
+</div>
+</div>
+<!-- Failed / Abandoned -->
+<div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col justify-between hover:translate-y-[-2px] transition-transform">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Failed / Cancelled</span>
+<div class="w-7 h-7 rounded-lg bg-error-container/60 flex items-center justify-center">
+<span class="material-symbols-outlined text-error text-[16px]">cancel</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-headline-md text-headline-md text-on-surface tracking-tight">₦140,000</span>
+<div class="flex items-center gap-1.5 text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-[14px] text-error">info</span>
+<span class="">2 abandoned test modal sessions</span>
+</div>
+</div>
+<div class="w-full bg-surface-container mt-space-md rounded-full h-1.5 overflow-hidden">
+<div class="bg-error h-full rounded-full" style="width: 1%"></div>
+</div>
+</div>
+<!-- Unreconciled Discrepancies -->
+<div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col justify-between hover:translate-y-[-2px] transition-transform">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Unreconciled Discrepancy</span>
+<div class="w-7 h-7 rounded-lg bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[16px]">balance</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<span class="font-headline-md text-headline-md text-on-surface tracking-tight">₦0.00</span>
+<div class="flex items-center gap-1.5 text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[14px]">all_inclusive</span>
+<span class="">100% matched to pupil ledger accounts</span>
+</div>
+</div>
+<div class="w-full bg-surface-container mt-space-md rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 100%"></div>
+</div>
+</div>
+</div>
+<!-- Filters & Action Bar Card -->
+<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-space-md">
+<!-- Search Input Container -->
+<div class="relative flex-1 min-w-[280px]">
+<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full pl-10 pr-space-md h-10 rounded-lg bg-surface text-on-surface placeholder:text-outline font-body-md text-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary focus:outline-none transition-all" id="ledgerSearch" oninput="handleSearch(this.value)" placeholder="Search by ref (EDV-TEST-...), pupil name, or receipt #" type="text">
+</div>
+<!-- Segmented Select Filters -->
+<div class="flex items-center gap-space-sm flex-wrap xl:flex-nowrap">
+<!-- Status Dropdown -->
+<div class="flex items-center gap-1.5 bg-surface rounded-lg px-space-sm h-10">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Status:</span>
+<select class="bg-transparent text-on-surface font-label-md text-label-md focus:outline-none cursor-pointer" id="statusFilter" onchange="filterStatus(this.value)">
+<option value="all">All Transactions</option>
+<option value="verified">Verified Only</option>
+<option value="pending">Pending Ingress</option>
+<option value="failed">Failed / Cancelled</option>
+<option value="discrepancy">Discrepancy (₦0)</option>
+</select>
+</div>
+<!-- Class Filter Dropdown -->
+<div class="flex items-center gap-1.5 bg-surface rounded-lg px-space-sm h-10">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Class:</span>
+<select class="bg-transparent text-on-surface font-label-md text-label-md focus:outline-none cursor-pointer" id="classFilter">
+<option value="all">All Levels</option>
+<option value="nursery">Nursery Early Years</option>
+<option value="pri1">Primary 1 (A-C)</option>
+<option value="pri2">Primary 2</option>
+<option value="pri3">Primary 3</option>
+<option value="pri4">Primary 4</option>
+<option value="pri5">Primary 5</option>
+</select>
+</div>
+<!-- Date Range Pill Button -->
+<div class="flex items-center gap-space-xs bg-surface-container-high text-primary px-space-md h-10 rounded-lg font-label-md text-label-md shrink-0">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span class="">2026/2027 First Term</span>
+</div>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden flex flex-col">
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left border-collapse min-w-[960px]">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-space-md px-gutter font-semibold">Ref &amp; Timestamp</th>
+<th class="py-space-md px-space-md font-semibold">Pupil / Class</th>
+<th class="py-space-md px-space-md font-semibold">Payment Narration</th>
+<th class="py-space-md px-space-md font-semibold">Method &amp; Channel</th>
+<th class="py-space-md px-space-md font-semibold text-right">Amount (NGN)</th>
+<th class="py-space-md px-space-md font-semibold text-center">Status</th>
+<th class="py-space-md px-gutter font-semibold text-right">Verification Action</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm text-on-surface" id="ledgerTableBody">
+<!-- Row 1: Osasere -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-space-md px-gutter align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-medium tracking-tight">EDV-TEST-8842</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Today, 09:42:18</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Osasere Ehigiator</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Primary 3A • CED-2024-091</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col max-w-xs">
+<span class="font-medium text-on-surface">Tranche 1 (Full Resumption Fee)</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Termly Tuition + Textbook Kit</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-tertiary">credit_card</span>
+<span class="">Paystack Test Card (•••• 4081)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<span class="font-title-md text-title-md text-on-surface tabular-nums">₦70,000.00</span>
+</td>
+<td class="py-space-md px-space-md align-top text-center">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="">Verified</span>
+</span>
+</td>
+<td class="py-space-md px-gutter align-top text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-primary font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="viewReceiptModal('EDV-TEST-8842', 'Osasere Ehigiator', '₦70,000.00', 'Primary 3A')">
+<span class="material-symbols-outlined text-[14px]">receipt</span>
+<span class="">Receipt</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="inspectWebhookJson('EDV-TEST-8842', '09:42 Today', '7000000', 'card')">
+<span class="material-symbols-outlined text-[14px]">code</span>
+<span class="">JSON</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Kome Agbaje -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-space-md px-gutter align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-medium tracking-tight">EDV-TEST-8841</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Yesterday, 16:15:02</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Kome Agbaje</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Primary 4 • CED-2023-142</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col max-w-xs">
+<span class="font-medium text-on-surface">Tranche 1 &amp; 2 Part</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Classroom Levy &amp; STEM Lab Kit</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-tertiary">smartphone</span>
+<span class="">Paystack Test Mobile (•••• 9180)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<span class="font-title-md text-title-md text-on-surface tabular-nums">₦85,000.00</span>
+</td>
+<td class="py-space-md px-space-md align-top text-center">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="">Verified</span>
+</span>
+</td>
+<td class="py-space-md px-gutter align-top text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-primary font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="viewReceiptModal('EDV-TEST-8841', 'Kome Agbaje', '₦85,000.00', 'Primary 4')">
+<span class="material-symbols-outlined text-[14px]">receipt</span>
+<span class="">Receipt</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="inspectWebhookJson('EDV-TEST-8841', '16:15 Yesterday', '8500000', 'mobile_money')">
+<span class="material-symbols-outlined text-[14px]">code</span>
+<span class="">JSON</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: Chukwudi Nwosu -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-space-md px-gutter align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-medium tracking-tight">EDV-TEST-8840</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Oct 12, 11:30:45</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Chukwudi Nwosu</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Primary 1B • CED-2025-014</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col max-w-xs">
+<span class="font-medium text-on-surface">Full Term Settlement</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Full Fee with Extended Daycare</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-tertiary">account_balance</span>
+<span class="">Paystack Test Transfer (Mock)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<span class="font-title-md text-title-md text-on-surface tabular-nums">₦120,000.00</span>
+</td>
+<td class="py-space-md px-space-md align-top text-center">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="">Verified</span>
+</span>
+</td>
+<td class="py-space-md px-gutter align-top text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-primary font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="viewReceiptModal('EDV-TEST-8840', 'Chukwudi Nwosu', '₦120,000.00', 'Primary 1B')">
+<span class="material-symbols-outlined text-[14px]">receipt</span>
+<span class="">Receipt</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="inspectWebhookJson('EDV-TEST-8840', 'Oct 12 11:30', '12000000', 'bank_transfer')">
+<span class="material-symbols-outlined text-[14px]">code</span>
+<span class="">JSON</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Amina Bello (Pending Yellow) -->
+<tr class="hover:bg-surface-container-low/60 transition-colors bg-secondary-fixed/15">
+<td class="py-space-md px-gutter align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-secondary font-medium tracking-tight">EDV-TEST-8839</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Oct 11, 14:02:11</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Amina Bello</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Primary 2A • CED-2024-118</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col max-w-xs">
+<span class="font-medium text-on-surface">Tranche 1 Part</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Instalment fee via USSD Gateway</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-secondary">dialpad</span>
+<span class="">Paystack Test USSD (*737#)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<span class="font-title-md text-title-md text-on-surface tabular-nums">₦50,000.00</span>
+</td>
+<td class="py-space-md px-space-md align-top text-center">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px] animate-spin">autorenew</span>
+<span class="">Pending Verification</span>
+</span>
+</td>
+<td class="py-space-md px-gutter align-top text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-2.5 py-1 rounded bg-secondary-fixed text-on-secondary-fixed hover:bg-secondary-fixed-dim font-label-sm text-label-sm transition-colors flex items-center gap-1 font-semibold" onclick="retryVerification('EDV-TEST-8839')">
+<span class="material-symbols-outlined text-[14px]">refresh</span>
+<span class="">Retry Verify</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="inspectWebhookJson('EDV-TEST-8839', 'Oct 11 14:02', '5000000', 'ussd', 'ongoing')">
+<span class="material-symbols-outlined text-[14px]">receipt_long</span>
+<span class="">Inspect Log</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Folake Adeyemi -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-space-md px-gutter align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-medium tracking-tight">EDV-TEST-8838</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Oct 10, 08:20:59</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Folake Adeyemi</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Nursery 2B • CED-2025-201</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col max-w-xs">
+<span class="font-medium text-on-surface">Full Term Early Years</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Includes Montessori Materials pack</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-tertiary">credit_card</span>
+<span class="">Paystack Test Card (•••• 1004)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<span class="font-title-md text-title-md text-on-surface tabular-nums">₦95,000.00</span>
+</td>
+<td class="py-space-md px-space-md align-top text-center">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="">Verified</span>
+</span>
+</td>
+<td class="py-space-md px-gutter align-top text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-primary font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="viewReceiptModal('EDV-TEST-8838', 'Folake Adeyemi', '₦95,000.00', 'Nursery 2B')">
+<span class="material-symbols-outlined text-[14px]">receipt</span>
+<span class="">Receipt</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="inspectWebhookJson('EDV-TEST-8838', 'Oct 10 08:20', '9500000', 'card')">
+<span class="material-symbols-outlined text-[14px]">code</span>
+<span class="">JSON</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 6: Chinedu Okonkwo -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-space-md px-gutter align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-medium tracking-tight">EDV-TEST-8837</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Oct 09, 13:45:10</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Chinedu Okonkwo</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Primary 5B • CED-2022-049</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col max-w-xs">
+<span class="font-medium text-on-surface">Full Term + Uniform levy</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Graduation transition bundle &amp; PTA</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-tertiary">credit_card</span>
+<span class="">Paystack Test Card (•••• 4420)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<span class="font-title-md text-title-md text-on-surface tabular-nums">₦135,000.00</span>
+</td>
+<td class="py-space-md px-space-md align-top text-center">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="">Verified</span>
+</span>
+</td>
+<td class="py-space-md px-gutter align-top text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-primary font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="viewReceiptModal('EDV-TEST-8837', 'Chinedu Okonkwo', '₦135,000.00', 'Primary 5B')">
+<span class="material-symbols-outlined text-[14px]">receipt</span>
+<span class="">Receipt</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="inspectWebhookJson('EDV-TEST-8837', 'Oct 09 13:45', '13500000', 'card')">
+<span class="material-symbols-outlined text-[14px]">code</span>
+<span class="">JSON</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 7: Efosa Nosa-Obahiagbon -->
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-space-md px-gutter align-top">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-medium tracking-tight">EDV-TEST-8836</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Oct 08, 10:12:33</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface">Efosa Nosa-Obahiagbon</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Primary 1C • CED-2025-078</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex flex-col max-w-xs">
+<span class="font-medium text-on-surface">Tranche 1 Settlement</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Direct portal tuition payment</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-tertiary">credit_card</span>
+<span class="">Paystack Test Card (•••• 8092)</span>
+</div>
+</td>
+<td class="py-space-md px-space-md align-top text-right">
+<span class="font-title-md text-title-md text-on-surface tabular-nums">₦110,000.00</span>
+</td>
+<td class="py-space-md px-space-md align-top text-center">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span class="">Verified</span>
+</span>
+</td>
+<td class="py-space-md px-gutter align-top text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-primary font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="viewReceiptModal('EDV-TEST-8836', 'Efosa Nosa-Obahiagbon', '₦110,000.00', 'Primary 1C')">
+<span class="material-symbols-outlined text-[14px]">receipt</span>
+<span class="">Receipt</span>
+</button>
+<button class="px-2.5 py-1 rounded bg-surface hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm transition-colors flex items-center gap-1" onclick="inspectWebhookJson('EDV-TEST-8836', 'Oct 08 10:12', '11000000', 'card')">
+<span class="material-symbols-outlined text-[14px]">code</span>
+<span class="">JSON</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="px-gutter py-space-md bg-surface-container-lowest flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+          Showing <span class="font-medium text-on-surface">1–7</span> of <span class="font-medium text-on-surface">105</span> verified test transactions
+        </span>
+<div class="flex items-center gap-space-xs">
+<button class="px-3 py-1.5 rounded-lg bg-surface hover:bg-surface-container text-on-surface-variant font-label-md text-label-md disabled:opacity-50 transition-colors flex items-center gap-1" disabled="">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+<span class="">Prev</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold">1</button>
+<button class="w-8 h-8 rounded-lg bg-surface hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors">2</button>
+<button class="w-8 h-8 rounded-lg bg-surface hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors">3</button>
+<span class="px-1 text-on-surface-variant font-label-md text-label-md">...</span>
+<button class="w-8 h-8 rounded-lg bg-surface hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors">15</button>
+<button class="px-3 py-1.5 rounded-lg bg-surface hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors flex items-center gap-1">
+<span class="">Next</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Audit Traceability Bottom Footnote -->
+<div class="flex flex-col sm:flex-row items-center justify-between text-on-surface-variant font-body-sm text-body-sm px-space-xs py-space-sm gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">verified</span>
+<span class="">Cryptographic Hash Traceability: <code>SHA512(payload, paystack_secret_key)</code> validated on ingress.</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class=""></span>
+<span class=""></span>
+</div>
+</div>
+</div>
+<!-- Micro Modal 1: Webhook Payload Inspector -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden flex items-center justify-center p-space-md" id="webhookModal">
+<div class="bg-surface-container-lowest rounded-xl max-w-xl w-full p-space-lg shadow-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">code</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Inspect Webhook Payload</span>
+</div>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant" onclick="closeModal('webhookModal')">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="flex flex-col gap-1 text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center justify-between">
+<span class="">Event Type: <strong class="text-on-surface">charge.success</strong></span>
+<span class="px-space-xs py-0.5 rounded bg-surface-container-high text-primary font-label-sm text-label-sm">Signature Verified</span>
+</div>
+<div class="">Reference: <span class="text-primary font-medium" id="modalRefCode">EDV-TEST-8842</span></div>
+</div>
+<!-- JSON Preview Box -->
+<pre class="bg-surface-container-low p-space-md rounded-lg font-mono text-label-md text-on-surface overflow-x-auto max-h-72 leading-relaxed whitespace-pre-wrap select-all" id="jsonContent">{
+  "event": "charge.success",
+  "data": {
+    "id": 302910811,
+    "domain": "test",
+    "status": "success",
+    "reference": "EDV-TEST-8842",
+    "amount": 7000000,
+    "gateway_response": "Successful (Test Mode)",
+    "paid_at": "2026-10-14T09:42:18.000Z",
+    "channel": "card",
+    "currency": "NGN",
+    "ip_address": "102.89.34.12",
+    "metadata": {
+      "pupil_id": "CED-2024-091",
+      "pupil_name": "Osasere Ehigiator",
+      "session_term": "2026/2027 First Term"
+    }
+  }
+}
+      </pre>
+<div class="flex items-center justify-end gap-space-sm pt-space-xs">
+<button class="px-space-md h-9 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-1" onclick="copyJsonPayload()">
+<span class="material-symbols-outlined text-[16px]">content_copy</span>
+<span id="copyBtnText" class="">Copy Raw Payload</span>
+</button>
+<button class="px-space-md h-9 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md" onclick="closeModal('webhookModal')">
+          Dismiss
+        </button>
+</div>
+</div>
+</div>
+<!-- Micro Modal 2: Verified Receipt Preview -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden flex items-center justify-center p-space-md" id="receiptModal">
+<div class="bg-surface-container-lowest rounded-xl max-w-md w-full p-space-lg shadow-xl flex flex-col gap-space-md">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[18px]">receipt</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Cedar Primary Demonstration</span>
+</div>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant" onclick="closeModal('receiptModal')">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Receipt Card Surface -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Official Payment Voucher</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-semibold">PAID / AUDITED</span>
+</div>
+<div class="flex flex-col gap-1 py-space-xs">
+<span class="text-on-surface-variant font-label-sm text-label-sm">Pupil Beneficiary</span>
+<span class="font-title-md text-title-md text-on-surface" id="rcptPupil">Osasere Ehigiator</span>
+<span class="text-on-surface-variant font-body-sm text-body-sm" id="rcptClass">Primary 3A • 2026/2027 Term 1</span>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded-lg flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant">Settled Amount</span>
+<span class="font-headline-md text-headline-md text-primary font-bold" id="rcptAmount">₦70,000.00</span>
+</div>
+<div class="flex flex-col gap-1 text-on-surface-variant font-label-sm text-label-sm pt-space-xs">
+<div class="flex justify-between">
+<span class="">Paystack Reference:</span>
+<span class="font-mono text-on-surface" id="rcptRef">EDV-TEST-8842</span>
+</div>
+<div class="flex justify-between">
+<span class="">Ledger Ledger Post Time:</span>
+<span class="text-on-surface">Oct 14, 2026 • 09:42 West Africa Time</span>
+</div>
+<div class="flex justify-between">
+<span class="">Channel Provider:</span>
+<span class="text-on-surface">Paystack Sandbox Gateway</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-end gap-space-sm pt-space-xs">
+<button class="px-space-md h-9 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center gap-1" onclick="window.print()">
+<span class="material-symbols-outlined text-[16px]">print</span>
+<span class="">Print Voucher</span>
+</button>
+<button class="px-space-md h-9 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md" onclick="closeModal('receiptModal')">
+          Close
+        </button>
+</div>
+</div>
+</div>
+<!-- Toast Notification Container -->
+<div class="fixed bottom-6 right-6 z-50 bg-surface-container-lowest text-on-surface shadow-xl rounded-xl p-space-md hidden flex items-center gap-space-md transform transition-all duration-300" id="toastNotification">
+<div class="w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center" id="toastIconContainer">
+<span class="material-symbols-outlined text-primary text-[20px]" id="toastIcon">check</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface" id="toastTitle">Notification</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant" id="toastMessage">Action completed</span>
+</div>
+</div>
+<!-- Interactive Logic Script -->
+<script>
+    function showToast(title, message, isSuccess = true) {
+      const toast = document.getElementById('toastNotification');
+      const toastTitle = document.getElementById('toastTitle');
+      const toastMessage = document.getElementById('toastMessage');
+      const toastIcon = document.getElementById('toastIcon');
+      const iconBox = document.getElementById('toastIconContainer');
+
+      toastTitle.textContent = title;
+      toastMessage.textContent = message;
+
+      if (isSuccess) {
+        toastIcon.textContent = 'check_circle';
+        toastIcon.className = 'material-symbols-outlined text-primary text-[20px]';
+        iconBox.className = 'w-9 h-9 rounded-lg bg-surface-container-high flex items-center justify-center';
+      } else {
+        toastIcon.textContent = 'info';
+        toastIcon.className = 'material-symbols-outlined text-secondary text-[20px]';
+        iconBox.className = 'w-9 h-9 rounded-lg bg-secondary-fixed/50 flex items-center justify-center';
+      }
+
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 4000);
+    }
+
+    function simulateWebhookPing() {
+      const btn = document.getElementById('btnSimulateWebhook');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span><span>Transmitting Webhook...</span>';
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+        showToast(
+          'Webhook Handshake 200 OK',
+          'Mock test event charge.success received & cryptographically reconciled (SHA512 match).'
+        );
+      }, 1200);
+    }
+
+    function triggerLedgerExport() {
+      showToast(
+        'Export Generated',
+        'payment_ledger_term1_2026_testbed.csv downloaded successfully.'
+      );
+    }
+
+    function retryVerification(ref) {
+      showToast(
+        'Re-querying Paystack API',
+        'Verified status confirmed for reference ' + ref + '. Ledger balance updated.',
+        true
+      );
+    }
+
+    function inspectWebhookJson(ref, time, amountKobo, channel, status = 'success') {
+      document.getElementById('modalRefCode').textContent = ref;
+      const jsonObj = {
+        event: status === 'success' ? "charge.success" : "charge.pending",
+        data: {
+          id: Math.floor(100000000 + Math.random() * 900000000),
+          domain: "test",
+          status: status,
+          reference: ref,
+          amount: parseInt(amountKobo),
+          gateway_response: status === 'success' ? "Successful (Test Mode)" : "USSD Session In Progress",
+          paid_at: "2026-10-14T" + (time.includes(':') ? time : "10:00:00") + ".000Z",
+          channel: channel,
+          currency: "NGN",
+          ip_address: "102.89.45.19",
+          customer: {
+            email: "guardian.demo@edvora.ng",
+            risk_action: "default"
+          },
+          authorization: {
+            channel: channel,
+            bank: "Paystack Test Mock Bank",
+            brand: "visa"
+          }
+        }
+      };
+
+      document.getElementById('jsonContent').textContent = JSON.stringify(jsonObj, null, 2);
+      document.getElementById('webhookModal').classList.remove('hidden');
+    }
+
+    function viewReceiptModal(ref, pupil, amount, className) {
+      document.getElementById('rcptRef').textContent = ref;
+      document.getElementById('rcptPupil').textContent = pupil;
+      document.getElementById('rcptAmount').textContent = amount;
+      document.getElementById('rcptClass').textContent = className + ' • 2026/2027 First Term';
+      document.getElementById('receiptModal').classList.remove('hidden');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    function copyJsonPayload() {
+      const code = document.getElementById('jsonContent').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const copyBtn = document.getElementById('copyBtnText');
+        copyBtn.textContent = 'Copied to Clipboard!';
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy Raw Payload';
+        }, 2000);
+      });
+    }
+
+    function handleSearch(query) {
+      const q = query.toLowerCase().trim();
+      const rows = document.querySelectorAll('#ledgerTableBody tr');
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(q)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    function filterStatus(val) {
+      const rows = document.querySelectorAll('#ledgerTableBody tr');
+      rows.forEach(row => {
+        if (val === 'all') {
+          row.style.display = '';
+        } else if (val === 'pending') {
+          row.style.display = row.textContent.includes('Pending') ? '' : 'none';
+        } else if (val === 'verified') {
+          row.style.display = row.textContent.includes('Verified') && !row.textContent.includes('Pending') ? '' : 'none';
+        } else {
+          row.style.display = '';
+        }
+      });
+    }
+  </script>
+</div></main></div>
+
+</body></html>

@@ -1,0 +1,805 @@
+<!DOCTYPE html><html lang="en" style=""><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary": "#004f46", "on-secondary-fixed-variant": "#633f00", "secondary": "#825504", "error": "#ba1a1a", "tertiary": "#3b4944", "primary-container": "#14695d", "surface-tint": "#166a5e", "on-tertiary-fixed": "#111e1a", "on-error": "#ffffff", "on-surface-variant": "#3f4946", "on-tertiary-fixed-variant": "#3c4a44", "on-primary-fixed-variant": "#005046", "secondary-container": "#ffc16c", "on-tertiary": "#ffffff", "primary-fixed-dim": "#89d4c5", "surface-container-low": "#def8fd", "surface-bright": "#edfcff", "inverse-surface": "#1c3438", "on-primary-fixed": "#00201b", "on-primary": "#ffffff", "on-surface": "#051f23", "inverse-on-surface": "#dbf6fa", "surface-container-highest": "#cde7ec", "error-container": "#ffdad6", "inverse-primary": "#89d4c5", "on-background": "#051f23", "secondary-fixed": "#ffddb5", "secondary-fixed-dim": "#f9bb67", "on-tertiary-container": "#cbdbd3", "outline-variant": "#bec9c5", "surface-dim": "#c5dfe4", "on-secondary-fixed": "#2a1800", "tertiary-fixed-dim": "#bacac3", "surface-variant": "#cde7ec", "background": "#edfcff", "tertiary-fixed": "#d6e6de", "on-error-container": "#93000a", "on-primary-container": "#9ae5d6", "surface-container": "#d8f3f8", "outline": "#6f7976", "primary-fixed": "#a5f1e1", "surface": "#edfcff", "surface-container-lowest": "#ffffff", "surface-container-high": "#d3edf2", "on-secondary": "#ffffff", "on-secondary-container": "#784d00", "tertiary-container": "#52615b" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "space-sm": "0.5rem", "space-xs": "0.25rem", "space-lg": "1.5rem", "space-md": "1rem", "margin-mobile": "1rem", "gutter": "1.5rem", "margin": "2.5rem", "gutter-mobile": "1rem", "space-xl": "2rem" }, "fontFamily": { "display-lg": [ "Plus Jakarta Sans" ], "label-lg": [ "Inter" ], "label-sm": [ "Inter" ], "headline-lg": [ "Plus Jakarta Sans" ], "headline-md": [ "Plus Jakarta Sans" ], "title-md": [ "Plus Jakarta Sans" ], "headline-lg-mobile": [ "Plus Jakarta Sans" ], "body-lg": [ "Inter" ], "body-md": [ "Inter" ], "label-md": [ "Inter" ], "body-sm": [ "Inter" ], "headline-sm": [ "Plus Jakarta Sans" ], "display-lg-mobile": [ "Plus Jakarta Sans" ] }, "fontSize": { "display-lg": [ "48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" } ], "label-lg": [ "14px", { "lineHeight": "20px", "fontWeight": "500" } ], "label-sm": [ "11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "600" } ], "headline-lg": [ "32px", { "lineHeight": "40px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "headline-md": [ "24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" } ], "title-md": [ "16px", { "lineHeight": "24px", "fontWeight": "600" } ], "headline-lg-mobile": [ "26px", { "lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "600" } ], "body-lg": [ "16px", { "lineHeight": "26px", "fontWeight": "400" } ], "body-md": [ "14px", { "lineHeight": "22px", "fontWeight": "400" } ], "label-md": [ "12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" } ], "body-sm": [ "13px", { "lineHeight": "18px", "fontWeight": "400" } ], "headline-sm": [ "20px", { "lineHeight": "28px", "fontWeight": "600" } ], "display-lg-mobile": [ "34px", { "lineHeight": "42px", "letterSpacing": "-0.02em", "fontWeight": "700" } ] } } } };</script></head><body class="bg-surface font-body-md text-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="h-24 px-gutter flex items-center gap-space-sm"><div class="flex items-center gap-space-xs"><span class="font-headline-md text-headline-md text-primary tracking-tight">edvora<span class="text-secondary">.</span></span></div><span class="px-space-sm py-space-xs rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Staff Dashboard</span></div><nav class="flex flex-col gap-space-xs px-gutter" data-active-classes="bg-primary text-on-primary font-title-md"><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="overview" href="#"><span class="material-symbols-outlined text-[20px]">space_dashboard</span><span class="">Overview</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="pupils-and-guardians" href="#"><span class="material-symbols-outlined text-[20px]">group</span><span class="">Pupils &amp; Guardians</span></a><a aria-current="page" class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg transition-colors bg-primary text-on-primary font-title-md" data-path="fees" href="#"><span class="material-symbols-outlined text-[20px]">account_balance_wallet</span><span class="">Fees</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payment-ledger" href="#"><span class="material-symbols-outlined text-[20px]">receipt_long</span><span class="">Payment Ledger</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="reminders" href="#"><span class="material-symbols-outlined text-[20px]">notifications_active</span><span class="">Reminders</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="results" href="#"><span class="material-symbols-outlined text-[20px]">school</span><span class="">Results</span></a><a class="flex items-center gap-space-md px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span class="">Settings</span></a></nav></div><div class="p-gutter flex flex-col gap-space-sm bg-surface-container-low"><div class="flex items-center gap-space-xs text-on-surface-variant font-label-md text-label-md"><span class="material-symbols-outlined text-[18px] text-primary">support_agent</span><span class="">Support Desk (Mon-Fri)</span></div><div class="flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm"><span class="">+234 800 EDVORA</span><span class="font-label-sm text-label-sm px-space-xs py-0.5 rounded bg-surface-container text-on-surface"></span></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 z-40 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="w-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm px-gutter py-space-xs flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-[16px] text-secondary">bolt</span><span class="">2026/2027 · First Term</span></div><span class="font-body-sm text-body-sm text-on-secondary-fixed"></span></div><div class="h-16 px-gutter flex items-center justify-between"><div class="flex items-center gap-space-md"><span class="font-title-md text-title-md text-on-surface">Edvora Nursery &amp; Primary School</span><span class="text-outline-variant font-body-sm text-body-sm">/</span><div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded-lg text-primary font-label-md text-label-md"><span class="material-symbols-outlined text-[16px]">calendar_month</span><span class="">2026/2027 First Term</span><span class="material-symbols-outlined text-[16px]">expand_more</span></div></div><div class="flex items-center gap-space-lg"><span class="px-space-md py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Bursar &amp; Admin</span><div class="flex items-center gap-space-sm"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><a class="text-on-surface-variant hover:text-error transition-colors font-label-md text-label-md flex items-center gap-space-xs" data-path="staff-sign-out" href="#"><span class="material-symbols-outlined text-[16px]">logout</span><span class="">Sign Out</span></a></div></div></div></header><main class="w-full pt-24 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Interactive & Notification Banner for Paystack Test Mode -->
+<div class="px-gutter pt-space-lg pb-space-sm">
+<div class="bg-surface-container-high rounded-xl p-space-md shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-lg bg-secondary/15 flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-[24px]">verified_user</span>
+</div>
+<div>
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface">Term Fee Administration</span>
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-semibold tracking-wide uppercase"></span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Payments are credited after verification. Review discrepancies before adjusting a pupil account.</p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0 w-full md:w-auto">
+<button class="flex-1 md:flex-none flex items-center justify-center gap-space-xs bg-surface-container-lowest text-on-surface hover:bg-surface-dim px-space-md py-space-sm rounded-lg font-label-md text-label-md transition-all shadow-sm" id="downloadCsvBtn" onclick="triggerLedgerExport()">
+<span class="material-symbols-outlined text-[18px] text-primary">download</span>
+<span class="">Download Term Ledger (CSV)</span>
+</button>
+<button class="flex-1 md:flex-none flex items-center justify-center gap-space-xs bg-primary text-on-primary hover:bg-primary-container px-space-md py-space-sm rounded-lg font-label-md text-label-md transition-all shadow-sm" onclick="simulateWebhookSync()">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+<span class="">Review Payments</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Key Metric Summary Cards -->
+<div class="px-gutter py-space-md">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- Total Term Charges -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-surface-container-high/40 pointer-events-none transition-transform group-hover:scale-110"></div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Gross Billed Charges</span>
+<span class="p-1.5 rounded-md bg-surface-container-low text-primary">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</span>
+</div>
+<div class="mt-space-md">
+<span class="font-display-lg text-headline-lg font-semibold text-on-surface">₦21,600,000</span>
+</div>
+</div>
+<div class="mt-space-lg flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="font-semibold text-on-surface">180 pupils</span>
+<span class="">across Nursery &amp; Primary</span>
+</div>
+</div>
+<!-- Verified Test Collections -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-primary/5 pointer-events-none transition-transform group-hover:scale-110"></div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Verified Collections</span>
+<span class="p-1.5 rounded-md bg-primary/10 text-primary">
+<span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+</span>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-display-lg text-headline-lg font-semibold text-primary">₦12,600,000</span>
+<span class="px-space-xs py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">58.3%</span>
+</div>
+</div>
+<div class="mt-space-lg">
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-700" style="width: 58.3%;"></div>
+</div>
+<span class="mt-1 block font-label-sm text-label-sm text-on-surface-variant">Verified payments</span>
+</div>
+</div>
+<!-- Outstanding Balance -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-secondary/5 pointer-events-none transition-transform group-hover:scale-110"></div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Outstanding Receivable</span>
+<span class="p-1.5 rounded-md bg-secondary-fixed text-on-secondary-fixed">
+<span class="material-symbols-outlined text-[18px]">pending_actions</span>
+</span>
+</div>
+<div class="mt-space-md flex items-baseline gap-space-sm">
+<span class="font-display-lg text-headline-lg font-semibold text-secondary">₦9,000,000</span>
+<span class="px-space-xs py-0.5 rounded bg-secondary-fixed-dim/30 text-secondary font-label-sm text-label-sm">41.7%</span>
+</div>
+</div>
+<div class="mt-space-lg flex items-center justify-between text-body-sm text-on-surface-variant">
+<span class="">Tranche 2 pending:</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Week 7 cutoff</span>
+</div>
+</div>
+<!-- Approved Bursary / Fee Adjustments -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute -right-4 -bottom-4 w-24 h-24 rounded-full bg-surface-container-high/60 pointer-events-none transition-transform group-hover:scale-110"></div>
+<div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Approved Waivers &amp; Adjustments</span>
+<span class="p-1.5 rounded-md bg-surface-container-low text-tertiary">
+<span class="material-symbols-outlined text-[18px]">rule_folder</span>
+</span>
+</div>
+<div class="mt-space-md">
+<span class="font-display-lg text-headline-lg font-semibold text-on-surface">₦420,000</span>
+</div>
+</div>
+<div class="mt-space-lg flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-primary">verified</span>
+<span class="text-tertiary font-label-sm text-label-sm">Audited bursary concessions</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Fee Structures & Visual Trajectory -->
+<div class="px-gutter py-space-sm">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- Fee Plans Breakdown -->
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<h2 class="font-title-md text-title-md text-on-surface">Term Fee Schedules &amp; Structured Instalments</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Term fee plans and flexible instalments for 2026/2027 First Term.</p>
+</div>
+<span class="px-space-sm py-1 rounded-full bg-surface-container-low text-primary font-label-sm text-label-sm font-semibold">2 Active Plans</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md mt-space-md">
+<!-- Primary 1 to 5 Plan -->
+<div class="bg-surface-container-low/70 rounded-xl p-space-md flex flex-col justify-between shadow-sm">
+<div>
+<div class="flex items-center justify-between">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-lowest text-primary font-label-sm text-label-sm font-semibold">Primary Section</span>
+<span class="font-title-md text-title-md text-primary font-bold">₦120,000</span>
+</div>
+<div class="mt-space-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Primary 1 through 5</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Full term composite tuition, enrichment resources &amp; digital learning access.</p>
+</div>
+<div class="mt-space-md space-y-space-xs">
+<div class="flex items-center justify-between p-space-xs rounded bg-surface-container-lowest/80 text-on-surface">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-sm text-label-sm">Tranche 1 (Week 1 Resumption)</span>
+</div>
+<span class="font-label-md text-label-md font-semibold text-on-surface">₦70,000</span>
+</div>
+<div class="flex items-center justify-between p-space-xs rounded bg-surface-container-lowest/80 text-on-surface">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm">Tranche 2 (Mid-Term Week 7)</span>
+</div>
+<span class="font-label-md text-label-md font-semibold text-on-surface">₦50,000</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-surface-container text-on-surface-variant font-label-sm text-label-sm flex items-center justify-between">
+<span class="">Total Enrollment: 140 Pupils</span>
+<span class="text-primary font-semibold">₦16,800,000 Total Billed</span>
+</div>
+</div>
+<!-- Nursery 1 to 2 Plan -->
+<div class="bg-surface-container-low/70 rounded-xl p-space-md flex flex-col justify-between shadow-sm">
+<div>
+<div class="flex items-center justify-between">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-lowest text-secondary font-label-sm text-label-sm font-semibold">Early Years Foundation</span>
+<span class="font-title-md text-title-md text-secondary font-bold">₦120,000</span>
+</div>
+<div class="mt-space-sm">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Nursery 1 &amp; Nursery 2</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Montessori apparatus, sensory supplies, term nursery welfare &amp; care kit.</p>
+</div>
+<div class="mt-space-md space-y-space-xs">
+<div class="flex items-center justify-between p-space-xs rounded bg-surface-container-lowest/80 text-on-surface">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-sm text-label-sm">Tranche 1 (Resumption)</span>
+</div>
+<span class="font-label-md text-label-md font-semibold text-on-surface">₦70,000</span>
+</div>
+<div class="flex items-center justify-between p-space-xs rounded bg-surface-container-lowest/80 text-on-surface">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm">Tranche 2 (Mid-Term)</span>
+</div>
+<span class="font-label-md text-label-md font-semibold text-on-surface">₦50,000</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm border-t border-surface-container text-on-surface-variant font-label-sm text-label-sm flex items-center justify-between">
+<span class="">Total Enrollment: 40 Pupils</span>
+<span class="text-secondary font-semibold">₦4,800,000 Total Billed</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-space-lg flex items-center justify-between bg-surface-container-lowest rounded-lg p-space-sm text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-primary">security_update_good</span>
+<span class="">Parent portal displays direct Paystack checkout popups with instant receipt validation.</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Zero Bank Reconciliation Friction</span>
+</div>
+</div>
+<!-- Live Webhook Feed & Settlement Pulse -->
+<div class="lg:col-span-4 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+</span>
+<h3 class="font-title-md text-title-md text-on-surface">Verified Payment Activity</h3>
+</div>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Payment verification</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Recent verified payments credited to pupil accounts.</p>
+<div class="mt-space-md space-y-space-sm" id="webhookLogContainer">
+<div class="p-space-sm bg-surface-container-low rounded-lg transition-all hover:bg-surface-container">
+<div class="flex items-center justify-between text-label-sm font-label-sm">
+<span class="text-primary font-semibold">charge.success (Tranche 1)</span>
+<span class="text-on-surface-variant">2 mins ago</span>
+</div>
+<div class="mt-1 flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface font-medium">₦70,000 · Pupil: P-0428 (P3)</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-lowest text-primary">AUTH_TEST_839</span>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg transition-all hover:bg-surface-container">
+<div class="flex items-center justify-between text-label-sm font-label-sm">
+<span class="text-primary font-semibold">charge.success (Full Term)</span>
+<span class="text-on-surface-variant">14 mins ago</span>
+</div>
+<div class="mt-1 flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface font-medium">₦120,000 · Pupil: P-0193 (P5)</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-lowest text-primary">AUTH_TEST_104</span>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-lg transition-all hover:bg-surface-container">
+<div class="flex items-center justify-between text-label-sm font-label-sm">
+<span class="text-primary font-semibold">charge.success (Tranche 1)</span>
+<span class="text-on-surface-variant">1 hour ago</span>
+</div>
+<div class="mt-1 flex items-center justify-between font-body-sm text-body-sm">
+<span class="text-on-surface font-medium">₦55,000 · Pupil: N-0012 (N1)</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-lowest text-primary">AUTH_TEST_992</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm bg-surface-container-high/40 p-space-sm rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">shield</span>
+<span class="">Signed HMAC: SHA512</span>
+</div>
+<span class="text-primary font-label-sm text-label-sm font-medium">Status: 200 OK</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Class-by-Class Bursary Ledger Table -->
+<div class="px-gutter py-space-md">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="p-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-md bg-surface-container-lowest">
+<div>
+<div class="flex items-center gap-space-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Class-by-Class Bursary Ledger</h2>
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">7 Grade Cohorts</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Real-time aggregation of collections, pending tranche balances, and cohort completion rates.</p>
+</div>
+<!-- Filter and Search Row -->
+<div class="flex items-center gap-space-sm">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-on-surface-variant">search</span>
+<input class="pl-9 pr-space-md py-space-xs h-10 rounded-lg bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/60 font-body-sm text-body-sm focus:outline-none focus:ring-2 focus:ring-primary" id="classSearchInput" onkeyup="filterLedgerTable()" placeholder="Filter by class..." type="text">
+</div>
+<select class="h-10 px-space-md rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md focus:outline-none" id="sectionSelect" onchange="filterLedgerTable()">
+<option value="ALL">All Sections</option>
+<option value="NURSERY">Nursery Section</option>
+<option value="PRIMARY">Primary Section</option>
+</select>
+</div>
+</div>
+<!-- Responsive Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left" id="ledgerTable">
+<thead>
+<tr class="bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-space-md px-space-lg">Class / Section</th>
+<th class="py-space-md px-space-md text-center">Enrolled</th>
+<th class="py-space-md px-space-md text-right">Total Billed</th>
+<th class="py-space-md px-space-md text-right">Verified Paid</th>
+<th class="py-space-md px-space-md text-right">Outstanding</th>
+<th class="py-space-md px-space-md text-center">Collection Rate</th>
+<th class="py-space-md px-space-lg text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container text-body-md text-on-surface font-body-md" id="ledgerTableBody">
+<!-- Nursery 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors" data-class="Nursery 1" data-section="NURSERY">
+<td class="py-space-md px-space-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center font-title-md text-title-md text-primary font-bold">N1</div>
+<div>
+<span class="font-title-md text-title-md font-medium text-on-surface">Nursery 1</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Early Years Foundation · Daisy Room</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md text-center font-label-md text-label-md">20 Pupils</td>
+<td class="py-space-md px-space-md text-right font-medium">₦2,400,000</td>
+<td class="py-space-md px-space-md text-right font-semibold text-primary">₦1,400,000</td>
+<td class="py-space-md px-space-md text-right text-secondary">₦1,000,000</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center justify-center gap-space-xs">
+<div class="w-16 bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 66.7%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">58.3%</span>
+</div>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="px-space-sm py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-medium">On Track</span>
+</td>
+</tr>
+<!-- Nursery 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors" data-class="Nursery 2" data-section="NURSERY">
+<td class="py-space-md px-space-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center font-title-md text-title-md text-primary font-bold">N2</div>
+<div>
+<span class="font-title-md text-title-md font-medium text-on-surface">Nursery 2</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Early Years Foundation · Buttercup Room</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md text-center font-label-md text-label-md">20 Pupils</td>
+<td class="py-space-md px-space-md text-right font-medium">₦2,400,000</td>
+<td class="py-space-md px-space-md text-right font-semibold text-primary">₦1,400,000</td>
+<td class="py-space-md px-space-md text-right text-secondary">₦1,000,000</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center justify-center gap-space-xs">
+<div class="w-16 bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 66.7%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">58.3%</span>
+</div>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="px-space-sm py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-medium">On Track</span>
+</td>
+</tr>
+<!-- Primary 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors" data-class="Primary 1" data-section="PRIMARY">
+<td class="py-space-md px-space-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center font-title-md text-title-md text-on-primary-fixed font-bold">P1</div>
+<div>
+<span class="font-title-md text-title-md font-medium text-on-surface">Primary 1</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Lower Primary · Cedar Pine</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md text-center font-label-md text-label-md">28 Pupils</td>
+<td class="py-space-md px-space-md text-right font-medium">₦3,360,000</td>
+<td class="py-space-md px-space-md text-right font-semibold text-primary">₦1,960,000</td>
+<td class="py-space-md px-space-md text-right text-secondary">₦1,400,000</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center justify-center gap-space-xs">
+<div class="w-16 bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 58.3%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">58.3%</span>
+</div>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-medium">Pending T2</span>
+</td>
+</tr>
+<!-- Primary 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors" data-class="Primary 2" data-section="PRIMARY">
+<td class="py-space-md px-space-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center font-title-md text-title-md text-on-primary-fixed font-bold">P2</div>
+<div>
+<span class="font-title-md text-title-md font-medium text-on-surface">Primary 2</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Lower Primary · Cedar Elm</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md text-center font-label-md text-label-md">28 Pupils</td>
+<td class="py-space-md px-space-md text-right font-medium">₦3,360,000</td>
+<td class="py-space-md px-space-md text-right font-semibold text-primary">₦1,960,000</td>
+<td class="py-space-md px-space-md text-right text-secondary">₦1,400,000</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center justify-center gap-space-xs">
+<div class="w-16 bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 58.3%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">58.3%</span>
+</div>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-medium">Pending T2</span>
+</td>
+</tr>
+<!-- Primary 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors" data-class="Primary 3" data-section="PRIMARY">
+<td class="py-space-md px-space-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center font-title-md text-title-md text-on-primary-fixed font-bold">P3</div>
+<div>
+<span class="font-title-md text-title-md font-medium text-on-surface">Primary 3</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Mid Primary · Cedar Olive</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md text-center font-label-md text-label-md">28 Pupils</td>
+<td class="py-space-md px-space-md text-right font-medium">₦3,360,000</td>
+<td class="py-space-md px-space-md text-right font-semibold text-primary">₦1,960,000</td>
+<td class="py-space-md px-space-md text-right text-secondary">₦1,400,000</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center justify-center gap-space-xs">
+<div class="w-16 bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 58.3%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">58.3%</span>
+</div>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-medium">Pending T2</span>
+</td>
+</tr>
+<!-- Primary 4 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors" data-class="Primary 4" data-section="PRIMARY">
+<td class="py-space-md px-space-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center font-title-md text-title-md text-on-primary-fixed font-bold">P4</div>
+<div>
+<span class="font-title-md text-title-md font-medium text-on-surface">Primary 4</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Upper Primary · Cedar Willow</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md text-center font-label-md text-label-md">28 Pupils</td>
+<td class="py-space-md px-space-md text-right font-medium">₦3,360,000</td>
+<td class="py-space-md px-space-md text-right font-semibold text-primary">₦1,960,000</td>
+<td class="py-space-md px-space-md text-right text-secondary">₦1,400,000</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center justify-center gap-space-xs">
+<div class="w-16 bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 58.3%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">58.3%</span>
+</div>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-medium">Pending T2</span>
+</td>
+</tr>
+<!-- Primary 5 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors" data-class="Primary 5" data-section="PRIMARY">
+<td class="py-space-md px-space-lg">
+<div class="flex items-center gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center font-title-md text-title-md text-on-primary-fixed font-bold">P5</div>
+<div>
+<span class="font-title-md text-title-md font-medium text-on-surface">Primary 5</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Graduating Class · Cedar Oak</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md text-center font-label-md text-label-md">28 Pupils</td>
+<td class="py-space-md px-space-md text-right font-medium">₦3,360,000</td>
+<td class="py-space-md px-space-md text-right font-semibold text-primary">₦1,960,000</td>
+<td class="py-space-md px-space-md text-right text-secondary">₦1,400,000</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center justify-center gap-space-xs">
+<div class="w-16 bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary-fixed-dim h-full rounded-full" style="width: 54.3%;"></div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">58.3%</span>
+</div>
+</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-medium">Pending T2</span>
+</td>
+</tr>
+</tbody>
+<tfoot>
+<tr class="bg-surface-container font-title-md text-title-md text-on-surface font-bold">
+<td class="py-space-md px-space-lg">Aggregate Total (180 Pupils)</td>
+<td class="py-space-md px-space-md text-center">100% Active</td>
+<td class="py-space-md px-space-md text-right">₦21,600,000</td>
+<td class="py-space-md px-space-md text-right text-primary">₦12,600,000</td>
+<td class="py-space-md px-space-md text-right text-secondary">₦9,000,000</td>
+<td class="py-space-md px-space-md text-center text-primary">58.3%</td>
+<td class="py-space-md px-space-lg text-right">
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container-lowest text-primary text-label-sm font-semibold">Term Normal</span>
+</td>
+</tr>
+</tfoot>
+</table>
+</div>
+</div>
+</div>
+<!-- Approved Adjustments, Instalments & Audit Trail Section -->
+<div class="px-gutter pt-space-sm pb-space-xl">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- Audit Trail Table -->
+<div class="lg:col-span-8 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">policy</span>
+<h2 class="font-title-md text-title-md text-on-surface">Approved Bursary Adjustments &amp; Custom Agreements</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Immutable administrative log of ratified sibling waivers, staff concessions, and split payment agreements.</p>
+</div>
+<span class="px-space-sm py-1 rounded bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold">₦420,000 Total Logged</span>
+</div>
+<div class="space-y-space-sm">
+<!-- Item 1 -->
+<div class="p-space-md rounded-xl bg-surface-container-low/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md hover:bg-surface-container-low transition-colors">
+<div class="flex items-start gap-space-md">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">family_restroom</span>
+</div>
+<div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="font-title-md text-title-md text-on-surface">Sibling Instalment Adjustment</span>
+<span class="px-space-xs py-0.5 rounded bg-primary/10 text-primary font-label-sm text-label-sm font-semibold">Approved</span>
+</div>
+<div class="flex items-center gap-space-md text-on-surface-variant font-body-sm text-body-sm mt-1">
+<span class="">Pupils: <strong>David &amp; Sarah Adeleke</strong> (P2 &amp; P4)</span>
+<span class="">•</span>
+<span class="">Approver: <strong>Head Bursar (M. Ojo)</strong></span>
+<span class="">•</span>
+<span class="">Date: <strong>12 Jan 2026</strong></span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 italic">Reason: Third child enrolled sibling courtesy tier + deferred Tranche 2 due date to Week 9.</p>
+</div>
+</div>
+<div class="text-left sm:text-right shrink-0">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">₦180,000</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Adjusted from ₦240,000</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="p-space-md rounded-xl bg-surface-container-low/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md hover:bg-surface-container-low transition-colors">
+<div class="flex items-start gap-space-md">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</div>
+<div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="font-title-md text-title-md text-on-surface">Academic Staff Child Concession</span>
+<span class="px-space-xs py-0.5 rounded bg-primary/10 text-primary font-label-sm text-label-sm font-semibold">Approved</span>
+</div>
+<div class="flex items-center gap-space-md text-on-surface-variant font-body-sm text-body-sm mt-1">
+<span class="">Pupil: <strong>Zainab Okon</strong> (Primary 1)</span>
+<span class="">•</span>
+<span class="">Approver: <strong>Head Bursar</strong></span>
+<span class="">•</span>
+<span class="">Date: <strong>09 Jan 2026</strong></span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 italic">Reason: 50% staff tuition assistance policy ratified by School Advisory Council.</p>
+</div>
+</div>
+<div class="text-left sm:text-right shrink-0">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">₦140,000</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Waiver Applied</span>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="p-space-md rounded-xl bg-surface-container-low/60 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md hover:bg-surface-container-low transition-colors">
+<div class="flex items-start gap-space-md">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-tertiary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+</div>
+<div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="font-title-md text-title-md text-on-surface">Special 3-Stage Tranche Re-structuring</span>
+<span class="px-space-xs py-0.5 rounded bg-primary/10 text-primary font-label-sm text-label-sm font-semibold">Approved</span>
+</div>
+<div class="flex items-center gap-space-md text-on-surface-variant font-body-sm text-body-sm mt-1">
+<span class="">Pupil: <strong>Emeka Chukwuma</strong> (Nursery 2)</span>
+<span class="">•</span>
+<span class="">Approver: <strong>Head Bursar</strong></span>
+<span class="">•</span>
+<span class="">Date: <strong>06 Jan 2026</strong></span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 italic">Reason: Medical recovery expense grace period; 3 installments scheduled via Paystack tokens.</p>
+</div>
+</div>
+<div class="text-left sm:text-right shrink-0">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">₦100,000</span>
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Re-scheduled</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Panel & Settlement Security Protocol -->
+<div class="lg:col-span-4 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-space-xs mb-space-sm">
+<span class="material-symbols-outlined text-secondary text-[22px]">gavel</span>
+<h3 class="font-title-md text-title-md text-on-surface">Bursar Authorization Rules</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">Fee records and authorised adjustments preserve a clear audit history.</p>
+<div class="space-y-space-md">
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px] mt-0.5">lock</span>
+<div>
+<h4 class="font-label-md text-label-md font-semibold text-on-surface">No Bank Transfer Bypass</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Account balances update only after the payment has been verified.</p>
+</div>
+</div>
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px] mt-0.5">fact_check</span>
+<div>
+<h4 class="font-label-md text-label-md font-semibold text-on-surface">Permanent Audit Record</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Every waiver or tranche date modification issues a timestamped signature logged directly to school records.</p>
+</div>
+</div>
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-primary text-[18px] mt-0.5">mail_lock</span>
+<div>
+<h4 class="font-label-md text-label-md font-semibold text-on-surface">Automated Parent Reminders</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">SMS and WhatsApp reminders follow the school schedule and use the latest outstanding balance.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-space-lg pt-space-md border-t border-surface-container">
+<button class="w-full flex items-center justify-center gap-space-xs bg-primary text-on-primary hover:bg-primary-container px-space-md py-space-sm rounded-lg font-label-md text-label-md transition-colors shadow-sm" onclick="openAdjustmentModal()">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+<span class="">Record New Bursary Waiver</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Modal: Record Bursary Waiver (Demo Interaction) -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center p-space-md bg-inverse-surface/40 backdrop-blur-sm" id="adjustmentModal">
+<div class="bg-surface-container-lowest rounded-xl max-w-lg w-full p-space-lg shadow-xl relative animate-in fade-in zoom-in duration-150">
+<div class="flex items-center justify-between pb-space-sm border-b border-surface-container">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">edit_document</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Record Bursary Concession</h3>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface" onclick="closeAdjustmentModal()">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="mt-space-md space-y-space-md font-body-sm text-body-sm">
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase font-semibold">Select Enrolled Pupil</label>
+<select class="w-full h-10 px-space-md rounded-lg bg-surface-container-low text-on-surface font-body-sm focus:outline-none focus:ring-2 focus:ring-primary">
+<option>P-0112 · Joshua Okafor (Primary 3)</option>
+<option>P-0220 · Miracle Eze (Primary 1)</option>
+<option>N-0008 · Sophia Bello (Nursery 1)</option>
+</select>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase font-semibold">Concession / Adjustment Type</label>
+<select class="w-full h-10 px-space-md rounded-lg bg-surface-container-low text-on-surface font-body-sm focus:outline-none focus:ring-2 focus:ring-primary">
+<option>Sibling Enrollment Courtesy Tier (15%)</option>
+<option>Staff Child Bursary Grant (50%)</option>
+<option>Hardship Split-Tranche Grace Period</option>
+</select>
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase font-semibold">Amount to Waive / Adjust (₦)</label>
+<input class="w-full h-10 px-space-md rounded-lg bg-surface-container-low text-on-surface font-body-sm focus:outline-none focus:ring-2 focus:ring-primary" type="text" value="35,000">
+</div>
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase font-semibold">Audit Justification Notes</label>
+<textarea class="w-full p-space-sm rounded-lg bg-surface-container-low text-on-surface font-body-sm focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Describe board reference or verified parent request..." rows="2">Approved by Principal &amp; Head Bursar per session demonstration policy.</textarea>
+</div>
+<div class="p-space-sm rounded bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">info</span>
+<span class="">Logged into the immutable audit trial under operator: Head Bursar (M. Ojo)</span>
+</div>
+</div>
+<div class="mt-space-lg flex items-center justify-end gap-space-sm pt-space-sm border-t border-surface-container">
+<button class="px-space-md py-space-sm rounded-lg text-on-surface-variant hover:bg-surface-container font-label-md text-label-md" onclick="closeAdjustmentModal()">Cancel</button>
+<button class="px-space-md py-space-sm rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-sm" onclick="saveAdjustmentDemo()">Authorize &amp; Post to Ledger</button>
+</div>
+</div>
+</div>
+<!-- Notification Toast Container -->
+<div class="fixed bottom-6 right-6 z-50 hidden transition-all duration-300" id="toastNotification">
+<div class="bg-inverse-surface text-inverse-on-surface px-space-md py-space-sm rounded-xl shadow-xl flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[20px] text-primary-fixed" id="toastIcon">check_circle</span>
+<span class="font-body-sm text-body-sm" id="toastMessage">Ledger export generated successfully.</span>
+</div>
+</div>
+</div>
+<script>
+  function showToast(message, icon = 'check_circle') {
+    const toast = document.getElementById('toastNotification');
+    const toastMsg = document.getElementById('toastMessage');
+    const toastIco = document.getElementById('toastIcon');
+    if (!toast) return;
+
+    toastMsg.textContent = message;
+    toastIco.textContent = icon;
+    toast.classList.remove('hidden');
+
+    setTimeout(() => {
+      toast.classList.add('hidden');
+    }, 3500);
+  }
+
+  function triggerLedgerExport() {
+    showToast("Generating 'Cedar_Primary_First_Term_Fees_2026.csv'...", "download");
+    
+    // Simulate programmatic CSV download
+    setTimeout(() => {
+      const csvContent = "data:text/csv;charset=utf-8," 
+        + "Class,Enrolled,Total Billed,Test Collected,Outstanding,Rate,Status\n"
+        + "Nursery 1,18,1710000,1140000,570000,66.7%,On Track\n"
+        + "Nursery 2,22,1890000,1260000,630000,66.7%,On Track\n"
+        + "Primary 1,30,3600000,2100000,1500000,58.3%,Pending T2\n"
+        + "Primary 2,28,3360000,1960000,1400000,58.3%,Pending T2\n"
+        + "Primary 3,32,3840000,2240000,1600000,58.3%,Pending T2\n"
+        + "Primary 4,31,3720000,2170000,1550000,58.3%,Pending T2\n"
+        + "Primary 5,29,3480000,1890000,1590000,54.3%,Pending T2\n";
+      
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "Cedar_Primary_First_Term_Fees_2026.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("Download complete: Cedar_Primary_First_Term_Fees_2026.csv", "verified");
+    }, 600);
+  }
+
+  function simulateWebhookSync() {
+    showToast("Polling Paystack Test Webhook dispatch port...", "sync");
+    setTimeout(() => {
+      const container = document.getElementById('webhookLogContainer');
+      if (container) {
+        const newCard = document.createElement('div');
+        newCard.className = "p-space-sm bg-surface-container-low rounded-lg transition-all hover:bg-surface-container animate-in fade-in duration-300";
+        newCard.innerHTML = `
+          <div class="flex items-center justify-between text-label-sm font-label-sm">
+            <span class="text-primary font-semibold">charge.success (Tranche 1)</span>
+            <span class="text-on-surface-variant">Just now</span>
+          </div>
+          <div class="mt-1 flex items-center justify-between font-body-sm text-body-sm">
+            <span class="text-on-surface font-medium">₦70,000 · Pupil: P-0309 (P1)</span>
+            <span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-surface-container-lowest text-primary">AUTH_TEST_${Math.floor(100 + Math.random() * 900)}</span>
+          </div>
+        `;
+        container.insertBefore(newCard, container.firstChild);
+        if (container.children.length > 3) {
+          container.removeChild(container.lastChild);
+        }
+      }
+      showToast("Webhooks synchronized: 1 new test charge verified.", "check_circle");
+    }, 700);
+  }
+
+  function filterLedgerTable() {
+    const searchVal = (document.getElementById('classSearchInput').value || '').toLowerCase();
+    const sectionVal = document.getElementById('sectionSelect').value;
+    const rows = document.querySelectorAll('#ledgerTableBody tr');
+
+    rows.forEach(row => {
+      const className = (row.getAttribute('data-class') || '').toLowerCase();
+      const section = row.getAttribute('data-section');
+
+      const matchesSearch = className.includes(searchVal);
+      const matchesSection = (sectionVal === 'ALL') || (section === sectionVal);
+
+      if (matchesSearch && matchesSection) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  function openAdjustmentModal() {
+    const modal = document.getElementById('adjustmentModal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function closeAdjustmentModal() {
+    const modal = document.getElementById('adjustmentModal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function saveAdjustmentDemo() {
+    closeAdjustmentModal();
+    showToast("Audit recorded: Bursary concession appended to ledger.", "check_circle");
+  }
+</script></main></div>
+
+</body></html>
