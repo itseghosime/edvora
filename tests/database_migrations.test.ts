@@ -18,7 +18,10 @@ describe('In-Memory PostgreSQL Schema DDL, Relation & Constraint Verification (p
     .replace(/DO \$\$[\s\S]*?\$\$;/g, '')
     .replace(/ALTER TABLE [\s\S]*?ENABLE ROW LEVEL SECURITY;/g, '')
     .replace(/DROP POLICY [\s\S]*?;/g, '')
-    .replace(/CREATE POLICY [\s\S]*?;/g, '');
+    .replace(/CREATE POLICY [\s\S]*?;/g, '')
+    .replace(/GRANT [\s\S]*?;/g, '')
+    .replace(/CREATE SCHEMA [\s\S]*?;/g, '')
+    .replace(/CREATE OR REPLACE FUNCTION[\s\S]*?\$\$\s*LANGUAGE[\s\S]*?;/gi, '');
 
   const ddlStatements = cleanedSql
     .split(';')

@@ -100,6 +100,123 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
     }
   });
 
+  it('enforces Row-Level Security (RLS) under unprivileged roles for unauthorized pupil, guardian, and financial-record access', async () => {
+    const client = await pool.connect();
+    try {
+      // 1. Unprivileged Anonymous (anon) RLS tests
+      await client.query('SET ROLE anon;');
+
+      // Attempting to read pupils returns 0 rows (filtered by RLS)
+      const anonPupils = await client.query('SELECT * FROM pupils;');
+      expect(anonPupils.rows).toHaveLength(0);
+
+      // Attempting to insert a pupil under anon is blocked by RLS policy
+      let anonInsertPupilBlocked = false;
+      try {
+        await client.query(`
+          INSERT INTO pupils (id, admission_number, first_name, last_name, class_id)
+          VALUES (gen_random_uuid(), 'ANON/001', 'Anon', 'Pupil', '22222222-0000-0000-0000-000000000000');
+        `);
+      } catch (err: any) {
+        anonInsertPupilBlocked = true;
+        expect(err.message).toMatch(/violates row-level security policy for table "pupils"/i);
+      }
+      expect(anonInsertPupilBlocked).toBe(true);
+
+      // Attempting to read guardians returns 0 rows
+      const anonGuardians = await client.query('SELECT * FROM guardians;');
+      expect(anonGuardians.rows).toHaveLength(0);
+
+      // Attempting to read financial records (fee_assignments, ledger, receipts) returns 0 rows
+      const anonFees = await client.query('SELECT * FROM fee_assignments;');
+      expect(anonFees.rows).toHaveLength(0);
+
+      const anonLedger = await client.query('SELECT * FROM fee_ledger_entries;');
+      expect(anonLedger.rows).toHaveLength(0);
+
+      const anonReceipts = await client.query('SELECT * FROM receipts;');
+      expect(anonReceipts.rows).toHaveLength(0);
+
+      // Attempting to insert financial credit under anon is blocked by RLS
+      let anonInsertLedgerBlocked = false;
+      try {
+        await client.query(`
+          INSERT INTO fee_ledger_entries (pupil_id, term_id, entry_type, amount_minor, running_balance_minor, reference)
+          VALUES (gen_random_uuid(), gen_random_uuid(), 'credit', 500000, 0, 'ANON-UNAUTH-REF');
+        `);
+      } catch (err: any) {
+        anonInsertLedgerBlocked = true;
+        expect(err.message).toMatch(/violates row-level security policy for table "fee_ledger_entries"/i);
+      }
+      expect(anonInsertLedgerBlocked).toBe(true);
+
+      // 2. Unprivileged / Unauthorized Authenticated RLS tests (arbitrary sub/uid)
+      await client.query('SET ROLE authenticated;');
+      await client.query("SET request.jwt.claim.sub = '99999999-9999-9999-9999-000000000001';");
+
+      // Unauthorized authenticated user cannot read other pupils or guardians
+      const unauthPupils = await client.query('SELECT * FROM pupils;');
+      expect(unauthPupils.rows).toHaveLength(0);
+
+      const unauthGuardians = await client.query('SELECT * FROM guardians;');
+      expect(unauthGuardians.rows).toHaveLength(0);
+
+      // Unauthorized authenticated user cannot read financial records
+      const unauthFees = await client.query('SELECT * FROM fee_assignments;');
+      expect(unauthFees.rows).toHaveLength(0);
+
+      const unauthLedger = await client.query('SELECT * FROM fee_ledger_entries;');
+      expect(unauthLedger.rows).toHaveLength(0);
+
+      const unauthReceipts = await client.query('SELECT * FROM receipts;');
+      expect(unauthReceipts.rows).toHaveLength(0);
+
+      // Unauthorized authenticated user cannot insert financial entries
+      let unauthInsertLedgerBlocked = false;
+      try {
+        await client.query(`
+          INSERT INTO fee_ledger_entries (pupil_id, term_id, entry_type, amount_minor, running_balance_minor, reference)
+          VALUES (gen_random_uuid(), gen_random_uuid(), 'credit', 500000, 0, 'UNAUTH-REF');
+        `);
+      } catch (err: any) {
+        unauthInsertLedgerBlocked = true;
+        expect(err.message).toMatch(/violates row-level security policy for table "fee_ledger_entries"/i);
+      }
+      expect(unauthInsertLedgerBlocked).toBe(true);
+
+      // 3. Authorized Guardian context: can read ONLY their own pupil & financial records
+      await client.query('RESET ROLE;');
+      const authUserId = '77777777-1111-2222-3333-444444444444';
+      const guardianId = '88888888-1111-2222-3333-444444444444';
+      const pupilId = '99999999-1111-2222-3333-444444444444';
+
+      await client.query(`
+        INSERT INTO guardians (id, user_id, full_name, phone_number)
+        VALUES ('${guardianId}', '${authUserId}', 'Authorized Parent', '+2348031112233')
+        ON CONFLICT DO NOTHING;
+
+        INSERT INTO pupils (id, admission_number, first_name, last_name, class_id, guardian_id, status)
+        VALUES ('${pupilId}', 'EDV/AUTH/001', 'Authorized', 'Child', '22222222-0000-0000-0000-000000000000', '${guardianId}', 'active')
+        ON CONFLICT DO NOTHING;
+      `);
+
+      // Switch to authenticated with the authorized user's sub
+      await client.query('SET ROLE authenticated;');
+      await client.query(`SET request.jwt.claim.sub = '${authUserId}';`);
+
+      const authorizedPupils = await client.query('SELECT id, admission_number FROM pupils;');
+      expect(authorizedPupils.rows).toHaveLength(1);
+      expect(authorizedPupils.rows[0].id).toBe(pupilId);
+
+      const authorizedGuardians = await client.query('SELECT id, full_name FROM guardians;');
+      expect(authorizedGuardians.rows).toHaveLength(1);
+      expect(authorizedGuardians.rows[0].id).toBe(guardianId);
+    } finally {
+      await client.query('RESET ROLE;');
+      client.release();
+    }
+  });
+
   it('executes atomic payment crediting, ledger entry, receipt, and notification in PostgreSQL', async () => {
     const client = await pool.connect();
     try {

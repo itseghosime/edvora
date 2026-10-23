@@ -32,8 +32,23 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // 3. Strict credential verification: dateOfBirth must match authoritative pupil record
-      if (pupil.dateOfBirth && pupil.dateOfBirth !== dateOfBirth.trim()) {
+      // 3. Check pupil account status before issuing a session
+      if (pupil.status !== 'active') {
+        return NextResponse.json(
+          { error: `Student account is ${pupil.status || 'inactive'}. Please contact the school administration.` },
+          { status: 403 }
+        );
+      }
+
+      // 4. Reject student login if the persisted DOB is missing or does not match
+      if (!pupil.dateOfBirth || !pupil.dateOfBirth.trim()) {
+        return NextResponse.json(
+          { error: 'Pupil account record has no registered date of birth. Please contact the school office.' },
+          { status: 401 }
+        );
+      }
+
+      if (pupil.dateOfBirth.trim() !== dateOfBirth.trim()) {
         return NextResponse.json(
           { error: 'Invalid credentials: Date of birth does not match school records for this admission number.' },
           { status: 401 }
@@ -79,33 +94,30 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // 2. Verify with Supabase Auth when configured
-      const supabase = getSupabaseAdmin();
-      if (supabase) {
-        const { error: authError } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password: password.trim(),
-        });
+      const cleanEmail = email.trim().toLowerCase();
 
-        if (authError) {
-          return NextResponse.json(
-            { error: `Invalid staff credentials: ${authError.message}` },
-            { status: 401 }
-          );
-        }
-      } else {
-        // Enforce valid staff password verification (minimum password strength and correct credential check)
-        const cleanPassword = password.trim();
-        if (cleanPassword.length < 6 || cleanPassword === 'wrong_password' || cleanPassword === 'invalid') {
-          return NextResponse.json(
-            { error: 'Invalid staff email or password. Please contact the administrator.' },
-            { status: 401 }
-          );
-        }
+      // 2. Verify with Supabase Auth: fail closed if Supabase Auth is unavailable
+      const supabase = getSupabaseAdmin();
+      if (!supabase) {
+        return NextResponse.json(
+          { error: 'Authentication service unavailable: Supabase Auth is not configured. Staff credential verification cannot proceed.' },
+          { status: 503 }
+        );
+      }
+
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password: password.trim(),
+      });
+
+      if (authError || !authData?.user) {
+        return NextResponse.json(
+          { error: `Invalid staff credentials: ${authError?.message || 'Authentication failed'}` },
+          { status: 401 }
+        );
       }
 
       // 3. Query persisted staff profile from database repository
-      const cleanEmail = email.trim().toLowerCase();
       const staff = await db.getStaffByEmail(cleanEmail);
 
       if (!staff || !staff.isActive) {

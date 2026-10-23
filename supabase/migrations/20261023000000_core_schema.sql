@@ -355,6 +355,66 @@ CREATE POLICY service_role_all_receipts ON receipts FOR ALL TO service_role USIN
 DROP POLICY IF EXISTS service_role_all_results ON academic_results;
 CREATE POLICY service_role_all_results ON academic_results FOR ALL TO service_role USING (true);
 
+-- Ensure auth schema and auth.uid() function exist for Supabase compatibility
+CREATE SCHEMA IF NOT EXISTS auth;
+CREATE OR REPLACE FUNCTION auth.uid() RETURNS UUID AS $$
+  SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid;
+$$ LANGUAGE sql STABLE;
+
+-- Grant schema and table usage to anon and authenticated roles
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+
+-- Authenticated policies: Access strictly isolated to linked guardian or active staff
+DROP POLICY IF EXISTS authenticated_pupils_view ON pupils;
+CREATE POLICY authenticated_pupils_view ON pupils FOR SELECT TO authenticated
+USING (
+  guardian_id IN (SELECT id FROM guardians WHERE user_id = auth.uid())
+  OR id IN (SELECT pg.pupil_id FROM pupil_guardians pg JOIN guardians g ON g.id = pg.guardian_id WHERE g.user_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM staff_profiles sp WHERE sp.user_id = auth.uid() AND sp.is_active = true)
+);
+
+DROP POLICY IF EXISTS authenticated_guardians_view ON guardians;
+CREATE POLICY authenticated_guardians_view ON guardians FOR SELECT TO authenticated
+USING (
+  user_id = auth.uid()
+  OR EXISTS (SELECT 1 FROM staff_profiles sp WHERE sp.user_id = auth.uid() AND sp.is_active = true)
+);
+
+DROP POLICY IF EXISTS authenticated_fees_view ON fee_assignments;
+CREATE POLICY authenticated_fees_view ON fee_assignments FOR SELECT TO authenticated
+USING (
+  pupil_id IN (
+    SELECT p.id FROM pupils p WHERE p.guardian_id IN (SELECT id FROM guardians WHERE user_id = auth.uid())
+    UNION
+    SELECT pg.pupil_id FROM pupil_guardians pg JOIN guardians g ON g.id = pg.guardian_id WHERE g.user_id = auth.uid()
+  )
+  OR EXISTS (SELECT 1 FROM staff_profiles sp WHERE sp.user_id = auth.uid() AND sp.is_active = true AND sp.role IN ('admin', 'bursar'))
+);
+
+DROP POLICY IF EXISTS authenticated_ledger_view ON fee_ledger_entries;
+CREATE POLICY authenticated_ledger_view ON fee_ledger_entries FOR SELECT TO authenticated
+USING (
+  pupil_id IN (
+    SELECT p.id FROM pupils p WHERE p.guardian_id IN (SELECT id FROM guardians WHERE user_id = auth.uid())
+    UNION
+    SELECT pg.pupil_id FROM pupil_guardians pg JOIN guardians g ON g.id = pg.guardian_id WHERE g.user_id = auth.uid()
+  )
+  OR EXISTS (SELECT 1 FROM staff_profiles sp WHERE sp.user_id = auth.uid() AND sp.is_active = true AND sp.role IN ('admin', 'bursar'))
+);
+
+DROP POLICY IF EXISTS authenticated_receipts_view ON receipts;
+CREATE POLICY authenticated_receipts_view ON receipts FOR SELECT TO authenticated
+USING (
+  pupil_id IN (
+    SELECT p.id FROM pupils p WHERE p.guardian_id IN (SELECT id FROM guardians WHERE user_id = auth.uid())
+    UNION
+    SELECT pg.pupil_id FROM pupil_guardians pg JOIN guardians g ON g.id = pg.guardian_id WHERE g.user_id = auth.uid()
+  )
+  OR EXISTS (SELECT 1 FROM staff_profiles sp WHERE sp.user_id = auth.uid() AND sp.is_active = true AND sp.role IN ('admin', 'bursar'))
+);
+
 -- Indexes for performance and high-concurrency lookups
 CREATE INDEX IF NOT EXISTS idx_pupils_class ON pupils(class_id);
 CREATE INDEX IF NOT EXISTS idx_fee_ledger_pupil ON fee_ledger_entries(pupil_id, term_id);

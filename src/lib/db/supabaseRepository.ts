@@ -26,7 +26,7 @@ export class DatabaseRepository {
 
   private getClient() {
     const client = getSupabaseAdmin();
-    if (!client) {
+    if (!client || typeof client.from !== 'function') {
       if (this.isProduction) {
         throw new Error(
           'FATAL: Supabase credentials (NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY) are missing in production. Application will not silently fall back to temporary in-memory storage in production.'
@@ -883,7 +883,7 @@ export class DatabaseRepository {
     const client = this.getClient();
     if (!client) {
       const p = memoryStore.pupils.find((pupil) => pupil.admissionNumber.toUpperCase() === clean);
-      return p ? { ...p, dateOfBirth: p.dateOfBirth || '2018-05-14', className: p.className || 'Primary 3A' } : null;
+      return p ? { ...p, dateOfBirth: p.dateOfBirth, className: p.className || 'Primary 3A' } : null;
     }
 
     const { data, error } = await client

@@ -12,11 +12,16 @@ import { mapTermiiProviderStatus, canTransitionAttemptStatus } from '../src/lib/
 import { store } from '../src/lib/db/store';
 import { db } from '../src/lib/db/supabaseRepository';
 import { config } from '../src/lib/config';
+import * as supabaseClientModule from '../src/lib/supabase/client';
 
 describe('Codex Defect Regressions', () => {
   beforeAll(() => {
     config.paystack.secretKey = 'sk_test_mock_paystack_secret_2026';
     config.automationServiceKey = 'test_automation_service_key_2026';
+  });
+
+  beforeEach(() => {
+    vi.restoreAllMocks();
   });
   const pupilId = '77777777-7777-7777-7777-000000000001'; // Osasere Ehigiator
   const termId = '22222222-2222-2222-2222-222222222222';
@@ -85,31 +90,71 @@ describe('Codex Defect Regressions', () => {
       expect(json.error).toMatch(/Password is required/i);
     });
 
-    it('rejects staff login with correct email but wrong password with HTTP 401', async () => {
+    it('fails closed with HTTP 503 if Supabase Auth is unavailable when verifying staff credentials', async () => {
+      // Ensure Supabase admin client is unavailable
+      vi.spyOn(supabaseClientModule, 'getSupabaseAdmin').mockReturnValue(null);
+
       const req = new NextRequest('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'staff',
           email: 'admin@edvora.ng',
-          password: 'wrong_password',
+          password: 'some_password',
+        }),
+      });
+
+      const res = await loginRoute(req);
+      expect(res.status).toBe(503);
+      const json = await res.json();
+      expect(json.error).toMatch(/Authentication service unavailable/i);
+    });
+
+    it('rejects staff login when Supabase Auth reports invalid credentials with HTTP 401', async () => {
+      // Mock Supabase Auth returning invalid credentials error
+      vi.spyOn(supabaseClientModule, 'getSupabaseAdmin').mockReturnValue({
+        auth: {
+          signInWithPassword: vi.fn().mockResolvedValue({
+            error: { message: 'Invalid login credentials' },
+            data: { user: null },
+          }),
+        },
+      } as any);
+
+      const req = new NextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'staff',
+          email: 'admin@edvora.ng',
+          password: 'arbitrary_incorrect_password',
         }),
       });
 
       const res = await loginRoute(req);
       expect(res.status).toBe(401);
       const json = await res.json();
-      expect(json.error).toMatch(/Invalid staff email or password/i);
+      expect(json.error).toMatch(/Invalid staff credentials/i);
     });
 
-    it('authenticates staff login with valid credentials and issues signed session cookie', async () => {
+    it('authenticates staff login when Supabase Auth verifies credentials and issues signed session cookie', async () => {
+      // Mock Supabase Auth returning successful user authentication
+      vi.spyOn(supabaseClientModule, 'getSupabaseAdmin').mockReturnValue({
+        auth: {
+          signInWithPassword: vi.fn().mockResolvedValue({
+            error: null,
+            data: { user: { id: adminStaffId, email: 'admin@edvora.ng' } },
+          }),
+        },
+      } as any);
+
       const req = new NextRequest('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'staff',
           email: 'admin@edvora.ng',
-          password: 'admin_secure_password_2026',
+          password: 'valid_secure_password',
         }),
       });
 
@@ -140,14 +185,33 @@ describe('Codex Defect Regressions', () => {
       expect(json.error).toMatch(/Date of birth is required/i);
     });
 
-    it('rejects student login with correct admission number but wrong date of birth with HTTP 401', async () => {
+    it('rejects student login if the persisted DOB is missing in school records with HTTP 401', async () => {
+      // EDV/2025/0118 (Tamara Ehigiator) has no persisted dateOfBirth in records
+      const req = new NextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'student',
+          admissionNumber: 'EDV/2025/0118',
+          dateOfBirth: '2019-06-20',
+        }),
+      });
+
+      const res = await loginRoute(req);
+      expect(res.status).toBe(401);
+      const json = await res.json();
+      expect(json.error).toMatch(/no registered date of birth/i);
+    });
+
+    it('rejects student login with arbitrary supplied date of birth not matching records with HTTP 401', async () => {
+      // EDV/2024/0042 (Osasere) has DOB 2018-05-14; supplying arbitrary DOB must fail
       const req = new NextRequest('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: 'student',
           admissionNumber: 'EDV/2024/0042',
-          dateOfBirth: '2020-01-01', // Incorrect
+          dateOfBirth: '2021-12-31', // Arbitrary non-matching DOB
         }),
       });
 
@@ -155,6 +219,24 @@ describe('Codex Defect Regressions', () => {
       expect(res.status).toBe(401);
       const json = await res.json();
       expect(json.error).toMatch(/Date of birth does not match/i);
+    });
+
+    it('rejects student login for inactive or withdrawn pupils with HTTP 403', async () => {
+      // EDV/2023/0099 (Chinedu Okeke) has status: 'withdrawn'
+      const req = new NextRequest('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'student',
+          admissionNumber: 'EDV/2023/0099',
+          dateOfBirth: '2017-03-21',
+        }),
+      });
+
+      const res = await loginRoute(req);
+      expect(res.status).toBe(403);
+      const json = await res.json();
+      expect(json.error).toMatch(/withdrawn|inactive/i);
     });
 
     it('authenticates student login with valid admission number and matching date of birth', async () => {
@@ -338,22 +420,129 @@ describe('Codex Defect Regressions', () => {
   describe('2. Removal of Assumed-Success & Offline Payment Fallbacks', () => {
     beforeEach(() => {
       vi.restoreAllMocks();
+      config.paystack.secretKey = 'sk_test_mock_paystack_secret_2026';
     });
 
-    it('never credits money if payment provider is unconfigured or returns HTTP error', async () => {
+    function mockPaystackVerify(verifyResponse: any) {
+      vi.spyOn(global, 'fetch').mockImplementation(async (url: any) => {
+        const urlStr = String(url);
+        if (urlStr.includes('/initialize')) {
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              status: true,
+              data: {
+                authorization_url: 'https://checkout.paystack.com/auth-mock-test',
+                access_code: 'acc_mock_code_test',
+              },
+            }),
+          } as any;
+        }
+        return typeof verifyResponse === 'function' ? verifyResponse(urlStr) : verifyResponse;
+      });
+    }
+
+    it('fails checkout initialization explicitly when PAYSTACK_SECRET_KEY is unconfigured without returning local URL', async () => {
+      config.paystack.secretKey = '';
+
+      let initError: any;
+      try {
+        await initializePayment({
+          pupilId,
+          termId,
+          amountMinor: 500000,
+          payerEmail: 'test@edvora.edu.ng',
+        });
+      } catch (err: any) {
+        initError = err;
+      }
+
+      expect(initError).toBeDefined();
+      expect(initError.message).toMatch(/PAYSTACK_SECRET_KEY is required/i);
+    });
+
+    it('fails checkout initialization explicitly on provider HTTP errors without returning local URL', async () => {
+      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        json: async () => ({ message: 'Paystack downstream unavailable' }),
+      } as any);
+
+      let initError: any;
+      try {
+        await initializePayment({
+          pupilId,
+          termId,
+          amountMinor: 500000,
+          payerEmail: 'test@edvora.edu.ng',
+        });
+      } catch (err: any) {
+        initError = err;
+      }
+
+      expect(initError).toBeDefined();
+      expect(initError.message).toMatch(/HTTP status 500/i);
+    });
+
+    it('fails checkout initialization explicitly on malformed provider response payloads', async () => {
+      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ status: true, data: {} }), // Missing authorization_url & access_code
+      } as any);
+
+      let malformedError: any;
+      try {
+        await initializePayment({
+          pupilId,
+          termId,
+          amountMinor: 500000,
+          payerEmail: 'test@edvora.edu.ng',
+        });
+      } catch (err: any) {
+        malformedError = err;
+      }
+
+      expect(malformedError).toBeDefined();
+      expect(malformedError.message).toMatch(/missing authorization_url or access_code/i);
+    });
+
+    it('fails checkout initialization explicitly on timeout without returning fabricated access code', async () => {
+      const timeoutErr = new Error('The operation was aborted due to timeout');
+      timeoutErr.name = 'TimeoutError';
+      vi.spyOn(global, 'fetch').mockRejectedValueOnce(timeoutErr);
+
+      let timeoutFailure: any;
+      try {
+        await initializePayment({
+          pupilId,
+          termId,
+          amountMinor: 500000,
+          payerEmail: 'test@edvora.edu.ng',
+        });
+      } catch (err: any) {
+        timeoutFailure = err;
+      }
+
+      expect(timeoutFailure).toBeDefined();
+      expect(timeoutFailure.message).toMatch(/timed out/i);
+    });
+
+    it('never credits money if payment provider returns HTTP error during verification', async () => {
+      mockPaystackVerify({
+        ok: false,
+        status: 500,
+        json: async () => ({ status: false, message: 'Provider internal error' }),
+      });
+
       const init = await initializePayment({
         pupilId,
         termId,
         amountMinor: 500000,
         payerEmail: 'test@edvora.edu.ng',
       });
-
-      // Mock fetch returning provider 500 internal error
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        json: async () => ({ status: false, message: 'Provider internal error' }),
-      } as any);
 
       const beforeBalance = store.getAuthoritativeBalance(pupilId, termId);
       const verifyResult = await verifyPayment(init.reference);
@@ -368,27 +557,29 @@ describe('Codex Defect Regressions', () => {
     });
 
     it('never credits money if provider returns status other than success (e.g. abandoned, failed)', async () => {
-      const init = await initializePayment({
-        pupilId,
-        termId,
-        amountMinor: 500000,
-        payerEmail: 'test@edvora.edu.ng',
-      });
-
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      let currentRef = '';
+      mockPaystackVerify(() => ({
         ok: true,
         status: 200,
         json: async () => ({
           status: true,
           data: {
             status: 'abandoned',
-            reference: init.reference,
+            reference: currentRef,
             amount: 500000,
             currency: 'NGN',
             domain: 'test',
           },
         }),
-      } as any);
+      }));
+
+      const init = await initializePayment({
+        pupilId,
+        termId,
+        amountMinor: 500000,
+        payerEmail: 'test@edvora.edu.ng',
+      });
+      currentRef = init.reference;
 
       const beforeBalance = store.getAuthoritativeBalance(pupilId, termId);
       const verifyResult = await verifyPayment(init.reference);
@@ -401,28 +592,29 @@ describe('Codex Defect Regressions', () => {
     });
 
     it('rejects and refuses credit if paid amount does not match original intent (partial tampering)', async () => {
-      const init = await initializePayment({
-        pupilId,
-        termId,
-        amountMinor: 2000000, // ₦20,000
-        payerEmail: 'test@edvora.edu.ng',
-      });
-
-      // Provider says success, but amount paid was only ₦1,000 (100,000 kobo)
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      let currentRef = '';
+      mockPaystackVerify(() => ({
         ok: true,
         status: 200,
         json: async () => ({
           status: true,
           data: {
             status: 'success',
-            reference: init.reference,
+            reference: currentRef,
             amount: 100000, // Amount mismatch!
             currency: 'NGN',
             domain: 'test',
           },
         }),
-      } as any);
+      }));
+
+      const init = await initializePayment({
+        pupilId,
+        termId,
+        amountMinor: 2000000, // ₦20,000
+        payerEmail: 'test@edvora.edu.ng',
+      });
+      currentRef = init.reference;
 
       const beforeBalance = store.getAuthoritativeBalance(pupilId, termId);
       const verifyResult = await verifyPayment(init.reference);
@@ -435,27 +627,29 @@ describe('Codex Defect Regressions', () => {
     });
 
     it('rejects and refuses credit if provider domain is not test in test environment', async () => {
-      const init = await initializePayment({
-        pupilId,
-        termId,
-        amountMinor: 500000,
-        payerEmail: 'test@edvora.edu.ng',
-      });
-
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      let currentRef = '';
+      mockPaystackVerify(() => ({
         ok: true,
         status: 200,
         json: async () => ({
           status: true,
           data: {
             status: 'success',
-            reference: init.reference,
+            reference: currentRef,
             amount: 500000,
             currency: 'NGN',
             domain: 'live', // Domain mismatch!
           },
         }),
-      } as any);
+      }));
+
+      const init = await initializePayment({
+        pupilId,
+        termId,
+        amountMinor: 500000,
+        payerEmail: 'test@edvora.edu.ng',
+      });
+      currentRef = init.reference;
 
       const verifyResult = await verifyPayment(init.reference);
       expect(verifyResult.success).toBe(false);
@@ -463,23 +657,15 @@ describe('Codex Defect Regressions', () => {
     });
 
     it('credits atomically and issues immutable receipt only when all invariants match', async () => {
-      const init = await initializePayment({
-        pupilId,
-        termId,
-        amountMinor: 1000000, // ₦10,000
-        payerEmail: 'guardian.ehigiator@gmail.com',
-      });
-
-      const beforeBalance = store.getAuthoritativeBalance(pupilId, termId);
-
-      vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      let currentRef = '';
+      mockPaystackVerify(() => ({
         ok: true,
         status: 200,
         json: async () => ({
           status: true,
           data: {
             status: 'success',
-            reference: init.reference,
+            reference: currentRef,
             amount: 1000000,
             currency: 'NGN',
             domain: 'test',
@@ -487,7 +673,17 @@ describe('Codex Defect Regressions', () => {
             id: 998877,
           },
         }),
-      } as any);
+      }));
+
+      const init = await initializePayment({
+        pupilId,
+        termId,
+        amountMinor: 1000000, // ₦10,000
+        payerEmail: 'guardian.ehigiator@gmail.com',
+      });
+      currentRef = init.reference;
+
+      const beforeBalance = store.getAuthoritativeBalance(pupilId, termId);
 
       const verifyResult = await verifyPayment(init.reference);
       expect(verifyResult.success).toBe(true);

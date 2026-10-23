@@ -38,6 +38,40 @@ describe('Payment & Ledger Integrity', () => {
   });
 
   it('atomically credits a verified payment and recalculates balance', async () => {
+    let capturedRef = '';
+    vi.spyOn(global, 'fetch').mockImplementation(async (url: any) => {
+      const urlStr = String(url);
+      if (urlStr.includes('/initialize')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            status: true,
+            data: {
+              authorization_url: 'https://checkout.paystack.com/mock-checkout-auth',
+              access_code: 'acc_mock_code_123',
+            },
+          }),
+        } as any;
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          status: true,
+          data: {
+            status: 'success',
+            reference: capturedRef,
+            amount: 2000000,
+            currency: 'NGN',
+            domain: 'test',
+            channel: 'card',
+            id: 778899,
+          },
+        }),
+      } as any;
+    });
+
     // Make an installment of ₦20,000 (2,000,000 kobo)
     const init = await initializePayment({
       pupilId,
@@ -45,26 +79,11 @@ describe('Payment & Ledger Integrity', () => {
       amountMinor: 2000000,
       payerEmail: 'guardian.ehigiator@gmail.com',
     });
+    capturedRef = init.reference;
 
     expect(init.reference).toBeDefined();
-
-    // Mock Paystack verification response
-    vi.spyOn(global, 'fetch').mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        status: true,
-        data: {
-          status: 'success',
-          reference: init.reference,
-          amount: 2000000,
-          currency: 'NGN',
-          domain: 'test',
-          channel: 'card',
-          id: 778899,
-        },
-      }),
-    } as any);
+    expect(init.authorization_url).toBe('https://checkout.paystack.com/mock-checkout-auth');
+    expect(init.access_code).toBe('acc_mock_code_123');
 
     // Verify payment
     const verification = await verifyPayment(init.reference);

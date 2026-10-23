@@ -27,7 +27,12 @@ export async function initializePayment(params: {
     payerName: params.payerName,
   });
 
-  // 2. Prepare Paystack payload (amount in minor units / kobo)
+  // 2. Validate Paystack configuration - fail explicitly on missing configuration
+  if (!config.paystack.secretKey || config.paystack.secretKey.trim() === '') {
+    throw new Error('Paystack configuration missing: PAYSTACK_SECRET_KEY is required to initialize checkout.');
+  }
+
+  // 3. Prepare Paystack payload (amount in minor units / kobo)
   const paystackPayload = {
     email: params.payerEmail,
     amount: intent.amountMinor,
@@ -41,43 +46,52 @@ export async function initializePayment(params: {
     },
   };
 
-  let authorizationUrl = `${config.appUrl}/student/payments?verify=${intent.reference}`;
-  let accessCode = `acc_${intent.reference}`;
-
-  if (
-    process.env.NODE_ENV !== 'test' &&
-    !process.env.VITEST &&
-    config.paystack.secretKey &&
-    !config.paystack.secretKey.includes('sample') &&
-    !config.paystack.secretKey.includes('mock')
-  ) {
-    try {
-      const response = await fetch('https://api.paystack.co/transaction/initialize', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${config.paystack.secretKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(paystackPayload),
-        signal: AbortSignal.timeout(5000),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.status && data.data?.authorization_url) {
-          authorizationUrl = data.data.authorization_url;
-          accessCode = data.data.access_code;
-        }
-      }
-    } catch {
-      // If network unreachable during initialization, retain intent reference
+  let response: Response;
+  try {
+    response = await fetch('https://api.paystack.co/transaction/initialize', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${config.paystack.secretKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(paystackPayload),
+      signal: AbortSignal.timeout(5000),
+    });
+  } catch (err: any) {
+    if (err.name === 'TimeoutError' || err.name === 'AbortError') {
+      throw new Error(`Paystack checkout initialization timed out: ${err.message}`);
     }
+    throw new Error(`Paystack network error during initialization: ${err.message}`);
+  }
+
+  // 4. Fail explicitly on HTTP errors
+  if (!response.ok) {
+    let errorDetail = '';
+    try {
+      const errJson = await response.json();
+      errorDetail = errJson.message || '';
+    } catch {
+      // ignore json parse failure on non-ok status
+    }
+    throw new Error(`Paystack initialization failed with HTTP status ${response.status}: ${errorDetail || response.statusText}`);
+  }
+
+  // 5. Fail explicitly on malformed JSON or payload response
+  let data: any;
+  try {
+    data = await response.json();
+  } catch (err: any) {
+    throw new Error(`Malformed JSON response received from Paystack initialization: ${err.message}`);
+  }
+
+  if (!data || !data.status || !data.data || !data.data.authorization_url || !data.data.access_code) {
+    throw new Error('Malformed Paystack response: missing authorization_url or access_code in provider response.');
   }
 
   return {
     reference: intent.reference,
-    authorization_url: authorizationUrl,
-    access_code: accessCode,
+    authorization_url: data.data.authorization_url,
+    access_code: data.data.access_code,
     amount_minor: intent.amountMinor,
     currency: intent.currency,
     expires_at: intent.expiresAt,
