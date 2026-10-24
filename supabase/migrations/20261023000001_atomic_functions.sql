@@ -100,7 +100,7 @@ BEGIN
     );
 
     -- 8. Generate and insert receipt
-    v_receipt_number := 'REC-' || to_char(now(), 'YYYY') || '-' || lpad(cast(floor(random() * 9000 + 1000) as text), 4, '0');
+    v_receipt_number := 'REC-' || to_char(clock_timestamp(), 'YYYYMMDD') || '-' || lpad(cast(floor(random() * 90000000 + 10000000) as text), 8, '0');
     INSERT INTO receipts (
         receipt_number, transaction_id, pupil_id, term_id, amount_minor, currency, issued_at
     ) VALUES (

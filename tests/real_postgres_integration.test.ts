@@ -15,13 +15,17 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
     path.join(__dirname, '../supabase/migrations/20261023000001_atomic_functions.sql'),
     'utf-8'
   );
+  const hardenSql = fs.readFileSync(
+    path.join(__dirname, '../supabase/migrations/20261024000000_harden_rls_and_grants.sql'),
+    'utf-8'
+  );
 
   beforeAll(async () => {
     // Connect to postgres server and setup test database
     pool = new Pool({ connectionString });
     const client = await pool.connect();
     try {
-      // Create Supabase roles if not present
+      // 1. Create Supabase client roles if not present
       await client.query(`
         DO $$ BEGIN
           IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'anon') THEN
@@ -36,9 +40,19 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
         END $$;
       `);
 
-      // Apply migrations
+      // 2. Test-only compatibility stub for auth.uid() in standalone PostgreSQL testing
+      // (Supabase managed environments provide this natively; never defined in migrations)
+      await client.query(`
+        CREATE SCHEMA IF NOT EXISTS auth;
+        CREATE OR REPLACE FUNCTION auth.uid() RETURNS UUID AS $$
+          SELECT NULLIF(current_setting('request.jwt.claim.sub', true), '')::uuid;
+        $$ LANGUAGE sql STABLE;
+      `);
+
+      // 3. Apply migrations in order
       await client.query(schemaSql);
       await client.query(functionsSql);
+      await client.query(hardenSql);
     } finally {
       client.release();
     }
@@ -48,7 +62,7 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
     await pool.end();
   });
 
-  it('verifies that core schema tables and functions exist in PostgreSQL', async () => {
+  it('verifies that core schema tables and functions exist in PostgreSQL with RLS enabled', async () => {
     const res = await pool.query(`
       SELECT table_name FROM information_schema.tables 
       WHERE table_schema = 'public' 
@@ -64,6 +78,8 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
     expect(tables).toContain('receipts');
     expect(tables).toContain('reminder_jobs');
     expect(tables).toContain('notification_jobs');
+    expect(tables).toContain('operational_incidents');
+    expect(tables).toContain('audit_logs');
   });
 
   it('restricts execution of privileged functions from anon and authenticated roles', async () => {
@@ -100,117 +116,393 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
     }
   });
 
-  it('enforces Row-Level Security (RLS) under unprivileged roles for unauthorized pupil, guardian, and financial-record access', async () => {
+  it('proves anon and ordinary authenticated users cannot insert or modify staff roles (allowed: directory read)', async () => {
     const client = await pool.connect();
     try {
-      // 1. Unprivileged Anonymous (anon) RLS tests
+      // 0. Ensure baseline staff profile exists via service_role
+      const baselineStaffId = '44444444-0000-0000-0000-000000000001';
+      await client.query(`
+        INSERT INTO staff_profiles (id, full_name, email, role, is_active)
+        VALUES ('${baselineStaffId}', 'Dr. Stella Efe', 'admin@edvora.edu.ng', 'admin', true)
+        ON CONFLICT (email) DO NOTHING;
+      `);
+
+      // 1. Denied: anon cannot insert staff
       await client.query('SET ROLE anon;');
-
-      // Attempting to read pupils returns 0 rows (filtered by RLS)
-      const anonPupils = await client.query('SELECT * FROM pupils;');
-      expect(anonPupils.rows).toHaveLength(0);
-
-      // Attempting to insert a pupil under anon is blocked by RLS policy
-      let anonInsertPupilBlocked = false;
+      let anonInsertBlocked = false;
       try {
         await client.query(`
-          INSERT INTO pupils (id, admission_number, first_name, last_name, class_id)
-          VALUES (gen_random_uuid(), 'ANON/001', 'Anon', 'Pupil', '22222222-0000-0000-0000-000000000000');
+          INSERT INTO staff_profiles (full_name, email, role)
+          VALUES ('Hacker Anon', 'anon_hacker@edvora.ng', 'admin');
         `);
       } catch (err: any) {
-        anonInsertPupilBlocked = true;
-        expect(err.message).toMatch(/violates row-level security policy for table "pupils"/i);
+        anonInsertBlocked = true;
+        expect(err.message).toMatch(/permission denied for table staff_profiles/i);
       }
-      expect(anonInsertPupilBlocked).toBe(true);
+      expect(anonInsertBlocked).toBe(true);
 
-      // Attempting to read guardians returns 0 rows
-      const anonGuardians = await client.query('SELECT * FROM guardians;');
-      expect(anonGuardians.rows).toHaveLength(0);
-
-      // Attempting to read financial records (fee_assignments, ledger, receipts) returns 0 rows
-      const anonFees = await client.query('SELECT * FROM fee_assignments;');
-      expect(anonFees.rows).toHaveLength(0);
-
-      const anonLedger = await client.query('SELECT * FROM fee_ledger_entries;');
-      expect(anonLedger.rows).toHaveLength(0);
-
-      const anonReceipts = await client.query('SELECT * FROM receipts;');
-      expect(anonReceipts.rows).toHaveLength(0);
-
-      // Attempting to insert financial credit under anon is blocked by RLS
-      let anonInsertLedgerBlocked = false;
-      try {
-        await client.query(`
-          INSERT INTO fee_ledger_entries (pupil_id, term_id, entry_type, amount_minor, running_balance_minor, reference)
-          VALUES (gen_random_uuid(), gen_random_uuid(), 'credit', 500000, 0, 'ANON-UNAUTH-REF');
-        `);
-      } catch (err: any) {
-        anonInsertLedgerBlocked = true;
-        expect(err.message).toMatch(/violates row-level security policy for table "fee_ledger_entries"/i);
-      }
-      expect(anonInsertLedgerBlocked).toBe(true);
-
-      // 2. Unprivileged / Unauthorized Authenticated RLS tests (arbitrary sub/uid)
+      // 2. Denied: authenticated ordinary user cannot insert staff profile
       await client.query('SET ROLE authenticated;');
-      await client.query("SET request.jwt.claim.sub = '99999999-9999-9999-9999-000000000001';");
-
-      // Unauthorized authenticated user cannot read other pupils or guardians
-      const unauthPupils = await client.query('SELECT * FROM pupils;');
-      expect(unauthPupils.rows).toHaveLength(0);
-
-      const unauthGuardians = await client.query('SELECT * FROM guardians;');
-      expect(unauthGuardians.rows).toHaveLength(0);
-
-      // Unauthorized authenticated user cannot read financial records
-      const unauthFees = await client.query('SELECT * FROM fee_assignments;');
-      expect(unauthFees.rows).toHaveLength(0);
-
-      const unauthLedger = await client.query('SELECT * FROM fee_ledger_entries;');
-      expect(unauthLedger.rows).toHaveLength(0);
-
-      const unauthReceipts = await client.query('SELECT * FROM receipts;');
-      expect(unauthReceipts.rows).toHaveLength(0);
-
-      // Unauthorized authenticated user cannot insert financial entries
-      let unauthInsertLedgerBlocked = false;
+      await client.query("SET request.jwt.claim.sub = '00000000-0000-0000-0000-000000000001';");
+      let authInsertBlocked = false;
       try {
         await client.query(`
-          INSERT INTO fee_ledger_entries (pupil_id, term_id, entry_type, amount_minor, running_balance_minor, reference)
-          VALUES (gen_random_uuid(), gen_random_uuid(), 'credit', 500000, 0, 'UNAUTH-REF');
+          INSERT INTO staff_profiles (full_name, email, role)
+          VALUES ('Malicious User', 'malicious@edvora.ng', 'admin');
         `);
       } catch (err: any) {
-        unauthInsertLedgerBlocked = true;
-        expect(err.message).toMatch(/violates row-level security policy for table "fee_ledger_entries"/i);
+        authInsertBlocked = true;
+        expect(err.message).toMatch(/permission denied for table staff_profiles/i);
       }
-      expect(unauthInsertLedgerBlocked).toBe(true);
+      expect(authInsertBlocked).toBe(true);
 
-      // 3. Authorized Guardian context: can read ONLY their own pupil & financial records
+      // 3. Denied: authenticated ordinary user cannot elevate or modify staff roles
+      let authUpdateBlocked = false;
+      try {
+        await client.query(`
+          UPDATE staff_profiles SET role = 'admin' WHERE email = 'admin@edvora.edu.ng';
+        `);
+      } catch (err: any) {
+        authUpdateBlocked = true;
+        expect(err.message).toMatch(/permission denied for table staff_profiles/i);
+      }
+      expect(authUpdateBlocked).toBe(true);
+
+      // 4. Allowed: authenticated users can read staff directory
+      const staffList = await client.query('SELECT id, full_name, email, role FROM staff_profiles;');
+      expect(staffList.rows.length).toBeGreaterThanOrEqual(1);
+
+      // 5. Allowed: service_role can manage staff profiles
       await client.query('RESET ROLE;');
-      const authUserId = '77777777-1111-2222-3333-444444444444';
-      const guardianId = '88888888-1111-2222-3333-444444444444';
-      const pupilId = '99999999-1111-2222-3333-444444444444';
+      const testStaffId = '44444444-9999-9999-9999-000000000001';
+      await client.query(`
+        INSERT INTO staff_profiles (id, full_name, email, role)
+        VALUES ('${testStaffId}', 'New Staff Member', 'new.staff@edvora.ng', 'teacher')
+        ON CONFLICT (email) DO NOTHING;
+      `);
+      const checkStaff = await client.query(`SELECT role FROM staff_profiles WHERE id = '${testStaffId}';`);
+      expect(checkStaff.rows[0].role).toBe('teacher');
+    } finally {
+      await client.query('RESET ROLE;');
+      client.release();
+    }
+  });
 
+  it('proves anon and ordinary authenticated users cannot read unrelated payment intents or transactions (allowed: own records)', async () => {
+    const client = await pool.connect();
+    try {
+      const parentAUserId = 'aaaaaaaa-1111-2222-3333-000000000001';
+      const parentBUserId = 'bbbbbbbb-1111-2222-3333-000000000002';
+      const guardianAId = 'aaaaaaaa-2222-3333-4444-000000000001';
+      const guardianBId = 'bbbbbbbb-2222-3333-4444-000000000002';
+      const pupilAId = 'aaaaaaaa-3333-4444-5555-000000000001';
+      const pupilBId = 'bbbbbbbb-3333-4444-5555-000000000002';
+      const intentARef = `EDV-INTENT-A-${Date.now()}`;
+      const intentBRef = `EDV-INTENT-B-${Date.now()}`;
+      const intentAId = `aa44aa44-4444-5555-6666-${Date.now().toString().slice(-12)}`;
+      const intentBId = `bb44bb44-4444-5555-6666-${Date.now().toString().slice(-12)}`;
+      const termId = '66666666-7777-8888-9999-000000000000';
+      const classId = '22222222-0000-0000-0000-000000000000';
+
+      // Insert prerequisites via service_role
       await client.query(`
         INSERT INTO guardians (id, user_id, full_name, phone_number)
-        VALUES ('${guardianId}', '${authUserId}', 'Authorized Parent', '+2348031112233')
+        VALUES 
+          ('${guardianAId}', '${parentAUserId}', 'Parent A', '+2348011111111'),
+          ('${guardianBId}', '${parentBUserId}', 'Parent B', '+2348022222222')
         ON CONFLICT DO NOTHING;
 
         INSERT INTO pupils (id, admission_number, first_name, last_name, class_id, guardian_id, status)
-        VALUES ('${pupilId}', 'EDV/AUTH/001', 'Authorized', 'Child', '22222222-0000-0000-0000-000000000000', '${guardianId}', 'active')
+        VALUES 
+          ('${pupilAId}', 'EDV/RLS/A01', 'Pupil', 'A', '${classId}', '${guardianAId}', 'active'),
+          ('${pupilBId}', 'EDV/RLS/B01', 'Pupil', 'B', '${classId}', '${guardianBId}', 'active')
+        ON CONFLICT DO NOTHING;
+
+        INSERT INTO payment_intents (id, pupil_id, term_id, reference, amount_minor, currency, environment, status, payer_email, expires_at)
+        VALUES 
+          ('${intentAId}', '${pupilAId}', '${termId}', '${intentARef}', 2000000, 'NGN', 'test', 'initialized', 'parentA@test.com', now() + interval '30 minutes'),
+          ('${intentBId}', '${pupilBId}', '${termId}', '${intentBRef}', 3000000, 'NGN', 'test', 'initialized', 'parentB@test.com', now() + interval '30 minutes')
+        ON CONFLICT DO NOTHING;
+
+        INSERT INTO payment_transactions (id, intent_id, reference, provider, amount_minor, currency, environment, status, channel)
+        VALUES 
+          (gen_random_uuid(), '${intentAId}', '${intentARef}', 'paystack', 2000000, 'NGN', 'test', 'success', 'card'),
+          (gen_random_uuid(), '${intentBId}', '${intentBRef}', 'paystack', 3000000, 'NGN', 'test', 'success', 'card')
         ON CONFLICT DO NOTHING;
       `);
 
-      // Switch to authenticated with the authorized user's sub
+      // 1. Denied: anon has no permission on payment intents or transactions
+      await client.query('SET ROLE anon;');
+      let anonIntentsBlocked = false;
+      try {
+        await client.query('SELECT * FROM payment_intents;');
+      } catch (err: any) {
+        anonIntentsBlocked = true;
+        expect(err.message).toMatch(/permission denied for table payment_intents/i);
+      }
+      expect(anonIntentsBlocked).toBe(true);
+
+      // 2. Denied: Parent A cannot see Parent B's payment intent
       await client.query('SET ROLE authenticated;');
-      await client.query(`SET request.jwt.claim.sub = '${authUserId}';`);
+      await client.query(`SET request.jwt.claim.sub = '${parentAUserId}';`);
 
-      const authorizedPupils = await client.query('SELECT id, admission_number FROM pupils;');
-      expect(authorizedPupils.rows).toHaveLength(1);
-      expect(authorizedPupils.rows[0].id).toBe(pupilId);
+      const parentAViewB = await client.query(`SELECT * FROM payment_intents WHERE reference = '${intentBRef}';`);
+      expect(parentAViewB.rows).toHaveLength(0); // Filtered by RLS
 
-      const authorizedGuardians = await client.query('SELECT id, full_name FROM guardians;');
-      expect(authorizedGuardians.rows).toHaveLength(1);
-      expect(authorizedGuardians.rows[0].id).toBe(guardianId);
+      // Denied: Parent A cannot see Parent B's payment transaction
+      const parentAViewBTx = await client.query(`SELECT * FROM payment_transactions WHERE reference = '${intentBRef}';`);
+      expect(parentAViewBTx.rows).toHaveLength(0); // Filtered by RLS
+
+      // 3. Allowed: Parent A can see own pupil's payment intent and transaction
+      const parentAViewA = await client.query(`SELECT * FROM payment_intents WHERE reference = '${intentARef}';`);
+      expect(parentAViewA.rows).toHaveLength(1);
+      expect(parentAViewA.rows[0].reference).toBe(intentARef);
+
+      const parentAViewATx = await client.query(`SELECT * FROM payment_transactions WHERE reference = '${intentARef}';`);
+      expect(parentAViewATx.rows).toHaveLength(1);
+      expect(Number(parentAViewATx.rows[0].amount_minor)).toBe(2000000);
+    } finally {
+      await client.query('RESET ROLE;');
+      client.release();
+    }
+  });
+
+  it('proves anon and ordinary authenticated users cannot create financial credits, receipts or fee adjustments (allowed: server-only)', async () => {
+    const client = await pool.connect();
+    try {
+      const pupilId = 'aaaaaaaa-3333-4444-5555-000000000001';
+      const termId = '66666666-7777-8888-9999-000000000000';
+
+      // 1. Denied: anon cannot create ledger entries, receipts, or fee adjustments
+      await client.query('SET ROLE anon;');
+      let anonLedgerBlocked = false;
+      try {
+        await client.query(`
+          INSERT INTO fee_ledger_entries (pupil_id, term_id, entry_type, amount_minor, running_balance_minor, reference, description)
+          VALUES ('${pupilId}', '${termId}', 'credit', 500000, 0, 'ANON-UNAUTH-CREDIT', 'Malicious credit');
+        `);
+      } catch (err: any) {
+        anonLedgerBlocked = true;
+        expect(err.message).toMatch(/permission denied for table fee_ledger_entries/i);
+      }
+      expect(anonLedgerBlocked).toBe(true);
+
+      let anonReceiptBlocked = false;
+      try {
+        await client.query(`
+          INSERT INTO receipts (receipt_number, transaction_id, pupil_id, term_id, amount_minor, currency)
+          VALUES ('REC-ANON-FAKE', gen_random_uuid(), '${pupilId}', '${termId}', 500000, 'NGN');
+        `);
+      } catch (err: any) {
+        anonReceiptBlocked = true;
+        expect(err.message).toMatch(/permission denied for table receipts/i);
+      }
+      expect(anonReceiptBlocked).toBe(true);
+
+      let anonAdjustBlocked = false;
+      try {
+        await client.query(`
+          INSERT INTO fee_adjustments (fee_assignment_id, amount_minor, adjustment_type, reason, authorized_by)
+          VALUES (gen_random_uuid(), 500000, 'waiver', 'Anon waiver', gen_random_uuid());
+        `);
+      } catch (err: any) {
+        anonAdjustBlocked = true;
+        expect(err.message).toMatch(/permission denied for table fee_adjustments/i);
+      }
+      expect(anonAdjustBlocked).toBe(true);
+
+      // 2. Denied: ordinary authenticated user cannot create ledger entries, receipts, or fee adjustments
+      await client.query('SET ROLE authenticated;');
+      await client.query("SET request.jwt.claim.sub = 'aaaaaaaa-1111-2222-3333-000000000001';");
+
+      let authLedgerBlocked = false;
+      try {
+        await client.query(`
+          INSERT INTO fee_ledger_entries (pupil_id, term_id, entry_type, amount_minor, running_balance_minor, reference, description)
+          VALUES ('${pupilId}', '${termId}', 'credit', 500000, 0, 'AUTH-UNAUTH-CREDIT', 'Malicious credit');
+        `);
+      } catch (err: any) {
+        authLedgerBlocked = true;
+        expect(err.message).toMatch(/permission denied for table fee_ledger_entries/i);
+      }
+      expect(authLedgerBlocked).toBe(true);
+
+      let authReceiptBlocked = false;
+      try {
+        await client.query(`
+          INSERT INTO receipts (receipt_number, transaction_id, pupil_id, term_id, amount_minor, currency)
+          VALUES ('REC-AUTH-FAKE', gen_random_uuid(), '${pupilId}', '${termId}', 500000, 'NGN');
+        `);
+      } catch (err: any) {
+        authReceiptBlocked = true;
+        expect(err.message).toMatch(/permission denied for table receipts/i);
+      }
+      expect(authReceiptBlocked).toBe(true);
+
+      let authAdjustBlocked = false;
+      try {
+        await client.query(`
+          INSERT INTO fee_adjustments (fee_assignment_id, amount_minor, adjustment_type, reason, authorized_by)
+          VALUES (gen_random_uuid(), 500000, 'waiver', 'User waiver', gen_random_uuid());
+        `);
+      } catch (err: any) {
+        authAdjustBlocked = true;
+        expect(err.message).toMatch(/permission denied for table fee_adjustments/i);
+      }
+      expect(authAdjustBlocked).toBe(true);
+
+      // 3. Allowed: service_role can create financial records
+      await client.query('RESET ROLE;');
+      const servRef = `EDV-SERV-LEDGER-${Date.now()}`;
+      await client.query(`
+        INSERT INTO fee_ledger_entries (pupil_id, term_id, entry_type, amount_minor, running_balance_minor, reference, description)
+        VALUES ('${pupilId}', '${termId}', 'debit', 12000000, 12000000, '${servRef}', 'First term tuition fee charge');
+      `);
+      const checkLedger = await client.query(`SELECT * FROM fee_ledger_entries WHERE reference = '${servRef}';`);
+      expect(checkLedger.rows).toHaveLength(1);
+    } finally {
+      await client.query('RESET ROLE;');
+      client.release();
+    }
+  });
+
+  it('proves anon and ordinary authenticated users cannot modify notification recipients, consent or job outcomes (allowed: server-only)', async () => {
+    const client = await pool.connect();
+    try {
+      // 1. Denied: anon has no access to notification queues
+      await client.query('SET ROLE anon;');
+      let anonNotifBlocked = false;
+      try {
+        await client.query('SELECT * FROM notification_jobs;');
+      } catch (err: any) {
+        anonNotifBlocked = true;
+        expect(err.message).toMatch(/permission denied for table notification_jobs/i);
+      }
+      expect(anonNotifBlocked).toBe(true);
+
+      // 2. Denied: authenticated user cannot view or tamper with notification or reminder jobs
+      await client.query('SET ROLE authenticated;');
+      await client.query("SET request.jwt.claim.sub = 'aaaaaaaa-1111-2222-3333-000000000001';");
+
+      let authNotifReadBlocked = false;
+      try {
+        await client.query('SELECT * FROM notification_jobs;');
+      } catch (err: any) {
+        authNotifReadBlocked = true;
+        expect(err.message).toMatch(/permission denied for table notification_jobs/i);
+      }
+      expect(authNotifReadBlocked).toBe(true);
+
+      let authReminderUpdateBlocked = false;
+      try {
+        await client.query("UPDATE reminder_jobs SET status = 'delivered' WHERE channel = 'sms';");
+      } catch (err: any) {
+        authReminderUpdateBlocked = true;
+        expect(err.message).toMatch(/permission denied for table reminder_jobs/i);
+      }
+      expect(authReminderUpdateBlocked).toBe(true);
+
+      // 3. Denied: authenticated user cannot modify other guardians' consent or contact
+      let authGuardianTamperBlocked = false;
+      try {
+        await client.query(`
+          UPDATE guardians 
+          SET phone_number = '+2340000000000', consent_sms = false 
+          WHERE user_id = 'bbbbbbbb-1111-2222-3333-000000000002';
+        `);
+      } catch (err: any) {
+        authGuardianTamperBlocked = true;
+        expect(err.message).toMatch(/permission denied for table guardians/i);
+      }
+      expect(authGuardianTamperBlocked).toBe(true);
+
+      // 4. Allowed: service_role can enqueue and update notification jobs
+      await client.query('RESET ROLE;');
+      const testJobId = '55555555-4444-3333-2222-111111111111';
+      await client.query(`
+        INSERT INTO notification_jobs (id, event_type, source_event_id, recipient_type, recipient_id, channel, status)
+        VALUES ('${testJobId}', 'payment_receipt', gen_random_uuid(), 'guardian', gen_random_uuid(), 'sms', 'pending')
+        ON CONFLICT DO NOTHING;
+
+        UPDATE notification_jobs SET status = 'claimed' WHERE id = '${testJobId}';
+      `);
+      const checkJob = await client.query(`SELECT status FROM notification_jobs WHERE id = '${testJobId}';`);
+      expect(checkJob.rows[0].status).toBe('claimed');
+    } finally {
+      await client.query('RESET ROLE;');
+      client.release();
+    }
+  });
+
+  it('proves anon and ordinary authenticated users cannot access internal incidents or audit records (allowed: server-only)', async () => {
+    const client = await pool.connect();
+    try {
+      // 1. Denied: anon cannot access operational incidents or audit logs
+      await client.query('SET ROLE anon;');
+      let anonIncidentBlocked = false;
+      try {
+        await client.query('SELECT * FROM operational_incidents;');
+      } catch (err: any) {
+        anonIncidentBlocked = true;
+        expect(err.message).toMatch(/permission denied for table operational_incidents/i);
+      }
+      expect(anonIncidentBlocked).toBe(true);
+
+      let anonAuditBlocked = false;
+      try {
+        await client.query('SELECT * FROM audit_logs;');
+      } catch (err: any) {
+        anonAuditBlocked = true;
+        expect(err.message).toMatch(/permission denied for table audit_logs/i);
+      }
+      expect(anonAuditBlocked).toBe(true);
+
+      // 2. Denied: authenticated ordinary user cannot access operational incidents or audit logs
+      await client.query('SET ROLE authenticated;');
+      await client.query("SET request.jwt.claim.sub = 'aaaaaaaa-1111-2222-3333-000000000001';");
+
+      let authIncidentBlocked = false;
+      try {
+        await client.query('SELECT * FROM operational_incidents;');
+      } catch (err: any) {
+        authIncidentBlocked = true;
+        expect(err.message).toMatch(/permission denied for table operational_incidents/i);
+      }
+      expect(authIncidentBlocked).toBe(true);
+
+      let authAuditBlocked = false;
+      try {
+        await client.query('SELECT * FROM audit_logs;');
+      } catch (err: any) {
+        authAuditBlocked = true;
+        expect(err.message).toMatch(/permission denied for table audit_logs/i);
+      }
+      expect(authAuditBlocked).toBe(true);
+
+      let authAuditInsertBlocked = false;
+      try {
+        await client.query(`
+          INSERT INTO audit_logs (actor_type, action, entity_type)
+          VALUES ('user', 'unauthorized_action', 'audit');
+        `);
+      } catch (err: any) {
+        authAuditInsertBlocked = true;
+        expect(err.message).toMatch(/permission denied for table audit_logs/i);
+      }
+      expect(authAuditInsertBlocked).toBe(true);
+
+      // 3. Allowed: service_role can record and query incidents and audit logs
+      await client.query('RESET ROLE;');
+      const testIncidentKey = `INC-TEST-${Date.now()}`;
+      await client.query(`
+        INSERT INTO operational_incidents (incident_key, workflow_id, workflow_name, failure_kind)
+        VALUES ('${testIncidentKey}', 'WF01_PAYSTACK', 'Payment Reconciliation', 'provider_500');
+
+        INSERT INTO audit_logs (actor_type, action, entity_type)
+        VALUES ('system', 'sweep_execution', 'workflow');
+      `);
+      const checkIncident = await client.query(`SELECT * FROM operational_incidents WHERE incident_key = '${testIncidentKey}';`);
+      expect(checkIncident.rows).toHaveLength(1);
     } finally {
       await client.query('RESET ROLE;');
       client.release();
