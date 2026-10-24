@@ -1,8 +1,5 @@
 {
-  "id": "bt5x3HH74jRv5Ewt",
   "name": "EDVORA — WF01 — SMS & Telegram Fee Reminders",
-  "active": false,
-  "versionId": "18cb536a-95ae-4bb5-8f80-674200e48919",
   "nodes": [
     {
       "id": "2b0cc257-2e4a-473e-b5c6-60a9f3c69151",
@@ -43,7 +40,7 @@
               "id": "api",
               "name": "backend_url",
               "type": "string",
-              "value": "<__PLACEHOLDER_VALUE__Edvora backend HTTPS origin — no trailing slash__>"
+              "value": "https://edvora-sage.vercel.app"
             },
             {
               "id": "sms",
@@ -74,7 +71,7 @@
         "method": "POST",
         "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/reminders/claim\" }}",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpTemplatedCustomAuth",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ {run_id:$execution.id,limit:10} }}",
@@ -94,7 +91,13 @@
       },
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 1000
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "wgPiTsTz1sb7niE3",
+          "name": "Edvora Backend"
+        }
+      }
     },
     {
       "id": "14c18a99-cc09-454b-a8ba-5e5594a92743",
@@ -123,7 +126,7 @@
         "method": "POST",
         "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/reminders/authorize\" }}",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpTemplatedCustomAuth",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ {job_id:$json.job_id,claim_token:$json.claim_token,execution_id:$execution.id} }}",
@@ -139,6 +142,12 @@
               "responseFormat": "json"
             }
           }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "wgPiTsTz1sb7niE3",
+          "name": "Edvora Backend"
         }
       }
     },
@@ -238,7 +247,13 @@
       },
       "onError": "continueRegularOutput",
       "webhookId": "04e006c1-a6b1-4f62-826e-7b8a52ad7fc4",
-      "retryOnFail": false
+      "retryOnFail": false,
+      "credentials": {
+        "telegramApi": {
+          "id": "PP8MXdS9bur8PQ2k",
+          "name": "Telegram account"
+        }
+      }
     },
     {
       "id": "32b54ad1-0fad-41fa-a1fc-f35888655920",
@@ -267,7 +282,7 @@
         "method": "POST",
         "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/reminders/outcome\" }}",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpTemplatedCustomAuth",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ {job_id:$json.job_id,claim_token:$json.claim_token,attempt_id:$json.attempt_id,attempt_token:$json.attempt_token,status:$json.status,provider_message_id:$json.provider_message_id ?? null,reason:$json.reason ?? null,retryable:$json.retryable === true,execution_id:$execution.id} }}",
@@ -287,7 +302,13 @@
       },
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 1000
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "wgPiTsTz1sb7niE3",
+          "name": "Edvora Backend"
+        }
+      }
     },
     {
       "id": "fe4cd437-683e-45ad-a1df-d47057c5e9ec",
@@ -337,7 +358,8 @@
         }
       },
       "onError": "continueRegularOutput",
-      "retryOnFail": false
+      "retryOnFail": false,
+      "disabled": true
     },
     {
       "id": "1feed03f-b4eb-4018-af56-9003dbf9d17e",
@@ -609,6 +631,44 @@
     "saveManualExecutions": false,
     "saveDataErrorExecution": "none",
     "saveDataSuccessExecution": "none",
-    "executionTimeout": 180
-  }
+    "executionTimeout": 180,
+    "errorWorkflow": "hoPH7KNlrdMYXszh"
+  },
+  "nodeGroups": [
+    {
+      "id": "c3865048-09e2-424e-ab3a-b827a051bf86",
+      "name": "Prepare reminder jobs",
+      "nodeNames": [
+        "Edvora Configuration",
+        "Claim Due Reminder Jobs",
+        "Validate Claimed Jobs"
+      ],
+      "description": "Load due per-channel jobs through an atomic backend claim."
+    },
+    {
+      "id": "ccc1cb66-c2bd-41bd-907a-a02ea9984c6c",
+      "name": "Authorize each reminder",
+      "nodeNames": [
+        "Recheck Balance and Authorize",
+        "Validate Send Authorization"
+      ],
+      "description": "Recheck balance, account eligibility, consent and private recipient before sending."
+    },
+    {
+      "id": "2e093846-0d21-45ed-94a7-a38ae7534ac6",
+      "name": "Send and record channel outcomes",
+      "nodeNames": [
+        "Eligible to Send",
+        "Telegram Channel",
+        "Send Telegram Reminder",
+        "Send Termii SMS",
+        "Record Telegram Outcome",
+        "Record SMS Outcome",
+        "Record Skipped Reminder",
+        "Save Channel Outcome"
+      ],
+      "description": "Dispatch only authorized jobs and persist sent, accepted, skipped or uncertain outcomes."
+    }
+  ],
+  "active": false
 }

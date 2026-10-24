@@ -1,8 +1,5 @@
 {
-  "id": "hoPH7KNlrdMYXszh",
   "name": "EDVORA — WF04 — Failure Recovery & Staff Alerts",
-  "active": false,
-  "versionId": "835e88c7-3854-4ffd-8c02-fe9878a6fa8e",
   "nodes": [
     {
       "id": "fcb7f933-ba43-42d8-98e0-c4d0ebf308ec",
@@ -41,7 +38,7 @@
               "id": "backend",
               "name": "backend_url",
               "type": "string",
-              "value": "<__PLACEHOLDER_VALUE__Edvora backend HTTPS origin — no trailing slash__>"
+              "value": "https://edvora-sage.vercel.app"
             }
           ]
         }
@@ -60,7 +57,7 @@
         "method": "POST",
         "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/recovery/sweep\" }}",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpTemplatedCustomAuth",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ {run_id:$execution.id,limit:100,max_attempts:3} }}",
@@ -80,7 +77,13 @@
       },
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 1000
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "wgPiTsTz1sb7niE3",
+          "name": "Edvora Backend"
+        }
+      }
     },
     {
       "id": "665757ff-4d90-4c26-8c13-7e88ef326975",
@@ -121,7 +124,7 @@
               "id": "backend",
               "name": "backend_url",
               "type": "string",
-              "value": "<__PLACEHOLDER_VALUE__Edvora backend HTTPS origin — no trailing slash__>"
+              "value": "https://edvora-sage.vercel.app"
             }
           ]
         },
@@ -155,7 +158,7 @@
         "method": "POST",
         "url": "={{ $json.backend_url + \"/api/automation/incidents\" }}",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpTemplatedCustomAuth",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ {workflow_id:$json.workflow_id,workflow_name:$json.workflow_name,execution_id:$json.execution_id,failure_kind:$json.failure_kind,failed_node:$json.failed_node,incident_key:$json.incident_key,record_only:$json.record_only} }}",
@@ -175,7 +178,13 @@
       },
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 1000
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "wgPiTsTz1sb7niE3",
+          "name": "Edvora Backend"
+        }
+      }
     },
     {
       "id": "ea442324-7622-4a42-8cb2-e3258cac7fb4",
@@ -268,5 +277,27 @@
     "saveDataErrorExecution": "none",
     "saveDataSuccessExecution": "none",
     "executionTimeout": 180
-  }
+  },
+  "nodeGroups": [
+    {
+      "id": "87141b2c-8bff-418b-8859-3fd2e217f26a",
+      "name": "Scheduled safe recovery",
+      "nodeNames": [
+        "Edvora Configuration",
+        "Recover Safe Jobs and Queue Staff Alerts"
+      ],
+      "description": "Recover only known-safe work and queue deduplicated staff alerts."
+    },
+    {
+      "id": "e34e6744-f4dd-430a-a020-723da9ef2e4d",
+      "name": "Record workflow failures",
+      "nodeNames": [
+        "Edvora Error Configuration",
+        "Normalize Edvora Failure",
+        "Record Incident and Queue Staff Notification"
+      ],
+      "description": "Report sanitized failures to the backend without creating an alert loop."
+    }
+  ],
+  "active": false
 }

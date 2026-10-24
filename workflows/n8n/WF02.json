@@ -1,8 +1,5 @@
 {
-  "id": "d2nMNvcDwMMXgijY",
   "name": "EDVORA — WF02 — Payment Verification & Receipts",
-  "active": false,
-  "versionId": "4aace8d9-0195-48b4-9fd5-e89c9a12d296",
   "nodes": [
     {
       "id": "a8ff0200-ca1a-4a3e-92cc-a13cfe596987",
@@ -41,7 +38,7 @@
               "id": "backend",
               "name": "backend_url",
               "type": "string",
-              "value": "<__PLACEHOLDER_VALUE__Edvora backend HTTPS origin — no trailing slash__>"
+              "value": "https://edvora-sage.vercel.app"
             }
           ]
         }
@@ -60,7 +57,7 @@
         "method": "POST",
         "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/payments/claim\" }}",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpTemplatedCustomAuth",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ {run_id:$execution.id,limit:20} }}",
@@ -80,7 +77,13 @@
       },
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 1000
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "wgPiTsTz1sb7niE3",
+          "name": "Edvora Backend"
+        }
+      }
     },
     {
       "id": "80aa86ef-918b-4217-aeb9-5b3ceaae7284",
@@ -97,55 +100,6 @@
       }
     },
     {
-      "id": "bd004d03-ebd2-43bb-995f-8f91efe9784d",
-      "name": "Verify Reference with Paystack",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        1024,
-        224
-      ],
-      "parameters": {
-        "method": "GET",
-        "url": "={{ \"https://api.paystack.co/transaction/verify/\" + encodeURIComponent($json.reference) }}",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpTemplatedCustomAuth",
-        "options": {
-          "timeout": 15000,
-          "redirect": {
-            "redirect": {
-              "followRedirects": false
-            }
-          },
-          "response": {
-            "response": {
-              "fullResponse": true,
-              "neverError": true,
-              "responseFormat": "json"
-            }
-          }
-        }
-      },
-      "retryOnFail": true,
-      "maxTries": 2,
-      "waitBetweenTries": 1000,
-      "onError": "continueRegularOutput"
-    },
-    {
-      "id": "8ab17b24-1ae2-419a-8e51-63892805a56d",
-      "name": "Check Amount Currency and Status",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1248,
-        224
-      ],
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "jsCode": "const j=$('One Payment at a Time').item.json; const r=$input.first().json; const b=r.body??{};const d=b.data??{};const validResponse=!r.error&&r.statusCode===200&&b.status===true;const matches=validResponse&&d.reference===j.reference&&d.amount===j.expected_amount_minor&&d.currency===j.currency&&d.domain===j.environment;const terminalFailure=['failed','abandoned','reversed'].includes(d.status); let decision='defer';let reason='verification_unavailable_or_pending';if(validResponse&&!matches){decision='review';reason='provider_details_mismatch';}else if(matches&&d.status==='success'&&d.id!==undefined&&Number.isFinite(Date.parse(d.paid_at??''))){decision='verify_and_credit';reason=null;}else if(matches&&terminalFailure){decision='record_non_success';reason='provider_non_success';}return [{json:{job_id:j.job_id,claim_token:j.claim_token,reference:j.reference,decision,reason,provider_status:typeof d.status==='string'?d.status:null,provider_transaction_id:d.id===undefined?null:String(d.id),amount_minor:Number.isSafeInteger(d.amount)?d.amount:null,currency:typeof d.currency==='string'?d.currency:null,environment:typeof d.domain==='string'?d.domain:null,paid_at:typeof d.paid_at==='string'?d.paid_at:null},pairedItem:{item:0}}];"
-      }
-    },
-    {
       "id": "c9d1a6c6-8cf0-4732-b32f-6f362c603a26",
       "name": "Reconcile Payment and Create Receipt",
       "type": "n8n-nodes-base.httpRequest",
@@ -158,7 +112,7 @@
         "method": "POST",
         "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/payments/reconcile\" }}",
         "authentication": "genericCredentialType",
-        "genericAuthType": "httpTemplatedCustomAuth",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ {...$json,execution_id:$execution.id} }}",
@@ -178,7 +132,13 @@
       },
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 1000
+      "waitBetweenTries": 1000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "wgPiTsTz1sb7niE3",
+          "name": "Edvora Backend"
+        }
+      }
     },
     {
       "id": "4712a2ad-9e7f-4c0d-b13d-6c40de2b5fca",
@@ -265,45 +225,11 @@
         ]
       ]
     },
-    "Verify Reference with Paystack": {
-      "main": [
-        [
-          {
-            "node": "Check Amount Currency and Status",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Check Amount Currency and Status": {
-      "main": [
-        [
-          {
-            "node": "Reconcile Payment and Create Receipt",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Reconcile Payment and Create Receipt": {
       "main": [
         [
           {
             "node": "One Payment at a Time",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "One Payment at a Time": {
-      "main": [
-        [],
-        [
-          {
-            "node": "Verify Reference with Paystack",
             "type": "main",
             "index": 0
           }
@@ -320,6 +246,18 @@
           }
         ]
       ]
+    },
+    "One Payment at a Time": {
+      "main": [
+        null,
+        [
+          {
+            "node": "Reconcile Payment and Create Receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {
@@ -329,6 +267,20 @@
     "saveManualExecutions": false,
     "saveDataErrorExecution": "none",
     "saveDataSuccessExecution": "none",
-    "executionTimeout": 180
-  }
+    "executionTimeout": 180,
+    "errorWorkflow": "hoPH7KNlrdMYXszh"
+  },
+  "nodeGroups": [
+    {
+      "id": "68ee08e1-eb2d-462e-b403-bb2d7a0cf65f",
+      "name": "Claim payment work",
+      "nodeNames": [
+        "Edvora Configuration",
+        "Claim Payment Verification Jobs",
+        "Validate Payment Jobs"
+      ],
+      "description": "Claim server-created pending payment intents without duplicating work."
+    }
+  ],
+  "active": false
 }
