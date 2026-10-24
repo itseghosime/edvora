@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/query/hooks";
 export default function AccessForm() {
@@ -10,7 +10,10 @@ export default function AccessForm() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [admission, setAdmission] = useState("");
+  const initialized=useRef(false);
   useEffect(() => {
+    if(initialized.current)return;
+    initialized.current=true;
     const proof = window.location.hash.slice(1);
     setToken(/^[A-Za-z0-9_-]{43}$/.test(proof) ? proof : null);
     setReady(true);
