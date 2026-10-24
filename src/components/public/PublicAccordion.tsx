@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useId, useState } from "react";
 
 export interface AccordionItem {
   id: string;
@@ -19,6 +19,7 @@ export default function PublicAccordion({
   defaultOpenId,
   className = "",
 }: PublicAccordionProps) {
+  const instanceId = useId();
   const [openId, setOpenId] = useState<string | null>(defaultOpenId || null);
 
   const toggle = (id: string) => {
@@ -29,8 +30,8 @@ export default function PublicAccordion({
     <div className={`space-y-3 ${className}`}>
       {items.map((item) => {
         const isOpen = openId === item.id;
-        const buttonId = `faq-btn-${item.id}`;
-        const contentId = `faq-content-${item.id}`;
+        const buttonId = `${instanceId}-btn-${item.id}`;
+        const contentId = `${instanceId}-content-${item.id}`;
 
         return (
           <div
@@ -57,9 +58,10 @@ export default function PublicAccordion({
                 </span>
               </button>
             </h3>
-            {isOpen && (
+            {(
               <div
                 id={contentId}
+                hidden={!isOpen}
                 role="region"
                 aria-labelledby={buttonId}
                 className="px-5 pb-5 pt-1 text-on-surface-variant font-body-md text-sm leading-relaxed border-t border-ink-border/40"
@@ -73,4 +75,5 @@ export default function PublicAccordion({
     </div>
   );
 }
+
 

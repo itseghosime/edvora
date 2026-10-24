@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://edvora.org";
+  const baseUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://edvora-sage.vercel.app").replace(/\/$/, "");
   const currentDate = new Date();
 
   const publicRoutes = [
@@ -51,4 +51,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return publicRoutes;
 }
+
 

@@ -45,11 +45,11 @@ export default function PublicNavbar() {
             className="inline-flex items-center gap-2 font-medium hover:text-forest transition-colors"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-forest shrink-0" />
-            Admissions open for 2026/2027 Academic Session
+            Admissions · 2026/2027
             <ArrowUpRight size={13} aria-hidden="true" />
           </Link>
           <span className="hidden sm:inline text-ink-muted">
-            Airport Road Campus, GRA · Benin City, Edo State
+            Nursery & Primary School
           </span>
         </div>
       </div>
@@ -160,3 +160,4 @@ export default function PublicNavbar() {
     </header>
   );
 }
+

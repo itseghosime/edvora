@@ -109,7 +109,7 @@ export default function FacilityShowcase() {
     <div className="space-y-6">
       {/* Tab Controls */}
       <div
-        role="tablist"
+        role="group"
         aria-label="Campus Facility Categories"
         className="inline-flex p-1 rounded-xl bg-surface-container-high overflow-x-auto max-w-full gap-1"
       >
@@ -118,8 +118,8 @@ export default function FacilityShowcase() {
           return (
             <button
               key={cat.id}
-              role="tab"
-              aria-selected={isActive}
+              
+              aria-pressed={isActive}
               type="button"
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-3.5 py-2 rounded-lg font-label-md text-xs sm:text-sm font-semibold transition-all whitespace-nowrap focus-visible:outline-2 focus-visible:outline-primary ${
@@ -146,6 +146,7 @@ export default function FacilityShowcase() {
                 <img
                   src={facility.image}
                   alt={facility.title}
+                  loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-surface-container-lowest/90 backdrop-blur-md text-primary font-label-sm text-xs font-semibold">
@@ -183,4 +184,5 @@ export default function FacilityShowcase() {
     </div>
   );
 }
+
 

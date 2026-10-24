@@ -134,7 +134,7 @@ export default function PublicFooter() {
                 >
                   location_on
                 </span>
-                <span>Airport Road Campus, GRA · Benin City, Edo State</span>
+                <span>Nursery & Primary School</span>
               </p>
               <p className="flex items-start gap-2">
                 <span
@@ -157,7 +157,7 @@ export default function PublicFooter() {
         {/* Bottom Sub-Footer */}
         <div className="pt-6 border-t border-ink-border/70 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-on-surface-variant">
           <div>© 2026 Edvora Nursery &amp; Primary School. All rights reserved.</div>
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap justify-center items-center gap-x-6 gap-y-3">
             <Link href="/contact" className="hover:text-primary transition-colors">
               Campus Visits &amp; Enquiries
             </Link>
@@ -173,3 +173,4 @@ export default function PublicFooter() {
     </footer>
   );
 }
+

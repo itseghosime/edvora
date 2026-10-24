@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
+import PublicAccordion from "@/components/public/PublicAccordion";
+import PublicEnquiryForm from "@/components/public/PublicEnquiryForm";
 import React from "react";
 import Link from "next/link";
 import PublicNavbar from "@/components/public/PublicNavbar";
 import PublicFooter from "@/components/public/PublicFooter";
+
+export const metadata: Metadata = {"title": "Contact & Enquiries | Edvora", "description": "Prepare admissions, visit and portal questions for the Edvora school office.", "alternates": {"canonical": "/contact"}};
 
 export default function ContactPage() {
   return (
@@ -37,7 +42,7 @@ export default function ContactPage() {
 </div>
 <div className="flex items-center gap-space-xs mb-1">
 <span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Campus Reception</span>
-<span className="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Sample Config</span>
+<span className="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Visits by arrangement</span>
 </div>
 <h2 className="font-headline-sm text-headline-sm text-on-surface mb-space-xs">Admissions Quadrangle</h2>
 <p className="font-body-md text-body-md text-on-surface-variant">Contact the school office for directions and visit arrangements.</p>
@@ -45,7 +50,7 @@ export default function ContactPage() {
 <div className="mt-space-md pt-space-sm">
 <span className="inline-flex items-center gap-space-xs font-label-md text-label-md text-primary font-bold">
 <span aria-hidden="true" className="material-symbols-outlined text-[16px]">navigation</span>
-              GRA Gate Access 01
+              Arrange your visit in advance
             </span>
 </div>
 </div>
@@ -61,14 +66,14 @@ export default function ContactPage() {
 </div>
 <h2 className="font-headline-sm text-headline-sm text-on-surface mb-space-xs">Telephone Direct</h2>
 <div className="space-y-1">
-<a className="block font-body-md text-body-md text-on-surface font-semibold hover:text-primary transition-colors" href="tel:+23452290840">Contact school office</a>
-<a className="block font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="tel:+234800338672">Contact school office</a>
+<a className="block font-body-md text-body-md text-on-surface font-semibold hover:text-primary transition-colors" href="/contact#enquiry">Contact school office</a>
+<a className="block font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="/contact#enquiry">Contact school office</a>
 </div>
 </div>
 <div className="mt-space-md pt-space-sm">
 <span className="inline-flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
 <span className="w-2 h-2 rounded-full bg-primary-container"></span>
-              Live attendant on duty
+              Contact details to be confirmed
             </span>
 </div>
 </div>
@@ -84,14 +89,14 @@ export default function ContactPage() {
 </div>
 <h2 className="font-headline-sm text-headline-sm text-on-surface mb-space-xs">Official Desks</h2>
 <div className="space-y-1">
-<a className="block font-body-md text-body-md text-on-surface hover:text-primary transition-colors truncate" href="mailto:admissions@edvora.edu.ng">Contact school office</a>
-<a className="block font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors truncate" href="mailto:office@edvora.edu.ng">Contact school office</a>
+<a className="block font-body-md text-body-md text-on-surface hover:text-primary transition-colors truncate" href="/contact#enquiry">Contact school office</a>
+<a className="block font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors truncate" href="/contact#enquiry">Contact school office</a>
 </div>
 </div>
 <div className="mt-space-md pt-space-sm">
 <span className="inline-flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
 <span aria-hidden="true" className="material-symbols-outlined text-[14px] text-primary">schedule</span>
-              Average response: &lt; 4 hours
+              Prepare an enquiry below
             </span>
 </div>
 </div>
@@ -129,120 +134,16 @@ export default function ContactPage() {
 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-lg">
 <div>
 <span className="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">Interactive Registry</span>
-<h2 className="font-headline-lg text-headline-lg text-on-surface">Direct Message &amp; Tour Scheduling</h2>
+<h2 className="font-headline-lg text-headline-lg text-on-surface">Admissions &amp; Visit Enquiries</h2>
 </div>
 <div className="inline-flex items-center gap-space-xs px-3 py-1 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm self-start sm:self-auto">
 <span className="w-2 h-2 rounded-full bg-secondary"></span>
                 Admissions Session 2026/27
               </div>
 </div>
-<form className="space-y-space-md" id="contactTourForm">
-{/* Name & Phone */}
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
-<div className="space-y-space-xs">
-<label className="block font-label-lg text-label-lg text-on-surface" htmlFor="fullName">
-                    Parent / Guardian Full Name <span className="text-error">*</span>
-</label>
-<div className="relative">
-<span aria-hidden="true" className="material-symbols-outlined absolute left-3 top-3 text-[20px] text-on-surface-variant">person</span>
-<input className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary shadow-sm" id="fullName" placeholder="e.g. Dr. Osamwonyi Ighodaro" required type="text" />
-</div>
-</div>
-<div className="space-y-space-xs">
-<label className="block font-label-lg text-label-lg text-on-surface" htmlFor="phoneNumber">
-                    Contact Telephone <span className="text-error">*</span>
-</label>
-<div className="relative">
-<span aria-hidden="true" className="material-symbols-outlined absolute left-3 top-3 text-[20px] text-on-surface-variant">phone</span>
-<input className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary shadow-sm" id="phoneNumber" placeholder="+234 803 000 0000" required type="tel" />
-</div>
-</div>
-</div>
-{/* Email & Pupil Interest */}
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
-<div className="space-y-space-xs">
-<label className="block font-label-lg text-label-lg text-on-surface" htmlFor="emailAddress">
-                    Email Address <span className="text-error">*</span>
-</label>
-<div className="relative">
-<span aria-hidden="true" className="material-symbols-outlined absolute left-3 top-3 text-[20px] text-on-surface-variant">alternate_email</span>
-<input className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary shadow-sm" id="emailAddress" placeholder="parent@domain.com" required type="email" />
-</div>
-</div>
-<div className="space-y-space-xs">
-<label className="block font-label-lg text-label-lg text-on-surface" htmlFor="classInterest">
-                    Pupil's Age / Class Level
-                  </label>
-<div className="relative">
-<span aria-hidden="true" className="material-symbols-outlined absolute left-3 top-3 text-[20px] text-on-surface-variant">child_care</span>
-<select className="w-full pl-10 pr-8 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary shadow-sm appearance-none cursor-pointer" id="classInterest">
-<option value="creche">Creche &amp; Toddlers (3 mos – 18 mos)</option>
-<option value="playgroup">Playgroup / Early Discovery (18 mos – 3 yrs)</option>
-<option value="nursery1">Nursery I (Ages 3 – 4)</option>
-<option value="nursery2">Nursery II (Ages 4 – 5)</option>
-<option value="primary13">Lower Primary (Grades 1 – 3)</option>
-<option value="primary46">Upper Primary (Grades 4 – 6)</option>
-<option value="general">Not sure yet / General Assessment</option>
-</select>
-<span aria-hidden="true" className="material-symbols-outlined absolute right-3 top-3 text-[20px] text-on-surface-variant pointer-events-none">expand_more</span>
-</div>
-</div>
-</div>
-{/* Inquiry Type Radio Strip */}
-<div className="space-y-space-xs">
-<label className="block font-label-lg text-label-lg text-on-surface">
-                  Nature of Inquiry <span className="text-error">*</span>
-</label>
-<div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-<label className="relative flex flex-col items-center p-3 rounded-lg bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors has-[:checked]:bg-primary-container has-[:checked]:text-on-primary">
-<input defaultChecked className="sr-only" name="inquiryType" type="radio" value="Admissions" />
-<span aria-hidden="true" className="material-symbols-outlined text-[20px] mb-1">how_to_reg</span>
-<span className="font-label-md text-label-md text-center">Admissions</span>
-</label>
-<label className="relative flex flex-col items-center p-3 rounded-lg bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors has-[:checked]:bg-primary-container has-[:checked]:text-on-primary">
-<input className="sr-only" name="inquiryType" type="radio" value="Campus Tour" />
-<span aria-hidden="true" className="material-symbols-outlined text-[20px] mb-1">hiking</span>
-<span className="font-label-md text-label-md text-center">Campus Tour</span>
-</label>
-<label className="relative flex flex-col items-center p-3 rounded-lg bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors has-[:checked]:bg-primary-container has-[:checked]:text-on-primary">
-<input className="sr-only" name="inquiryType" type="radio" value="Fee Structure" />
-<span aria-hidden="true" className="material-symbols-outlined text-[20px] mb-1">receipt_long</span>
-<span className="font-label-md text-label-md text-center">Fee Schedule</span>
-</label>
-<label className="relative flex flex-col items-center p-3 rounded-lg bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors has-[:checked]:bg-primary-container has-[:checked]:text-on-primary">
-<input className="sr-only" name="inquiryType" type="radio" value="Portal Support" />
-<span aria-hidden="true" className="material-symbols-outlined text-[20px] mb-1">help_center</span>
-<span className="font-label-md text-label-md text-center">Portal Help</span>
-</label>
-</div>
-</div>
-{/* Message box */}
-<div className="space-y-space-xs">
-<label className="block font-label-lg text-label-lg text-on-surface" htmlFor="messageBox">
-                  Specific Requests or Preferred Tour Window
-                </label>
-<textarea className="w-full p-3 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary shadow-sm resize-y" id="messageBox" placeholder="Share your pupil's background, specific interests, or suggest dates and morning times between 9:00 AM and 1:00 PM for a personal walking tour..." rows={4}></textarea>
-</div>
-{/* Reassurance & Action Bar */}
-<div className="pt-space-xs flex flex-col sm:flex-row sm:items-center justify-between gap-space-md">
-<div className="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
-<span aria-hidden="true" className="material-symbols-outlined text-[18px] text-primary" style={{ fontVariationSettings: "" }}>verified_user</span>
-<span className="">Strict confidentiality assured. Swift response within 24 operational hours.</span>
-</div>
-<button className="inline-flex items-center justify-center gap-space-xs px-6 py-3 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg shadow-md transition-all" type="submit">
-<span className="">Submit Inquiry</span>
-<span aria-hidden="true" className="material-symbols-outlined text-[18px]">send</span>
-</button>
-</div>
-</form>
+<div id="enquiry"><PublicEnquiryForm idPrefix="contact" /></div>
 {/* Success State Notification Mock */}
-<div className="hidden mt-space-md p-space-md rounded-xl bg-primary-fixed text-on-primary-fixed flex items-start gap-space-sm" id="formSuccessToast">
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[24px]">task_alt</span>
-<div className="font-body-md text-body-md">
-<strong className="font-headline-sm text-headline-sm block text-on-primary-fixed">Your request has been logged successfully.</strong>
-                An Admissions Administrator will review your inquiry and follow up via telephone and email within 24 hours.
-              </div>
-</div>
+
 </div>
 {/* Editorial Photography Accent */}
 <div className="relative rounded-2xl overflow-hidden shadow-lg h-56 bg-surface-container">
@@ -269,58 +170,7 @@ export default function ContactPage() {
               </p>
 </div>
 {/* Accordion List */}
-<div className="space-y-space-sm" id="schoolFaqAccordion">
-{/* Accordion Item 1 */}
-<div className="rounded-xl bg-surface-container-low transition-colors duration-200 overflow-hidden">
-<button aria-expanded="false" className="faq-toggle w-full px-space-md py-3.5 flex items-center justify-between text-left focus:outline-none" type="button">
-<span className="font-headline-sm text-headline-sm text-on-surface pr-2">
-                    What are the exact age entry requirements for Nursery and Primary 1?
-                  </span>
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[20px] transition-transform duration-300 transform faq-icon">expand_more</span>
-</button>
-<div className="faq-content px-space-md pb-space-md text-on-surface-variant font-body-md text-body-md hidden">
-                  Pupils entering Nursery I must be 3 years of age by September 30th of the academic year. For Primary 1, children must have completed their 5th year and turned 5 by July preceding entry, accompanied by an early development and phonics readiness assessment.
-                </div>
-</div>
-{/* Accordion Item 2 */}
-<div className="rounded-xl bg-surface-container-low transition-colors duration-200 overflow-hidden">
-<button aria-expanded="false" className="faq-toggle w-full px-space-md py-3.5 flex items-center justify-between text-left focus:outline-none" type="button">
-<span className="font-headline-sm text-headline-sm text-on-surface pr-2">What do pupils learn at Edvora?</span>
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[20px] transition-transform duration-300 faq-icon">expand_more</span>
-</button>
-<div className="faq-content px-space-md pb-space-md text-on-surface-variant font-body-md text-body-md hidden">Our nursery and primary programmes develop literacy, numeracy, everyday science, creative expression and social skills. Contact the school for the current curriculum details.</div>
-</div>
-{/* Accordion Item 3 */}
-<div className="rounded-xl bg-surface-container-low transition-colors duration-200 overflow-hidden">
-<button aria-expanded="false" className="faq-toggle w-full px-space-md py-3.5 flex items-center justify-between text-left focus:outline-none" type="button">
-<span className="font-headline-sm text-headline-sm text-on-surface pr-2">Can families pay school fees in instalments?</span>
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[20px] transition-transform duration-300 faq-icon">expand_more</span>
-</button>
-<div className="faq-content px-space-md pb-space-md text-on-surface-variant font-body-md text-body-md hidden">Families can discuss flexible instalments with the school. View the amount due and make payments through the Student Portal. Balances update after payment verification.</div>
-</div>
-{/* Accordion Item 4 */}
-<div className="rounded-xl bg-surface-container-low transition-colors duration-200 overflow-hidden">
-<button aria-expanded="true" className="faq-toggle w-full px-space-md py-3.5 flex items-center justify-between text-left focus:outline-none" type="button">
-<span className="font-headline-sm text-headline-sm text-on-surface pr-2">
-                    How are academic updates shared without noisy group chats?
-                  </span>
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[20px] transition-transform duration-300 faq-icon rotate-180">expand_more</span>
-</button>
-<div className="faq-content px-space-md pb-space-md text-on-surface-variant font-body-md text-body-md">Parents and guardians can view published results and payment records through the Student Portal. The school sends one-way SMS or Telegram reminders, and the office handles questions directly.</div>
-</div>
-{/* Accordion Item 5 */}
-<div className="rounded-xl bg-surface-container-low transition-colors duration-200 overflow-hidden">
-<button aria-expanded="false" className="faq-toggle w-full px-space-md py-3.5 flex items-center justify-between text-left focus:outline-none" type="button">
-<span className="font-headline-sm text-headline-sm text-on-surface pr-2">
-                    What safety protocols govern campus access and pupil dismissal?
-                  </span>
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[20px] transition-transform duration-300 faq-icon">expand_more</span>
-</button>
-<div className="faq-content hidden px-space-md pb-space-md text-on-surface-variant font-body-md text-body-md">
-                  Campus grounds are guarded 24/7 with strict visitor registration. Pupils are only dismissed to individuals holding an authorized digital security pass or registered parent fingerprint matching our registry. Non-custodial pick-ups require advance written portal dispatch.
-                </div>
-</div>
-</div>
+<PublicAccordion items={[{"id": "schoolFaqAccordion0", "question": "How do families apply?", "answer": "Start by discussing the child\u2019s age, previous learning and class availability with the school office. Prepare your questions using the enquiry form. A visit is confirmed only when the office agrees a time."}, {"id": "schoolFaqAccordion1", "question": "How do parents access the portal?", "answer": "Parents use their child\u2019s Student account. The school issues a private setup link so the family can choose a password. Admission number and password are required to sign in."}, {"id": "schoolFaqAccordion2", "question": "Where can parents pay fees?", "answer": "Sign in to the Student portal to see the pupil\u2019s assigned fees and make a payment. Balances and receipts update only after the payment has been verified."}, {"id": "schoolFaqAccordion3", "question": "When can families see results?", "answer": "Results appear in the Student portal after an administrator publishes them. An unpaid fee balance does not block access to published results."}, {"id": "schoolFaqAccordion4", "question": "How can a family recover account access?", "answer": "Contact the school office. An administrator verifies the guardian\u2019s identity before issuing a private, single-use password setup link. Links expire after 30 minutes."}]} />
 </div>
 {/* Direct Enrolled Parent Gateway Card */}
 <div className="p-space-lg rounded-2xl bg-primary text-on-primary shadow-xl relative overflow-hidden">
@@ -340,7 +190,7 @@ export default function ContactPage() {
 <span className="">Enter Student Portal</span>
 <span aria-hidden="true" className="material-symbols-outlined text-[18px]">arrow_forward</span>
 </a>
-<a className="inline-flex items-center justify-center gap-space-xs px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-surface-tint font-label-lg text-label-lg transition-all" data-path="charter" href="#">
+<a className="inline-flex items-center justify-center gap-space-xs px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-surface-tint font-label-lg text-label-lg transition-all" data-path="charter" href="/about">
 <span className="">Parent Help Guide</span>
 <span aria-hidden="true" className="material-symbols-outlined text-[18px]">menu_book</span>
 </a>
@@ -365,10 +215,10 @@ export default function ContactPage() {
 </div>
 </div>
 <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-space-sm shrink-0">
-<button className="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs px-6 py-3 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg transition-all shadow-md" type="button">
+<a className="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs px-6 py-3 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg transition-all shadow-md"  href="#enquiry">
 <span aria-hidden="true" className="material-symbols-outlined text-[20px]">calendar_month</span>
 <span className="">Reserve a Morning Slot</span>
-</button>
+</a>
 </div>
 </div>
 </div>
@@ -380,3 +230,4 @@ export default function ContactPage() {
     </div>
   );
 }
+
