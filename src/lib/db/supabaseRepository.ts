@@ -651,7 +651,7 @@ export class DatabaseRepository {
     let query = client
       .from("pupils")
       .select(
-        "*, school_classes(name), guardians(full_name, phone_number, telegram_chat_id)",
+        "*, school_classes(name), guardians!pupils_guardian_id_fkey(full_name, phone_number, telegram_chat_id)",
       );
     if (filter?.pupilId) {
       query = query.eq("id", filter.pupilId);
