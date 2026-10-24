@@ -341,6 +341,15 @@ try {
     .getByLabel("Start or edit a report", { exact: true })
     .selectOption(uid(20));
   await page.getByRole("button", { name: "Open editor", exact: true }).click();
+  await page.getByRole("region", { name: "Report editor", exact: true }).waitFor();
+  const editorPosition = await page.evaluate(() => {
+    const editor = document.querySelector('section[aria-label="Report editor"]');
+    const table = document.querySelector('main table');
+    const bounds = editor.getBoundingClientRect();
+    return { focused: document.activeElement === editor, visible: bounds.top >= 0 && bounds.top < innerHeight, beforeTable: Boolean(editor.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING) };
+  });
+  assert.deepEqual(editorPosition, { focused: true, visible: true, beforeTable: true });
+
   await page.getByLabel("Subject 1", { exact: true }).fill("Mathematics");
   await page.getByLabel("CA /40", { exact: true }).fill("36");
   await page.getByLabel("Exam /60", { exact: true }).fill("54");
