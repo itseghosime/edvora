@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PageHeader from "../shared/PageHeader";
 import ResultReport from "../shared/ResultReport";
 import {
@@ -27,6 +27,11 @@ function ResultEditor({
   pupilId: string;
   onClose: () => void;
 }) {
+  const editorRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    editorRef.current?.focus({ preventScroll: true });
+    editorRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+  }, [pupilId]);
   const existing = data.results.find((r) => r.pupilId === pupilId);
   const action = useStaffAction();
   const [subjects, setSubjects] = useState(
@@ -43,6 +48,7 @@ function ResultEditor({
     existing?.headTeacherComment ?? "",
   );
   return (
+    <section ref={editorRef} tabIndex={-1} aria-label="Report editor" className="scroll-mt-40 my-6">
     <Panel
       title={`Report editor · ${data.pupils.find((p) => p.id === pupilId)?.fullName}`}
       description="Continuous assessment is out of 40; examination is out of 60. Totals and grades are calculated when saved."
@@ -181,6 +187,7 @@ function ResultEditor({
         </div>
       </form>
     </Panel>
+    </section>
   );
 }
 export default function StaffResults() {
@@ -227,7 +234,12 @@ export default function StaffResults() {
                   <select
                     className={inputClass}
                     value={classFilter}
-                    onChange={(e) => setClassFilter(e.target.value)}
+                    onChange={(e) => {
+                      setClassFilter(e.target.value);
+                      setPupilId("");
+                      setEditing("");
+                      setPreview("");
+                    }}
                   >
                     <option value="">All assigned classes</option>
                     {data.classes.map((c) => (
@@ -269,6 +281,14 @@ export default function StaffResults() {
                   Open editor
                 </button>
               </div>
+            {editing && (
+              <ResultEditor
+                key={editing}
+                data={data}
+                pupilId={editing}
+                onClose={() => setEditing("")}
+              />
+            )}
               {rows.length ? (
                 <DataTable
                   headers={["Pupil", "Class", "Report", "Average", "Actions"]}
@@ -404,14 +424,7 @@ export default function StaffResults() {
                 </form>
               </Panel>
             )}
-            {editing && (
-              <ResultEditor
-                key={editing}
-                data={data}
-                pupilId={editing}
-                onClose={() => setEditing("")}
-              />
-            )}
+
             {selected && (
               <ResultReport
                 result={selected}
