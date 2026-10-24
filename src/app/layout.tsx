@@ -3,6 +3,7 @@ import "./globals.css";
 import QueryProvider from "@/components/providers/QueryProvider";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://edvora-sage.vercel.app"),
   title: "Edvora Nursery & Primary School | Benin City, Edo State",
   description:
     "Official school portal and website for Edvora Nursery & Primary School. Balanced early education, transparent fee management, and published term results.",
@@ -33,3 +34,4 @@ export default function RootLayout({
     </html>
   );
 }
+

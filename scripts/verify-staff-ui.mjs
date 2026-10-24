@@ -476,6 +476,42 @@ try {
     requests.find((r) => r.passwordChange).passwordChange.currentPassword,
     "My old school password",
   );
+  // Public routes use real components; no enquiry is dispatched.
+  await context.clearCookies();
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of ["/", "/about", "/academics", "/admissions", "/fees", "/school-life", "/contact"]) {
+      await page.goto(base + path, { waitUntil: "domcontentloaded" });
+      assert.equal(await page.locator("main h1").count(), 1, path + " heading");
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
+      assert.equal(overflow, false, `${path} overflows at ${width}`);
+      const missingAnchors = await page.evaluate(() => [...document.querySelectorAll('a[href^="#"]')].map(a=>a.getAttribute('href')).filter(h=>h.length>1 && !document.getElementById(h.slice(1))));
+      assert.deepEqual(missingAnchors, [], `${path} broken anchors`);
+    }
+  }
+  await page.getByRole("button", { name: "Open navigation menu", exact: true }).click();
+  assert.equal(await page.getByRole("navigation", { name: "Mobile navigation", exact: true }).isVisible(), true);
+  await page.keyboard.press("Escape");
+  assert.equal(await page.getByRole("navigation", { name: "Mobile navigation", exact: true }).count(), 0);
+  await page.getByRole("button", { name: "Where can parents pay fees?", exact: true }).click();
+  assert.equal(await page.getByRole("button", { name: "Where can parents pay fees?", exact: true }).getAttribute("aria-expanded"), "true");
+  await page.getByLabel("Parent / guardian name", {exact:true}).fill("Enquiry Example");
+  await page.getByLabel("Contact phone or email", {exact:true}).fill("parent@example.invalid");
+  await page.getByRole("button", { name: "Prepare enquiry", exact:true }).click();
+  await page.getByText("Your enquiry is ready to copy. It has not been sent.", {exact:true}).waitFor();
+  assert.match(await page.getByLabel("Enquiry summary", {exact:true}).inputValue(), /Enquiry Example/);
+  await page.screenshot({ path: "test-results/staff-ui/public-contact-mobile.png", fullPage:true });
+  await page.goto(base+"/academics");
+  await page.getByRole("button", { name:"Primary School",exact:true }).click();
+  assert.equal(await page.getByRole("list", {name:"Primary School daily rhythm"}).isVisible(),true);
+  await page.goto(base+"/school-life");
+  await page.getByRole("button", { name:"Library & Literacy",exact:true }).click();
+  assert.equal(await page.getByRole("heading",{name:"Reading Sanctuary & Pods",exact:true}).count(),1);
+  assert.equal(await page.getByRole("heading",{name:"Naturally Ventilated Learning Studios",exact:true}).count(),0);
+  await page.screenshot({ path: "test-results/staff-ui/public-facilities-mobile.png", fullPage:true });
+  await page.goto(base+"/fees");
+  await page.getByRole("link",{name:"Open Student portal",exact:true}).click();
+  await page.waitForURL("**/login");
   assert.deepEqual(errors, []);
   console.log(
     "Staff UI smoke passed: seven routes on desktop/mobile, enrollment errors/retry key, result payload, role guard; API responses mocked.",

@@ -10,7 +10,9 @@
     "test": "vitest run --exclude tests/real_postgres_integration.test.ts",
     "test:integration": "vitest run tests/real_postgres_integration.test.ts",
     "typecheck": "tsc --noEmit",
-    "test:ui": "node scripts/verify-staff-ui.mjs"
+    "test:ui": "node scripts/verify-staff-ui.mjs",
+    "seed:demo": "node scripts/seed-demo.mjs",
+    "verify:demo": "tsx scripts/verify-demo.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
@@ -35,6 +37,7 @@
     "playwright": "1.62.1",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.23.15",
     "typescript": "^5.7.3",
     "vitest": "^5.0.5"
   }
