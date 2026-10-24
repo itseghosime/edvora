@@ -18,7 +18,7 @@ export default function PaymentTimeline({
 
   return (
     <div className="bg-white rounded-2xl p-6 border border-ink-border shadow-sm">
-      <div className="flex items-center justify-between mb-6 pb-4 border-b border-ink-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-ink-border">
         <div>
           <h3 className="text-base font-bold text-ink font-heading">
             Payment History & Timeline
@@ -27,7 +27,7 @@ export default function PaymentTimeline({
             Verified instalments credited to current academic term
           </p>
         </div>
-        <div className="text-right">
+        <div className="sm:text-right">
           <span className="text-xs text-ink-muted">Term Clearance</span>
           <div className="text-sm font-bold text-forest">
             {totalCharges > 0
@@ -38,6 +38,11 @@ export default function PaymentTimeline({
       </div>
 
       <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-ink-border">
+        {payments.length === 0 && (
+          <div className="p-4 rounded-xl bg-ivory-50/80 border border-ink-border/40 text-xs text-ink-muted">
+            No payments have been recorded for this term yet. Payments completed via debit card or bank transfer will reflect here once verified.
+          </div>
+        )}
         {payments.map((tx) => (
           <div key={tx.id} className="relative flex items-start gap-4">
             {/* Status dot */}

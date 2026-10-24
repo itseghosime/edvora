@@ -9,6 +9,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
+    if(session.type==='staff' && !['admin','bursar'].includes(session.role)) return NextResponse.json({error:'Financial access denied'},{status:403});
+
     const body = await req.json();
     const { pupilId, termId, amountMinor, payerEmail, payerName } = body;
 
@@ -38,3 +40,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status });
   }
 }
+

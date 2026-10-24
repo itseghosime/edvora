@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
+import PublicEnquiryForm from "@/components/public/PublicEnquiryForm";
 import React from "react";
 import Link from "next/link";
 import PublicNavbar from "@/components/public/PublicNavbar";
 import PublicFooter from "@/components/public/PublicFooter";
+
+export const metadata: Metadata = {"title": "Edvora Nursery & Primary School", "description": "Explore nursery and primary learning, admissions and school life. Parents use the Student portal for fees and published results.", "alternates": {"canonical": "/"}};
 
 export default function HomePage() {
   return (
@@ -286,7 +290,7 @@ export default function HomePage() {
 <div className="space-y-space-xs max-w-xl">
 <span className="font-label-md text-label-md text-secondary uppercase tracking-wider">A Glimpse Into Daily Life</span>
 <h2 className="font-headline-lg text-headline-lg text-on-surface">Joyful Spaces Built for Exploration</h2>
-<p className="font-body-md text-body-md text-on-surface-variant">Our enclosed GRA campus provides clean botanical lawns, air-conditioned acoustic classrooms, and dedicated creative studios.</p>
+<p className="font-body-md text-body-md text-on-surface-variant">Our learning environment provides clean botanical lawns, air-conditioned acoustic classrooms, and dedicated creative studios.</p>
 </div>
 <div className="flex items-center gap-space-sm">
 <span className="font-label-md text-label-md text-on-surface-variant">Campus Visits: Mon – Fri (9:00 AM – 1:00 PM)</span>
@@ -494,7 +498,7 @@ export default function HomePage() {
 </div>
 <div className="flex items-center gap-space-xs">
 <span aria-hidden="true" className="material-symbols-outlined text-[20px] text-secondary-container">call</span>
-<span className="font-body-md text-body-md">+234 (0) 52 290 840</span>
+<span className="font-body-md text-body-md">School office enquiries</span>
 </div>
 </div>
 </div>
@@ -502,46 +506,11 @@ export default function HomePage() {
 <div className="lg:col-span-5 bg-surface-container-lowest text-on-surface rounded-2xl p-space-lg shadow-md space-y-space-md">
 <div>
 <h3 className="font-headline-sm text-headline-sm text-on-surface">Book a school visit</h3>
-<p className="font-body-sm text-body-sm text-on-surface-variant">Our admissions office confirms within 24 hours.</p>
+<p className="font-body-sm text-body-sm text-on-surface-variant">Prepare your questions before speaking with the school office.</p>
 </div>
-<form className="space-y-space-sm">
-<div className="space-y-1">
-<label htmlFor="app-field-1" className="block font-label-md text-label-md text-on-surface">Parent / Guardian Name</label>
-<input id="app-field-1" className="w-full px-3 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm" placeholder="e.g. Dr. &amp; Mrs. O. Adeleke" required type="text" />
-</div>
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
-<div className="space-y-1">
-<label htmlFor="app-field-2" className="block font-label-md text-label-md text-on-surface">Phone Number</label>
-<input id="app-field-2" className="w-full px-3 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm" placeholder="0803 XXX XXXX" required type="tel" />
-</div>
-<div className="space-y-1">
-<label htmlFor="app-field-3" className="block font-label-md text-label-md text-on-surface">Programme of Interest</label>
-<select id="app-field-3" className="w-full px-3 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm">
-<option>Creche (18mo+)</option>
-<option>Nursery I &amp; II</option>
-<option>Lower Primary (1–3)</option>
-<option>Upper Primary (4–6)</option>
-</select>
-</div>
-</div>
-<div className="space-y-1">
-<label htmlFor="app-field-4" className="block font-label-md text-label-md text-on-surface">Preferred Visit Morning</label>
-<select id="app-field-4" className="w-full px-3 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm">
-<option>Tuesday Morning (9:30 AM)</option>
-<option>Thursday Morning (10:00 AM)</option>
-<option>Friday Morning (9:00 AM)</option>
-</select>
-</div>
-<button className="w-full py-3 px-4 rounded-xl bg-primary-container text-on-primary hover:bg-primary font-label-lg text-label-lg transition-colors shadow-sm" type="submit">
-                Confirm Walkthrough Request
-              </button>
-</form>
+<PublicEnquiryForm idPrefix="page" />
 {/* Success State Feedback */}
-<div className="hidden p-space-md rounded-xl bg-surface-container space-y-space-xs text-center" id="visit-success">
-<span aria-hidden="true" className="material-symbols-outlined text-[32px] text-primary">task_alt</span>
-<div className="font-headline-sm text-headline-sm text-on-surface">Thank You, Parent</div>
-<p className="font-body-md text-body-md text-on-surface-variant">Our admissions registrar has logged your walkthrough inquiry and will reach out promptly via phone call.</p>
-</div>
+
 </div>
 </div>
 </div>
@@ -553,3 +522,4 @@ export default function HomePage() {
     </div>
   );
 }
+

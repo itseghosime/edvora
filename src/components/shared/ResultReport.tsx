@@ -135,11 +135,11 @@ export default function ResultReport({
                   </td>
                   <td className="py-3 px-3 text-center">
                     <span className="text-xs bg-forest text-white px-2 py-0.5 rounded font-bold">
-                      Grade A
+                      Published
                     </span>
                   </td>
                   <td className="py-3 px-4 text-xs text-forest-700">
-                    Distinction Standard
+                    Academic summary
                   </td>
                 </tr>
               </tfoot>
@@ -156,9 +156,9 @@ export default function ResultReport({
                 &ldquo;{result.teacherComment}&rdquo;
               </p>
               <div className="mt-4 pt-3 border-t border-ink-border/50 flex justify-between items-center text-[11px]">
-                <span className="text-ink-muted">Class Teacher: Mr. D. Alabi</span>
+                <span className="text-ink-muted">Class Teacher</span>
                 <span className="text-forest font-semibold flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" /> Signed
+                  <CheckCircle className="w-3 h-3" /> Teacher remarks
                 </span>
               </div>
             </div>
@@ -171,9 +171,9 @@ export default function ResultReport({
                 &ldquo;{result.headTeacherComment}&rdquo;
               </p>
               <div className="mt-4 pt-3 border-t border-ink-border/50 flex justify-between items-center text-[11px]">
-                <span className="text-ink-muted">Attendance: {result.attendanceDays} of {result.totalSchoolDays} Days</span>
+                <span className="text-ink-muted">School review</span>
                 <span className="text-forest font-semibold flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" /> Endorsed
+                  <CheckCircle className="w-3 h-3" /> Head teacher remarks
                 </span>
               </div>
             </div>
@@ -183,4 +183,5 @@ export default function ResultReport({
     </div>
   );
 }
+
 

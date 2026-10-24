@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
+import PublicAccordion from "@/components/public/PublicAccordion";
+import PublicEnquiryForm from "@/components/public/PublicEnquiryForm";
 import React from "react";
 import Link from "next/link";
 import PublicNavbar from "@/components/public/PublicNavbar";
 import PublicFooter from "@/components/public/PublicFooter";
+
+export const metadata: Metadata = {"title": "Admissions | Edvora", "description": "Understand the admissions journey, prepare your questions and learn how families receive Student portal access.", "alternates": {"canonical": "/admissions"}};
 
 export default function AdmissionsPage() {
   return (
@@ -43,7 +48,7 @@ export default function AdmissionsPage() {
 </div>
 <div className="flex items-center gap-2">
 <span aria-hidden="true" className="material-symbols-outlined text-primary text-[18px]">park</span>
-<span className="">GRA Campus, Benin City</span>
+<span className="">Nursery & Primary School</span>
 </div>
 </div>
 </div>
@@ -208,134 +213,12 @@ export default function AdmissionsPage() {
 <span className="">Direct Registrar Submission</span>
 </div>
 <h3 className="font-headline-lg text-headline-lg text-on-surface mt-1">Book a Campus Tour &amp; Enquire</h3>
-<p className="font-body-md text-body-md text-on-surface-variant">Complete this form to reserve a morning slot with our academic heads. We respond within 24 hours.</p>
+<p className="font-body-md text-body-md text-on-surface-variant">Prepare an admissions enquiry and keep a copy for your conversation with the school office.</p>
 </div>
 {/* JavaScript-managed submission flow */}
-<form className="space-y-space-md" id="admissionsBookingForm">
-{/* Guardian Details Block */}
-<div className="space-y-space-sm">
-<div className="font-label-lg text-label-lg text-primary flex items-center gap-2">
-<span aria-hidden="true" className="material-symbols-outlined text-[18px]">person</span>
-<span className="">Guardian Information</span>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
-<div>
-<label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="guardianName">Guardian Full Name *</label>
-<input className="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-body-md" id="guardianName" placeholder="e.g. Dr. Osamudiamen Ighodaro" required type="text" />
-</div>
-<div>
-<label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="relationship">Relationship to Child *</label>
-<select className="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-body-md" id="relationship" required>
-<option disabled value="">Select relationship...</option>
-<option value="Mother">Mother</option>
-<option value="Father">Father</option>
-<option value="Legal Guardian">Legal Guardian</option>
-<option value="Sponsor / Grandparent">Sponsor / Grandparent</option>
-</select>
-</div>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
-<div>
-<label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="guardianEmail">Email Address *</label>
-<input className="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-body-md" id="guardianEmail" placeholder="name@domain.com" required type="email" />
-</div>
-<div>
-<label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="guardianPhone">Phone Number (+234) *</label>
-<input className="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-body-md" id="guardianPhone" placeholder="+234 803 000 0000" required type="tel" />
-</div>
-</div>
-</div>
-{/* Child Details Block */}
-<div className="space-y-space-sm pt-space-xs">
-<div className="font-label-lg text-label-lg text-primary flex items-center gap-2">
-<span aria-hidden="true" className="material-symbols-outlined text-[18px]">child_care</span>
-<span className="">Prospective Pupil Information</span>
-</div>
-<div className="grid grid-cols-1 md:grid-cols-3 gap-space-sm">
-<div>
-<label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="childName">Child's First Name *</label>
-<input className="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-body-md" id="childName" placeholder="e.g. Adesua" required type="text" />
-</div>
-<div>
-<label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="childAge">Child's Age (Years) *</label>
-<input className="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-body-md" id="childAge" max="12" min="1" placeholder="e.g. 4" required type="number" />
-</div>
-<div>
-<label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="classInterest">Class of Interest *</label>
-<select className="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-body-md" id="classInterest" required>
-<option disabled value="">Select class level...</option>
-<option value="Creche">Creche (6 mos – 18 mos)</option>
-<option value="Toddler">Toddlers (18 mos – 2.5 yrs)</option>
-<option value="Nursery 1">Nursery 1 (3 yrs)</option>
-<option value="Nursery 2">Nursery 2 (4 yrs)</option>
-<option value="Primary 1">Primary 1 (5 yrs)</option>
-<option value="Primary 2">Primary 2 (6 yrs)</option>
-<option value="Primary 3">Primary 3 (7 yrs)</option>
-<option value="Primary 4">Primary 4 (8 yrs)</option>
-<option value="Primary 5">Primary 5 (9 yrs)</option>
-<option value="Primary 6">Primary 6 (10+ yrs)</option>
-</select>
-</div>
-</div>
-</div>
-{/* Visit Scheduling Block */}
-<div className="space-y-space-sm pt-space-xs">
-<div className="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
-<div>
-<label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="visitDate">Preferred Tour Date *</label>
-<input className="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-body-md" id="visitDate" required type="date" />
-<span className="block font-body-sm text-body-sm text-on-surface-variant mt-1">Available Mon–Fri, 9:00 AM – 1:30 PM</span>
-</div>
-<div>
-<label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="preferredTime">Preferred Time Window *</label>
-<select className="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-body-md" id="preferredTime" required>
-<option value="Morning Session (09:30 AM)">Morning Session (09:30 AM)</option>
-<option value="Mid-day Observation (11:30 AM)">Mid-day Observation (11:30 AM)</option>
-<option value="Early Afternoon (01:00 PM)">Early Afternoon (01:00 PM)</option>
-</select>
-</div>
-</div>
-<div>
-<label className="block font-label-md text-label-md text-on-surface mb-1" htmlFor="enquiryMessage">Questions, Health Notes, or Academic Interests (Optional)</label>
-<textarea className="w-full px-3.5 py-2.5 rounded-lg bg-surface-container-lowest text-on-surface placeholder:text-on-surface-variant/50 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary font-body-md text-body-md" id="enquiryMessage" placeholder="Tell us about special interests (music, sports, arts), language proficiencies, or specific questions about curriculum..." rows={3}></textarea>
-</div>
-</div>
-{/* Consent Checkbox */}
-<div className="pt-space-xs">
-<label className="flex items-start gap-3 cursor-pointer">
-<input className="mt-1 w-4 h-4 rounded text-primary focus:ring-primary" id="consentCheck" required type="checkbox" />
-<span className="font-body-sm text-body-sm text-on-surface-variant">
-                  I consent to Edvora School contacting me via Telegram and email concerning this campus tour booking, availability updates, and admissions advice.
-                </span>
-</label>
-</div>
-{/* Submit Button & Security Note */}
-<div className="space-y-space-sm pt-space-xs">
-<button className="w-full py-3.5 px-6 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg hover:bg-primary-container transition-all shadow-md flex items-center justify-center gap-2" id="submitBtn" type="submit">
-<span aria-hidden="true" className="material-symbols-outlined text-[20px]">send</span>
-<span className="">Submit Admission Enquiry &amp; Reserve Date</span>
-</button>
-<div className="flex items-center justify-center gap-2 text-on-surface-variant font-body-sm text-body-sm text-center">
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[16px]">lock</span>
-<span className="">We protect your family's privacy. No spam or unsolicited marketing.</span>
-</div>
-</div>
-</form>
+<PublicEnquiryForm idPrefix="admissions" />
 {/* Success Notification Banner (Initially Hidden) */}
-<div className="hidden mt-space-md p-6 rounded-2xl bg-surface-container-high text-on-surface animate-fadeIn" id="formSuccessMessage">
-<div className="flex items-start gap-4">
-<div className="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shrink-0">
-<span aria-hidden="true" className="material-symbols-outlined text-[24px]">check</span>
-</div>
-<div className="space-y-1">
-<div className="font-headline-sm text-headline-sm text-primary">Enquiry Received with Gratitude!</div>
-<p className="font-body-md text-body-md text-on-surface-variant">
-                  Thank you for entrusting Edvora with your child’s educational journey. Our Admissions Officer, <strong>Mrs. N. Osagie</strong>, will review your requested tour date and call you within one business day with an appointment voucher.
-                </p>
-<div className="pt-2 text-primary font-label-sm text-label-sm uppercase tracking-wider font-bold">Booking Reference: #EDV-2026-ADM</div>
-</div>
-</div>
-</div>
+
 </div>
 </div>
 </div>
@@ -348,56 +231,7 @@ export default function AdmissionsPage() {
 <p className="font-body-md text-body-md text-on-surface-variant max-w-xl mx-auto">Straightforward answers regarding our age cut-offs, transfer protocols, and classroom standards.</p>
 </div>
 {/* Accordion Group */}
-<div className="space-y-space-sm" id="faqAccordion">
-{/* FAQ 1 */}
-<div className="bg-surface-container-lowest rounded-2xl p-5 shadow-sm transition-all">
-<button className="w-full flex items-center justify-between text-left gap-4 font-headline-sm text-headline-sm text-on-surface" type="button">
-<span className="">What are the exact age cut-off dates for Nursery and Primary entry?</span>
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200">expand_more</span>
-</button>
-<div className="faq-content hidden pt-3 font-body-md text-body-md text-on-surface-variant leading-relaxed">
-          For the 2026/2027 academic session, pupils entering <strong>Nursery 1</strong> should have attained 3 years of age on or before September 30, 2026. For <strong>Primary 1</strong>, candidates must turn 5 years old by the same date. For early toddler and creche admissions, enrolment is accepted year-round once the child is at least 6 months old.
-        </div>
-</div>
-{/* FAQ 2 */}
-<div className="bg-surface-container-lowest rounded-2xl p-5 shadow-sm transition-all">
-<button className="w-full flex items-center justify-between text-left gap-4 font-headline-sm text-headline-sm text-on-surface" type="button">
-<span className="">Do you accept mid-term or mid-session student transfers from other schools?</span>
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200">expand_more</span>
-</button>
-<div className="faq-content hidden pt-3 font-body-md text-body-md text-on-surface-variant leading-relaxed">
-          Yes. While we advise joining at the beginning of the First Term in September, families relocating to Benin City or seeking mid-year transfers are accommodated subject to vacancy within our capped streams. We request your child’s most recent terminal report cards and conduct a gentle baseline assessment to align curriculums smoothly.
-        </div>
-</div>
-{/* FAQ 3 */}
-<div className="bg-surface-container-lowest rounded-2xl p-5 shadow-sm transition-all">
-<button className="w-full flex items-center justify-between text-left gap-4 font-headline-sm text-headline-sm text-on-surface" type="button">
-<span className="">What is the strict class size policy across nursery and primary tiers?</span>
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200 rotate-180">expand_more</span>
-</button>
-<div className="faq-content pt-3 font-body-md text-body-md text-on-surface-variant leading-relaxed">Please contact the school to discuss class availability, classroom support and the programme that suits your child.</div>
-</div>
-{/* FAQ 4 */}
-<div className="bg-surface-container-lowest rounded-2xl p-5 shadow-sm transition-all">
-<button className="w-full flex items-center justify-between text-left gap-4 font-headline-sm text-headline-sm text-on-surface" type="button">
-<span className="">Can both working parents attend the campus tour on a flexible schedule?</span>
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200">expand_more</span>
-</button>
-<div className="faq-content hidden pt-3 font-body-md text-body-md text-on-surface-variant leading-relaxed">
-          Absolutely. While morning tours (9:30 AM to 11:30 AM) are best for seeing learners actively working and playing, our admissions office accommodates executive working hours, including early arrivals (7:45 AM) or designated Saturday morning open desks by prior appointment.
-        </div>
-</div>
-{/* FAQ 5 */}
-<div className="bg-surface-container-lowest rounded-2xl p-5 shadow-sm transition-all">
-<button className="w-full flex items-center justify-between text-left gap-4 font-headline-sm text-headline-sm text-on-surface" type="button">
-<span className="">What happens during the Informal Pupil Readiness Observation?</span>
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200">expand_more</span>
-</button>
-<div className="faq-content hidden pt-3 font-body-md text-body-md text-on-surface-variant leading-relaxed">
-          It is strictly warm, informal, and play-based. We do not administer stressful exams to young children. For nursery age, an educator joins the child with building blocks, colourful picture books, and tactile puzzles. For primary candidates, we simply review baseline reading comfort and numerical logic to ensure optimal classroom placement.
-        </div>
-</div>
-</div>
+<PublicAccordion items={[{"id": "faqAccordion0", "question": "How do families apply?", "answer": "Start by discussing the child\u2019s age, previous learning and class availability with the school office. Prepare your questions using the enquiry form. A visit is confirmed only when the office agrees a time."}, {"id": "faqAccordion1", "question": "How do parents access the portal?", "answer": "Parents use their child\u2019s Student account. The school issues a private setup link so the family can choose a password. Admission number and password are required to sign in."}, {"id": "faqAccordion2", "question": "Where can parents pay fees?", "answer": "Sign in to the Student portal to see the pupil\u2019s assigned fees and make a payment. Balances and receipts update only after the payment has been verified."}, {"id": "faqAccordion3", "question": "When can families see results?", "answer": "Results appear in the Student portal after an administrator publishes them. An unpaid fee balance does not block access to published results."}, {"id": "faqAccordion4", "question": "How can a family recover account access?", "answer": "Contact the school office. An administrator verifies the guardian\u2019s identity before issuing a private, single-use password setup link. Links expire after 30 minutes."}]} />
 </section>
 {/* CONTACT ADMISSIONS OFFICE CALLOUT BAND */}
 <section className="bg-surface-container-high py-space-xl lg:py-20 w-full">
@@ -426,12 +260,12 @@ export default function AdmissionsPage() {
 </div>
 <div className="flex items-center gap-2 text-on-surface">
 <span aria-hidden="true" className="material-symbols-outlined text-primary text-[20px]">near_me</span>
-<span className="">Airport Rd Campus, GRA</span>
+<span className="">Arrange a visit with the school office</span>
 </div>
 </div>
 </div>
 <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-3 justify-center items-stretch">
-<a className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-lg text-label-lg transition-all shadow-md text-center" href="tel:+23452290840">
+<a className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary font-label-lg text-label-lg transition-all shadow-md text-center" href="/contact#enquiry">
 <span aria-hidden="true" className="material-symbols-outlined text-[20px]">phone_in_talk</span>
 <span className="">Call Admissions Registrar</span>
 </a>
@@ -451,3 +285,4 @@ export default function AdmissionsPage() {
     </div>
   );
 }
+

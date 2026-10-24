@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
+import PublicEnquiryForm from "@/components/public/PublicEnquiryForm";
 import React from "react";
 import Link from "next/link";
 import PublicNavbar from "@/components/public/PublicNavbar";
 import PublicFooter from "@/components/public/PublicFooter";
+
+export const metadata: Metadata = {"title": "About Edvora", "description": "Discover the learning approach and parent partnership behind Edvora Nursery & Primary School.", "alternates": {"canonical": "/about"}};
 
 export default function AboutPage() {
   return (
@@ -398,7 +402,7 @@ export default function AboutPage() {
 <span className="font-label-sm text-label-sm uppercase tracking-widest text-primary">The Learning Grounds</span>
 <h2 className="font-headline-lg text-headline-lg text-on-surface">Thoughtfully Designed Spaces for Focus &amp; Wellbeing</h2>
 <p className="font-body-md text-body-md text-on-surface-variant">
-          Architecture informs how young minds breathe and concentrate. Explore our secure physical environment in the GRA district.
+          Architecture informs how young minds breathe and concentrate. Explore our secure physical environment with your child.
         </p>
 </div>
 <div className="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
@@ -481,7 +485,7 @@ export default function AboutPage() {
 </div>
 <div className="flex items-center gap-space-xs text-on-surface font-label-md text-label-md">
 <span aria-hidden="true" className="material-symbols-outlined text-secondary text-[20px]">call</span>
-<span className="">Direct Admissions Hotline: +234 52 290 840</span>
+<span className="">Admissions enquiries</span>
 </div>
 </div>
 </div>
@@ -489,38 +493,10 @@ export default function AboutPage() {
 <div className="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm space-y-space-md">
 <div className="space-y-space-xs">
 <div className="font-headline-sm text-headline-sm text-on-surface">Schedule an Academy Tour</div>
-<p className="font-body-sm text-body-sm text-on-surface-variant">Leave your contact details and our admissions coordinator will reach out within 24 hours.</p>
+<p className="font-body-sm text-body-sm text-on-surface-variant">Prepare your visit details to share with the school office.</p>
 </div>
-<form className="space-y-space-sm" id="tour-form">
-<div>
-<label htmlFor="about-field-1" className="block font-label-md text-label-md text-on-surface mb-1">Parent / Guardian Name</label>
-<input id="about-field-1" className="w-full px-3 py-2.5 rounded-lg bg-surface text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm" placeholder="e.g. Dr. &amp; Mrs. O. Ehigiator" required type="text" />
-</div>
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
-<div>
-<label htmlFor="about-field-2" className="block font-label-md text-label-md text-on-surface mb-1">Phone Number</label>
-<input id="about-field-2" className="w-full px-3 py-2.5 rounded-lg bg-surface text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-primary shadow-sm" placeholder="0803 000 0000" required type="tel" />
-</div>
-<div>
-<label htmlFor="about-field-3" className="block font-label-md text-label-md text-on-surface mb-1">Proposed Class</label>
-<select id="about-field-3" className="w-full px-3 py-2.5 rounded-lg bg-surface text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm">
-<option>Creche (3-18 mos)</option>
-<option>Nursery I &amp; II (2-4 yrs)</option>
-<option>Lower Primary (Grades 1-3)</option>
-<option>Upper Primary (Grades 4-6)</option>
-</select>
-</div>
-</div>
-<button className="w-full mt-space-sm py-3 px-4 rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg shadow-md hover:bg-primary transition-all flex items-center justify-center gap-space-xs" type="submit">
-<span aria-hidden="true" className="material-symbols-outlined text-[18px]">send</span>
-<span className="">Confirm Tour Request</span>
-</button>
-</form>
-<div className="hidden p-space-md rounded-xl bg-surface-container text-center space-y-space-xs" id="tour-confirmation">
-<span aria-hidden="true" className="material-symbols-outlined text-primary text-[36px]">check_circle</span>
-<div className="font-headline-sm text-headline-sm text-on-surface">Tour Request Received</div>
-<p className="font-body-sm text-body-sm text-on-surface-variant">Our Admissions Desk will contact you via Telegram and phone call to confirm your preferred morning appointment slot.</p>
-</div>
+<PublicEnquiryForm idPrefix="about" />
+
 </div>
 </div>
 </div>
@@ -533,3 +509,4 @@ export default function AboutPage() {
     </div>
   );
 }
+

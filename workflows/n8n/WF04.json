@@ -1,0 +1,272 @@
+{
+  "id": "hoPH7KNlrdMYXszh",
+  "name": "EDVORA — WF04 — Failure Recovery & Staff Alerts",
+  "active": false,
+  "versionId": "835e88c7-3854-4ffd-8c02-fe9878a6fa8e",
+  "nodes": [
+    {
+      "id": "fcb7f933-ba43-42d8-98e0-c4d0ebf308ec",
+      "name": "Recovery Sweep Every 15 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "8654e8d1-dd74-413d-8ee9-d08f175017f4",
+      "name": "Edvora Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        272,
+        224
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "backend",
+              "name": "backend_url",
+              "type": "string",
+              "value": "<__PLACEHOLDER_VALUE__Edvora backend HTTPS origin — no trailing slash__>"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "766b59da-78cb-45a5-a394-0d3439baa09d",
+      "name": "Recover Safe Jobs and Queue Staff Alerts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        496,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/recovery/sweep\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {run_id:$execution.id,limit:100,max_attempts:3} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "id": "665757ff-4d90-4c26-8c13-7e88ef326975",
+      "name": "Manual Review Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "5c21c368-5f51-47ea-8db4-ec66039d4352",
+      "name": "Edvora Workflow Failure",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        416
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "1b28fc65-7f56-4b48-a6f2-eb1aaf34fd0a",
+      "name": "Edvora Error Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        272,
+        544
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "backend",
+              "name": "backend_url",
+              "type": "string",
+              "value": "<__PLACEHOLDER_VALUE__Edvora backend HTTPS origin — no trailing slash__>"
+            }
+          ]
+        },
+        "includeOtherFields": true
+      }
+    },
+    {
+      "id": "3e150ac9-a9aa-47fb-81cd-3289d1f5058e",
+      "name": "Normalize Edvora Failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        544
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const p=$input.first().json;const w=p.workflow??{};const e=p.execution??{};const t=p.trigger??{};const id=String(w.id??'');const name=String(w.name??'');if(!name.startsWith('EDVORA — '))return [];return [{json:{backend_url:p.backend_url,workflow_id:id,workflow_name:name.slice(0,120),execution_id:e.id===undefined?null:String(e.id),failure_kind:e.error?'execution_error':t.error?'trigger_error':'workflow_error',failed_node:typeof e.lastNodeExecuted==='string'?e.lastNodeExecuted.slice(0,120):null,incident_key:'n8n:'+id+':'+String(e.id??$execution.id),record_only:name.includes('WF05')},pairedItem:{item:0}}];"
+      }
+    },
+    {
+      "id": "23d0fbc0-52c5-4b9d-b954-c8cfb2e8cbf2",
+      "name": "Record Incident and Queue Staff Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        720,
+        544
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.backend_url + \"/api/automation/incidents\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {workflow_id:$json.workflow_id,workflow_name:$json.workflow_name,execution_id:$json.execution_id,failure_kind:$json.failure_kind,failed_node:$json.failed_node,incident_key:$json.incident_key,record_only:$json.record_only} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "id": "ea442324-7622-4a42-8cb2-e3258cac7fb4",
+      "name": "Sticky Note 3963a895",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        288,
+        544
+      ],
+      "parameters": {
+        "content": "## Edvora recovery and incidents — inactive until integration\n/api/automation/recovery/sweep releases expired unstarted claims; expired authorized/uncertain attempts go to review. Only the latest definitive retryable failure may requeue, with exponential backoff and at most three retries. Successful channels never resend. Payment/SMS claims have persisted leases.\n/api/automation/incidents deduplicates incident keys and queues alerts only to active administrators with stored private consented contacts. WF05 failures force record-only even when the caller omits that flag.\nKeep the workflow unpublished until backend/provider integration is complete. Bind it as the Edvora error workflow after publication is authorized. Do not alter Nestly workflows or credentials.",
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Recovery Sweep Every 15 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Edvora Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edvora Configuration": {
+      "main": [
+        [
+          {
+            "node": "Recover Safe Jobs and Queue Staff Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Review Run": {
+      "main": [
+        [
+          {
+            "node": "Edvora Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edvora Workflow Failure": {
+      "main": [
+        [
+          {
+            "node": "Edvora Error Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edvora Error Configuration": {
+      "main": [
+        [
+          {
+            "node": "Normalize Edvora Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Edvora Failure": {
+      "main": [
+        [
+          {
+            "node": "Record Incident and Queue Staff Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 180
+  }
+}

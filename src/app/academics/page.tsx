@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
+import DailyRhythm from "@/components/public/DailyRhythm";
 import React from "react";
 import Link from "next/link";
 import PublicNavbar from "@/components/public/PublicNavbar";
 import PublicFooter from "@/components/public/PublicFooter";
+
+export const metadata: Metadata = {"title": "Academics | Edvora", "description": "Explore nursery and primary programmes, daily learning and how results are shared with families.", "alternates": {"canonical": "/academics"}};
 
 export default function AcademicsPage() {
   return (
@@ -353,111 +357,7 @@ export default function AcademicsPage() {
 </div>
 </div>
 </section>
-{/* SECTION 4: Sample Daily Rhythm (Interactive Timeline) */}
-<section className="w-full py-space-xl lg:py-28 px-margin-mobile lg:px-margin bg-surface">
-<div className="max-w-7xl mx-auto space-y-space-xl">
-<div className="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
-<div className="space-y-space-xs">
-<div className="font-label-sm text-label-sm text-primary uppercase font-bold tracking-widest">Paced for Concentration &amp; Joy</div>
-<h2 className="font-headline-lg text-headline-lg text-on-surface">The Edvora Daily Rhythm</h2>
-</div>
-<div className="inline-flex items-center gap-space-xs bg-surface-container p-1 rounded-xl">
-<button className="px-4 py-2 rounded-lg bg-surface-container-lowest text-primary font-label-md text-label-md shadow-sm transition-all" id="rhythm-nursery-btn">
-            Early Years (Toddler – N2)
-          </button>
-<button className="px-4 py-2 rounded-lg text-on-surface-variant hover:text-on-surface font-label-md text-label-md transition-all" id="rhythm-primary-btn">
-            Primary School (Pri 1 – 6)
-          </button>
-</div>
-</div>
-{/* Schedule Timeline Container */}
-<div className="grid grid-cols-1 md:grid-cols-6 gap-space-md relative" id="rhythm-container">
-{/* Slot 1 */}
-<div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col justify-between space-y-space-sm">
-<div className="space-y-space-xs">
-<span className="font-label-sm text-label-sm text-secondary font-bold" id="slot-time-1">07:45 – 08:15 AM</span>
-<div className="font-headline-sm text-headline-sm text-on-surface" id="slot-title-1">Morning Circle &amp; Reflection</div>
-<p className="font-body-sm text-body-sm text-on-surface-variant" id="slot-desc-1">Handshake greeting, prayer/meditation, hydration check, and calendar orientation.</p>
-</div>
-<div className="flex items-center gap-space-xs text-primary font-label-sm text-label-sm pt-2">
-<span aria-hidden="true" className="material-symbols-outlined text-[16px]">wb_sunny</span>
-<span id="slot-tag-1" className="">Social Regulation</span>
-</div>
-</div>
-{/* Slot 2 */}
-<div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col justify-between space-y-space-sm">
-<div className="space-y-space-xs">
-<span className="font-label-sm text-label-sm text-primary font-bold" id="slot-time-2">08:15 – 10:00 AM</span>
-<div className="font-headline-sm text-headline-sm text-on-surface" id="slot-title-2">Core Literacy &amp; Phonics</div>
-<p className="font-body-sm text-body-sm text-on-surface-variant" id="slot-desc-2">Peak cognitive window dedicated to sound decoding, reading pods, and penmanship.</p>
-</div>
-<div className="flex items-center gap-space-xs text-primary font-label-sm text-label-sm pt-2">
-<span aria-hidden="true" className="material-symbols-outlined text-[16px]">menu_book</span>
-<span id="slot-tag-2" className="">High Focus</span>
-</div>
-</div>
-{/* Slot 3 */}
-<div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col justify-between space-y-space-sm">
-<div className="space-y-space-xs">
-<span className="font-label-sm text-label-sm text-secondary font-bold" id="slot-time-3">10:00 – 10:45 AM</span>
-<div className="font-headline-sm text-headline-sm text-on-surface" id="slot-title-3">Organic Snack &amp; Botanical Play</div>
-<p className="font-body-sm text-body-sm text-on-surface-variant" id="slot-desc-3">Supervised motor exercise, courtyard tree climbing, fresh local seasonal fruits.</p>
-</div>
-<div className="flex items-center gap-space-xs text-primary font-label-sm text-label-sm pt-2">
-<span aria-hidden="true" className="material-symbols-outlined text-[16px]">nature_people</span>
-<span id="slot-tag-3" className="">Active Physicality</span>
-</div>
-</div>
-{/* Slot 4 */}
-<div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col justify-between space-y-space-sm">
-<div className="space-y-space-xs">
-<span className="font-label-sm text-label-sm text-primary font-bold" id="slot-time-4">10:45 – 12:15 PM</span>
-<div className="font-headline-sm text-headline-sm text-on-surface" id="slot-title-4">Numeracy &amp; Spatial Labs</div>
-<p className="font-body-sm text-body-sm text-on-surface-variant" id="slot-desc-4">Tactile math models, Cuisenaire rods, geometry puzzles, and quantitative problem sets.</p>
-</div>
-<div className="flex items-center gap-space-xs text-primary font-label-sm text-label-sm pt-2">
-<span aria-hidden="true" className="material-symbols-outlined text-[16px]">shapes</span>
-<span id="slot-tag-4" className="">Logical Modeling</span>
-</div>
-</div>
-{/* Slot 5 */}
-<div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col justify-between space-y-space-sm">
-<div className="space-y-space-xs">
-<span className="font-label-sm text-label-sm text-secondary font-bold" id="slot-time-5">12:15 – 01:15 PM</span>
-<div className="font-headline-sm text-headline-sm text-on-surface" id="slot-title-5">Dining &amp; Rest Period</div>
-<p className="font-body-sm text-body-sm text-on-surface-variant" id="slot-desc-5">Nutritious hot lunch, table etiquette lessons, followed by quiet nap/soothing audio.</p>
-</div>
-<div className="flex items-center gap-space-xs text-primary font-label-sm text-label-sm pt-2">
-<span aria-hidden="true" className="material-symbols-outlined text-[16px]">restaurant</span>
-<span id="slot-tag-5" className="">Restoration</span>
-</div>
-</div>
-{/* Slot 6 */}
-<div className="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col justify-between space-y-space-sm">
-<div className="space-y-space-xs">
-<span className="font-label-sm text-label-sm text-primary font-bold" id="slot-time-6">01:15 – 02:30 PM</span>
-<div className="font-headline-sm text-headline-sm text-on-surface" id="slot-title-6">Clubs &amp; Atelier Workshops</div>
-<p className="font-body-sm text-body-sm text-on-surface-variant" id="slot-desc-6">Creative studio, robotics, debate society, or cultural percussion prior to departure.</p>
-</div>
-<div className="flex items-center gap-space-xs text-primary font-label-sm text-label-sm pt-2">
-<span aria-hidden="true" className="material-symbols-outlined text-[16px]">celebration</span>
-<span id="slot-tag-6" className="">Enrichment</span>
-</div>
-</div>
-</div>
-{/* Photographic Context Banner */}
-<div className="relative w-full h-80 rounded-3xl overflow-hidden shadow-md">
-<img className="w-full h-full object-cover" alt="A clean, panoramic view of a sunny courtyard in an elite primary school in Benin City, with young Nigerian pupils in green uniforms engaged in an outdoor botany science class near a lush garden perimeter." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFc-JWI1CEzggBTf1vvWBGQ42uLWrM0qNvMwDLrS0K0JTis1WoakQ1ZTVvkkTpDJhjCMywpljjNJzgBtF1aLQSnspsGlrGF3IdmmbTw4ic6Dyf40s4c2lD7ZjUs1icKXVsvWsrOS2yVCJh0XYOkQ0Q_dtKtwHN6lso0aWfgGVKQZlEuZxMhY5pdjEvGzjW5Kfzw9qGQ_VAnxvNMCWgMZ0fUokDhb1q1bhCqVW1eBDgNikAEyxO0lR0" />
-<div className="absolute inset-0 bg-gradient-to-t from-inverse-surface/90 via-inverse-surface/40 to-transparent flex items-end p-space-lg lg:p-space-xl">
-<div className="max-w-2xl text-on-primary space-y-1">
-<span className="font-label-sm text-label-sm uppercase tracking-widest text-secondary-fixed">Sunlit Spaces &amp; Natural Air</span>
-<h4 className="font-headline-md text-headline-md text-on-primary">Purpose-built learning environments tailored for child joy</h4>
-<p className="font-body-sm text-body-sm text-on-primary-container">Learning spaces support reading, discussion, creative activities and focused practice.</p>
-</div>
-</div>
-</div>
-</div>
-</section>
+<section className="w-full py-space-xl px-margin-mobile lg:px-margin bg-surface"><div className="max-w-7xl mx-auto space-y-6"><h2 className="font-headline-lg text-headline-lg">The Edvora Daily Rhythm</h2><DailyRhythm /></div></section>
 {/* SECTION 5: Thoughtful Assessment & Reporting Philosophy (Continuous Assessment Model) */}
 <section className="w-full py-space-xl lg:py-28 px-margin-mobile lg:px-margin bg-surface-container-low">
 <div className="max-w-7xl mx-auto space-y-space-xl">
@@ -466,7 +366,7 @@ export default function AcademicsPage() {
 <div className="font-label-sm text-label-sm text-primary uppercase font-bold tracking-widest">Holistic Growth Metrics</div>
 <h2 className="font-headline-lg text-headline-lg text-on-surface">Assessment Devoid of Fear: The Continuous Insight Model</h2>
 <p className="font-body-md text-body-md text-on-surface-variant">
-            At Edvora, we reject high-stakes, anxiety-inducing cram exams for young children. Instead, we utilize a dignified Continuous Assessment (CA) model. Pupils are observed daily across cognitive, affective, and psychomotor dimensions.
+            Learning combines classroom practice, continuous assessment and examinations. The portal records continuous assessment out of 40 and examinations out of 60. Administrators review and publish results for families.
           </p>
 <div className="space-y-space-sm pt-2">
 <div className="flex items-start gap-space-sm">
@@ -475,7 +375,7 @@ export default function AcademicsPage() {
 </div>
 <div>
 <div className="font-headline-sm text-headline-sm text-on-surface">Descriptive Progression Rubrics</div>
-<div className="font-body-sm text-body-sm text-on-surface-variant">Detailed criteria rather than arbitrary single-letter grades, showing exactly what a child has conquered and what comes next.</div>
+<div className="font-body-sm text-body-sm text-on-surface-variant">Continuous assessment and examination scores show progress in each subject, alongside teacher feedback.</div>
 </div>
 </div>
 <div className="flex items-start gap-space-sm">
@@ -666,3 +566,4 @@ export default function AcademicsPage() {
     </div>
   );
 }
+

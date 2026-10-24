@@ -1,0 +1,334 @@
+{
+  "id": "d2nMNvcDwMMXgijY",
+  "name": "EDVORA — WF02 — Payment Verification & Receipts",
+  "active": false,
+  "versionId": "4aace8d9-0195-48b4-9fd5-e89c9a12d296",
+  "nodes": [
+    {
+      "id": "a8ff0200-ca1a-4a3e-92cc-a13cfe596987",
+      "name": "Check Pending Payments Every 5 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "35e9ebd5-1d18-4adf-b785-ee171404c547",
+      "name": "Edvora Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        272,
+        224
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "backend",
+              "name": "backend_url",
+              "type": "string",
+              "value": "<__PLACEHOLDER_VALUE__Edvora backend HTTPS origin — no trailing slash__>"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "23245ae0-8d39-4499-b05d-9878f7f2dc68",
+      "name": "Claim Payment Verification Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        496,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/payments/claim\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {run_id:$execution.id,limit:20} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "id": "80aa86ef-918b-4217-aeb9-5b3ceaae7284",
+      "name": "Validate Payment Jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        224
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const p=$input.first().json; if(!Array.isArray(p.jobs)) throw new Error('Expected payment jobs array'); const seen=new Set(); return p.jobs.map(j=>{if(!j||typeof j.job_id!=='string'||!j.job_id||typeof j.claim_token!=='string'||!j.claim_token||typeof j.reference!=='string'||!j.reference||j.reference.length>200||!Number.isSafeInteger(j.expected_amount_minor)||j.expected_amount_minor<=0||j.currency!=='NGN'||j.environment!=='test'||seen.has(j.job_id))throw new Error('Invalid payment job or unsupported environment');seen.add(j.job_id);return {json:j,pairedItem:{item:0}};});"
+      }
+    },
+    {
+      "id": "bd004d03-ebd2-43bb-995f-8f91efe9784d",
+      "name": "Verify Reference with Paystack",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1024,
+        224
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ \"https://api.paystack.co/transaction/verify/\" + encodeURIComponent($json.reference) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 1000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "8ab17b24-1ae2-419a-8e51-63892805a56d",
+      "name": "Check Amount Currency and Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        224
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const j=$('One Payment at a Time').item.json; const r=$input.first().json; const b=r.body??{};const d=b.data??{};const validResponse=!r.error&&r.statusCode===200&&b.status===true;const matches=validResponse&&d.reference===j.reference&&d.amount===j.expected_amount_minor&&d.currency===j.currency&&d.domain===j.environment;const terminalFailure=['failed','abandoned','reversed'].includes(d.status); let decision='defer';let reason='verification_unavailable_or_pending';if(validResponse&&!matches){decision='review';reason='provider_details_mismatch';}else if(matches&&d.status==='success'&&d.id!==undefined&&Number.isFinite(Date.parse(d.paid_at??''))){decision='verify_and_credit';reason=null;}else if(matches&&terminalFailure){decision='record_non_success';reason='provider_non_success';}return [{json:{job_id:j.job_id,claim_token:j.claim_token,reference:j.reference,decision,reason,provider_status:typeof d.status==='string'?d.status:null,provider_transaction_id:d.id===undefined?null:String(d.id),amount_minor:Number.isSafeInteger(d.amount)?d.amount:null,currency:typeof d.currency==='string'?d.currency:null,environment:typeof d.domain==='string'?d.domain:null,paid_at:typeof d.paid_at==='string'?d.paid_at:null},pairedItem:{item:0}}];"
+      }
+    },
+    {
+      "id": "c9d1a6c6-8cf0-4732-b32f-6f362c603a26",
+      "name": "Reconcile Payment and Create Receipt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1472,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/payments/reconcile\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {...$json,execution_id:$execution.id} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "id": "4712a2ad-9e7f-4c0d-b13d-6c40de2b5fca",
+      "name": "One Payment at a Time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        752,
+        96
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "39c16cec-e83c-424d-8339-4e62fd7bfc66",
+      "name": "Manual Review Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "5b10fb49-11ee-41f6-a14c-098176ef1d6a",
+      "name": "Sticky Note 198a02f4",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        672,
+        224
+      ],
+      "parameters": {
+        "content": "## Edvora payment verification — inactive, Paystack test only\nBackend /api/automation/payments/claim persists worker ownership leases. /reconcile requires job_id, claim_token and reference, then independently verifies the reference against Paystack using server credentials. Worker-supplied amounts/provider IDs never create a credit.\nDatabase locks and idempotency keep duplicate/concurrent callbacks from double crediting. Receipts and notification jobs commit with the payment. Non-successful, pending, mismatched or unavailable provider responses preserve the balance.\nConfigure backend HTTPS origin, Edvora Backend Service and Paystack test credentials before integration. No live payment collection or messages occurred during this update.",
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Check Pending Payments Every 5 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Edvora Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edvora Configuration": {
+      "main": [
+        [
+          {
+            "node": "Claim Payment Verification Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Payment Verification Jobs": {
+      "main": [
+        [
+          {
+            "node": "Validate Payment Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Payment Jobs": {
+      "main": [
+        [
+          {
+            "node": "One Payment at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Reference with Paystack": {
+      "main": [
+        [
+          {
+            "node": "Check Amount Currency and Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Amount Currency and Status": {
+      "main": [
+        [
+          {
+            "node": "Reconcile Payment and Create Receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reconcile Payment and Create Receipt": {
+      "main": [
+        [
+          {
+            "node": "One Payment at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One Payment at a Time": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Verify Reference with Paystack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Review Run": {
+      "main": [
+        [
+          {
+            "node": "Edvora Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 180
+  }
+}

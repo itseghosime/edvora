@@ -25,8 +25,9 @@ export default function PaymentModal({
   const [selectedOption, setSelectedOption] = useState<"full" | "instalment" | "custom">("full");
   const [customAmount, setCustomAmount] = useState<number>(20000);
   const [channel, setChannel] = useState<"Paystack (Card)" | "Bank Transfer" | "USSD">("Paystack (Card)");
-  const [checkoutStep, setCheckoutStep] = useState<"form" | "processing" | "receipt">("form");
-  const [latestReceipt, setLatestReceipt] = useState<any>(null);
+  const [checkoutStep, setCheckoutStep] = useState<"form" | "processing">("form");
+  const [payerEmail, setPayerEmail] = useState("");
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   const recordPaymentMutation = useRecordPaymentMutation();
 
@@ -43,13 +44,15 @@ export default function PaymentModal({
   const remainingBalancePreview = Math.max(0, currentBalance - amountToPay);
 
   const handlePay = () => {
-    if (amountToPay <= 0) return;
+    if (amountToPay <= 0 || !payerEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(payerEmail)) { setPaymentError("Enter a valid email address and payment amount."); return; }
+    setPaymentError(null);
 
     setCheckoutStep("processing");
 
     recordPaymentMutation.mutate(
       {
         pupilId,
+        payerEmail,
         amount: amountToPay,
         channel,
         notes:
@@ -59,11 +62,15 @@ export default function PaymentModal({
       },
       {
         onSuccess: (result) => {
-          setLatestReceipt(result.payment);
-          setCheckoutStep("receipt");
+          let url: URL;
+          try { url = new URL(result.authorization_url); } catch { setPaymentError("Unable to open secure checkout."); setCheckoutStep("form"); return; }
+          if (url.protocol !== "https:" || !(url.hostname === "paystack.com" || url.hostname.endsWith(".paystack.com"))) {
+            setPaymentError("Unable to open secure checkout."); setCheckoutStep("form"); return;
+          }
+          window.location.assign(url.toString());
         },
-        onError: () => {
-          alert("Payment processing encountered an error. Please try again.");
+        onError: (error) => {
+          setPaymentError(error.message);
           setCheckoutStep("form");
         },
       }
@@ -72,7 +79,6 @@ export default function PaymentModal({
 
   const handleClose = () => {
     setCheckoutStep("form");
-    setLatestReceipt(null);
     onClose();
   };
 
@@ -84,7 +90,7 @@ export default function PaymentModal({
         onClick={checkoutStep === "processing" ? undefined : handleClose}
       />
 
-      <div className="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-ink-border z-10 animate-in zoom-in-95 duration-200">
+      <div className="relative bg-white rounded-3xl max-w-lg w-full max-h-[calc(100dvh-2rem)] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-ink-border z-10 animate-in zoom-in-95 duration-200">
         {checkoutStep === "form" && (
           <div>
             <div className="flex items-start justify-between pb-4 border-b border-ink-border">
@@ -102,11 +108,18 @@ export default function PaymentModal({
               <button
                 type="button"
                 onClick={handleClose}
+                aria-label="Close payment modal"
                 className="p-1.5 text-ink-muted hover:text-ink hover:bg-gray-100 rounded-xl transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {paymentError && (
+              <p role="alert" className="text-error text-sm mt-3 p-3 bg-error-container/20 rounded-xl border border-error/30">
+                {paymentError}
+              </p>
+            )}
 
             <div className="mt-5 space-y-4">
               {/* Current balance reminder */}
@@ -189,6 +202,26 @@ export default function PaymentModal({
                 </span>
               </div>
 
+              {/* Receipt email input */}
+              <div className="space-y-1.5 pt-1">
+                <label htmlFor="payer-receipt-email" className="block text-xs font-bold text-ink">
+                  Receipt Email Address
+                </label>
+                <input
+                  id="payer-receipt-email"
+                  type="email"
+                  required
+                  value={payerEmail}
+                  onChange={(e) => setPayerEmail(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-ink-border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-forest bg-white"
+                  placeholder="parent@example.com"
+                  autoComplete="email"
+                />
+                <p className="text-[11px] text-ink-muted">
+                  Used by Paystack for checkout and payment communication.
+                </p>
+              </div>
+
               {/* Payment Channel Selection */}
               <div className="space-y-2 pt-2">
                 <label className="text-xs font-bold text-ink">Payment Channel</label>
@@ -256,77 +289,18 @@ export default function PaymentModal({
           <div className="py-12 text-center">
             <div className="w-14 h-14 border-4 border-forest-100 border-t-forest rounded-full animate-spin mx-auto mb-4" />
             <h3 className="text-lg font-heading font-extrabold text-ink">
-              Verifying Payment
+              Opening secure checkout
             </h3>
             <p className="text-xs text-ink-muted mt-1 max-w-xs mx-auto">
-              Connecting securely to provider gateway. Verifying transaction reference and updating pupil balance...
+              Connecting to Paystack. Your balance will update only after a successful payment has been verified.
             </p>
           </div>
         )}
 
-        {checkoutStep === "receipt" && latestReceipt && (
-          <div>
-            <div className="text-center pb-6 border-b border-ink-border">
-              <div className="w-12 h-12 bg-mint rounded-full flex items-center justify-center text-forest mx-auto mb-3">
-                <CheckCircle2 className="w-7 h-7" />
-              </div>
-              <span className="text-xs font-bold text-forest uppercase tracking-wider">
-                Payment Verified & Credited
-              </span>
-              <h3 className="text-2xl font-extrabold font-heading text-ink mt-1">
-                {formatNaira(latestReceipt.amount)}
-              </h3>
-              <p className="text-xs text-ink-muted mt-0.5">
-                Official electronic bursary receipt
-              </p>
-            </div>
 
-            <div className="py-5 space-y-2.5 text-xs">
-              <div className="flex justify-between py-1 border-b border-gray-100">
-                <span className="text-ink-muted">Receipt Number</span>
-                <span className="font-mono font-bold text-ink">{latestReceipt.receiptNumber}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-gray-100">
-                <span className="text-ink-muted">Pupil</span>
-                <span className="font-semibold text-ink">{latestReceipt.pupilName}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-gray-100">
-                <span className="text-ink-muted">Reference</span>
-                <span className="font-mono text-ink-muted text-[11px]">{latestReceipt.reference}</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-gray-100">
-                <span className="text-ink-muted">Channel</span>
-                <span className="font-semibold text-ink">{latestReceipt.channel}</span>
-              </div>
-              <div className="flex justify-between py-1 bg-ivory-50 p-2.5 rounded-xl border border-ink-border">
-                <span className="text-ink font-semibold">New Outstanding Balance</span>
-                <span className="font-bold text-sm text-forest font-heading">
-                  {formatNaira(latestReceipt.balanceAfter)}
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="px-4 py-2 text-xs font-semibold text-ink bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors flex items-center gap-1.5"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                Print Receipt
-              </button>
-              <button
-                type="button"
-                onClick={handleClose}
-                className="px-6 py-2 bg-forest hover:bg-forest-600 text-white text-xs font-semibold rounded-xl transition-colors"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
 }
+
 

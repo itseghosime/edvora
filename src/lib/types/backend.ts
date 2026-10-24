@@ -6,6 +6,7 @@
 export type StaffRole = 'admin' | 'bursar' | 'teacher';
 
 export interface StaffProfile {
+  authVersion?: number;
   id: string;
   userId?: string;
   fullName: string;
@@ -16,6 +17,7 @@ export interface StaffProfile {
 }
 
 export interface Pupil {
+  authVersion?: number;
   id: string;
   admissionNumber: string;
   firstName: string;
@@ -270,4 +272,5 @@ export interface OperationalIncident {
   resolvedAt?: string;
   createdAt: string;
 }
+
 

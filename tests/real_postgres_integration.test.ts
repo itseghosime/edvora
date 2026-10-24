@@ -3,7 +3,7 @@ import { Client, Pool } from 'pg';
 import fs from 'fs';
 import path from 'path';
 
-describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Concurrency', () => {
+describe('Real PostgreSQL Integration: Migrations, RLS, Stored Functions & Concurrency', () => {
   const connectionString = process.env.DATABASE_URL || 'postgres://postgres@localhost:5433/edvora_test';
   let pool: Pool;
 
@@ -63,6 +63,35 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
       await client.query(hardenSql);
       await client.query(staffBoundariesSql);
       await client.query(guardianPermissionsSql);
+      const integrationMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_portal_integration_foundation.sql'));
+      if(integrationMigration) await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',integrationMigration),'utf8'));
+      const staffMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_staff_workspace_transactions.sql'))!;
+      await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',staffMigration),'utf8'));
+      const balanceMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_serialize_fee_balance_updates.sql'))!;
+      await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',balanceMigration),'utf8'));
+      const classMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_harden_staff_class_checks.sql'))!;
+      await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',classMigration),'utf8'));
+      for(const suffix of ['_notification_leases_and_session_revocation.sql','_notification_send_authorization.sql','_notification_outcome_recovery.sql','_login_attempt_limits.sql']){
+        const migration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith(suffix))!;
+        await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',migration),'utf8'));
+      }
+      const studentMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_student_password_access.sql'))!;
+      await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',studentMigration),'utf8'));
+      const passwordSessionMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_require_student_password_sessions.sql'))!;
+      await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',passwordSessionMigration),'utf8'));
+      // Test-owned prerequisites; never rely on a developer's existing database seed.
+      await client.query(`
+        INSERT INTO academic_sessions (id,name,start_date,end_date)
+        VALUES ('11111111-0000-0000-0000-000000000000','2026/2027 Test','2026-09-01','2027-07-31')
+        ON CONFLICT (id) DO NOTHING;
+        INSERT INTO academic_terms (id,session_id,name,term_code,start_date,end_date)
+        VALUES ('66666666-7777-8888-9999-000000000000','11111111-0000-0000-0000-000000000000','RLS Test Term','RLS-TEST','2026-09-01','2026-12-31')
+        ON CONFLICT (id) DO NOTHING;
+        INSERT INTO school_classes (id,name,stage)
+        VALUES ('22222222-0000-0000-0000-000000000000','Primary 3A Test','primary')
+        ON CONFLICT (id) DO NOTHING;
+      `);
+
     } finally {
       client.release();
     }
@@ -1073,8 +1102,10 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
   it('guarantees database atomicity and single-credit during concurrent duplicate verification', async () => {
     const testRunId = Date.now();
     const concurrentRef = `EDV-CONCURRENT-REF-${testRunId}`;
-    const pupilId = '11111111-2222-3333-4444-555555555555';
-    const termId = '66666666-7777-8888-9999-000000000000';
+    const fixture = await pool.query("SELECT pupil_id, term_id FROM fee_assignments WHERE term_id = '66666666-7777-8888-9999-000000000000' LIMIT 1");
+    expect(fixture.rows).toHaveLength(1);
+    const pupilId = fixture.rows[0].pupil_id;
+    const termId = fixture.rows[0].term_id;
 
     // Insert intent for concurrency test
     await pool.query(`
@@ -1117,4 +1148,37 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
     `);
     expect(tx.rows).toHaveLength(1);
   });
+  it('enforces transactional Staff commands, live roles, class scope, idempotency and result publication rules',async()=>{
+    const client=await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(fs.readFileSync(path.join(__dirname,'fixtures/staff_commands.sql'),'utf8'));
+    } finally {
+      await client.query('ROLLBACK');
+      client.release();
+    }
+  });
+
+  it('serializes different payment references against the same fee balance',async()=>{
+    const fixture=await pool.query("SELECT a.pupil_id,a.term_id,a.adjusted_amount_minor-coalesce((SELECT sum(amount_minor) FROM fee_ledger_entries l WHERE l.pupil_id=a.pupil_id AND l.term_id=a.term_id AND l.entry_type='credit'),0) AS balance FROM fee_assignments a WHERE term_id='66666666-7777-8888-9999-000000000000' LIMIT 1");
+    const row=fixture.rows[0];const amount=100000;const before=Number(row.balance);
+    const references=[`EDV-RACE-A-${Date.now()}`,`EDV-RACE-B-${Date.now()}`];
+    for(const ref of references)await pool.query("INSERT INTO payment_intents(pupil_id,term_id,reference,amount_minor,payer_email) VALUES($1,$2,$3,$4,'race@test.invalid')",[row.pupil_id,row.term_id,ref,amount]);
+    const results=await Promise.all(references.map(ref=>pool.query("SELECT credit_payment_intent($1,$2,$3,'card') AS result",[ref,`PS-${ref}`,amount])));
+    const balances=results.map(r=>Number(r.rows[0].result.new_balance_minor)).sort((a,b)=>a-b);
+    expect(balances).toEqual([Math.max(0,before-2*amount),Math.max(0,before-amount)]);
+    expect(results.every(r=>r.rows[0].result.success&&!r.rows[0].result.duplicate)).toBe(true);
+  });
+
+  it('verifies notification ownership, early/late callbacks, uncertain sends, retry caps and revoked sessions',async()=>{
+    const client=await pool.connect();
+    try{await client.query('BEGIN');await client.query(fs.readFileSync(path.join(__dirname,'fixtures/notification_contracts.sql'),'utf8'));}
+    finally{await client.query('ROLLBACK');client.release();}
+  });
+
+  it('verifies private Student password setup, single-use recovery and session invalidation',async()=>{
+    const client=await pool.connect();try{await client.query('BEGIN');await client.query(fs.readFileSync(path.join(__dirname,'fixtures/student_password_access.sql'),'utf8'));}finally{await client.query('ROLLBACK');client.release();}
+  });
+
 });
+
