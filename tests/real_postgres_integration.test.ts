@@ -65,6 +65,16 @@ describe('Real PostgreSQL Integration: Migrations, RLS, Stored Functions & Concu
       await client.query(guardianPermissionsSql);
       const integrationMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_portal_integration_foundation.sql'));
       if(integrationMigration) await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',integrationMigration),'utf8'));
+      // Test-owned prerequisites; never rely on a developer's existing database seed.
+      await client.query(`
+        INSERT INTO academic_sessions (id,name,start_date,end_date)
+        VALUES ('11111111-0000-0000-0000-000000000000','RLS Test Session','2026-09-01','2027-07-31');
+        INSERT INTO academic_terms (id,session_id,name,term_code,start_date,end_date)
+        VALUES ('66666666-7777-8888-9999-000000000000','11111111-0000-0000-0000-000000000000','RLS Test Term','RLS-TEST','2026-09-01','2026-12-31');
+        INSERT INTO school_classes (id,name,stage)
+        VALUES ('22222222-0000-0000-0000-000000000000','RLS Test Class','primary');
+      `);
+
     } finally {
       client.release();
     }
