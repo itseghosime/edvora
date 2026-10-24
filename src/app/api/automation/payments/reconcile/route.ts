@@ -1,43 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { verifyAutomationRequest } from '@/lib/services/authService';
-import { db } from '@/lib/db/supabaseRepository';
-
+import { NextRequest, NextResponse } from "next/server";
+import { verifyAutomationRequest } from "@/lib/services/authService";
+import { getSupabaseAdmin } from "@/lib/supabase/client";
+import { verifyPayment } from "@/lib/services/paymentsService";
 export async function POST(req: NextRequest) {
-  const isAuth = verifyAutomationRequest(req.headers.get('authorization'));
-  if (!isAuth) {
-    return NextResponse.json({ error: 'Unauthorized: Invalid service key' }, { status: 401 });
-  }
-
+  if (!verifyAutomationRequest(req.headers.get("authorization")))
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
     const body = await req.json();
-    const { reference, provider_transaction_id, amount_minor, channel, status } = body;
-
-    if (!reference) {
-      return NextResponse.json({ error: 'Missing reference' }, { status: 400 });
-    }
-
-    if (status !== 'success') {
-      return NextResponse.json({
-        success: false,
-        status: status || 'pending',
-        action: 'preserved_balance',
-      });
-    }
-
-    const result = await db.creditPayment({
-      reference,
-      providerTransactionId: provider_transaction_id || `PSTK_${reference}`,
-      amountMinor: Number(amount_minor),
-      channel: channel || 'card',
-    });
-
-    return NextResponse.json({
-      success: true,
-      transaction_id: (result as any).transaction?.id || (result as any).transaction_id,
-      receipt_number: (result as any).receipt?.receiptNumber || (result as any).receipt_number,
-      new_balance_minor: (result as any).newBalanceMinor || (result as any).new_balance_minor,
-    });
-  } catch (err: unknown) {
-    return NextResponse.json({ error: (err as Error).message }, { status: 400 });
+    if (!body.job_id || !body.claim_token || !body.reference)
+      return NextResponse.json(
+        { error: "Payment job, claim and reference are required" },
+        { status: 400 },
+      );
+    const client = getSupabaseAdmin();
+    if (!client)
+      return NextResponse.json(
+        { error: "School database is not configured" },
+        { status: 503 },
+      );
+    const { data, error } = await client
+      .from("payment_intents")
+      .select("id,claim_token,lease_expires_at,status,reference")
+      .eq("id", body.job_id)
+      .eq("reference", body.reference)
+      .maybeSingle();
+    if (error) throw error;
+    if (
+      !data ||
+      data.claim_token !== body.claim_token ||
+      !data.lease_expires_at ||
+      Date.parse(data.lease_expires_at) <= Date.now()
+    )
+      return NextResponse.json(
+        { error: "Payment claim is not owned or has expired" },
+        { status: 403 },
+      );
+    // Re-verify server-side; an automation worker cannot fabricate a provider transaction.
+    return NextResponse.json(await verifyPayment(body.reference));
+  } catch {
+    return NextResponse.json(
+      { error: "Unable to reconcile payment" },
+      { status: 400 },
+    );
   }
 }

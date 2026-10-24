@@ -1,0 +1,614 @@
+{
+  "id": "bt5x3HH74jRv5Ewt",
+  "name": "EDVORA — WF01 — SMS & Telegram Fee Reminders",
+  "active": false,
+  "versionId": "18cb536a-95ae-4bb5-8f80-674200e48919",
+  "nodes": [
+    {
+      "id": "2b0cc257-2e4a-473e-b5c6-60a9f3c69151",
+      "name": "Daily 9am Lagos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "51426a40-77b1-4a7e-b589-25388062ab99",
+      "name": "Edvora Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        272,
+        224
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "api",
+              "name": "backend_url",
+              "type": "string",
+              "value": "<__PLACEHOLDER_VALUE__Edvora backend HTTPS origin — no trailing slash__>"
+            },
+            {
+              "id": "sms",
+              "name": "termii_send_url",
+              "type": "string",
+              "value": "<__PLACEHOLDER_VALUE__Termii dashboard base URL plus /api/sms/send__>"
+            },
+            {
+              "id": "sender",
+              "name": "sms_sender",
+              "type": "string",
+              "value": "<__PLACEHOLDER_VALUE__Approved Edvora Termii sender ID__>"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c221ab38-fefa-49b6-a4f2-b92c0a5e0682",
+      "name": "Claim Due Reminder Jobs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        496,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/reminders/claim\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {run_id:$execution.id,limit:10} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "id": "14c18a99-cc09-454b-a8ba-5e5594a92743",
+      "name": "Validate Claimed Jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        224
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const payload = $input.first().json;\nif (!Array.isArray(payload.jobs)) throw new Error('Backend must return {jobs: []}.');\nconst seen = new Set();\nreturn payload.jobs.map((job, index) => {\n if (!job || typeof job.job_id !== 'string' || !job.job_id || typeof job.claim_token !== 'string' || !job.claim_token || seen.has(job.job_id)) throw new Error('Invalid or duplicate claimed job.');\n seen.add(job.job_id);\n return {json:{job_id:job.job_id,claim_token:job.claim_token},pairedItem:{item:0}};\n});"
+      }
+    },
+    {
+      "id": "46c669fd-b7ac-4fc4-b211-953ec5ddd8e7",
+      "name": "Recheck Balance and Authorize",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1024,
+        144
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/reminders/authorize\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {job_id:$json.job_id,claim_token:$json.claim_token,execution_id:$execution.id} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "621b0511-325c-4641-b2f2-4fccca4ba02d",
+      "name": "Validate Send Authorization",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        144
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const original = $('One Reminder at a Time').item.json;\nconst a = $input.first().json;\nconst channel = a.channel;\nconst recipient = String(a.recipient ?? '');\nconst lease = Date.parse(a.lease_expires_at ?? '');\nconst validRecipient = channel === 'telegram' ? /^[1-9][0-9]{0,15}$/.test(recipient) : channel === 'sms' && /^[1-9][0-9]{7,14}$/.test(recipient);\nconst eligible = a.authorized === true && a.job_id === original.job_id && typeof a.attempt_id === 'string' && !!a.attempt_id && typeof a.attempt_token === 'string' && !!a.attempt_token && a.active === true && a.paused === false && a.consented === true && a.currency === 'NGN' && Number.isSafeInteger(a.balance_minor) && a.balance_minor > 0 && Number.isFinite(lease) && lease > Date.now() + 30000 && validRecipient && typeof a.message === 'string' && a.message.trim().length > 0 && a.message.length <= (channel === 'telegram' ? 4000 : 480);\nreturn [{json:{...original,attempt_id:a.attempt_id ?? null,attempt_token:a.attempt_token ?? null,channel,recipient,message:a.message ?? '',eligible,skip_reason:eligible ? null : 'authorization_or_eligibility_check_failed'},pairedItem:{item:0}}];"
+      }
+    },
+    {
+      "id": "c261c010-0570-4121-a4e7-a02ce0983ef1",
+      "name": "Eligible to Send",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1552,
+        416
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.eligible }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "39ae450e-6759-45f5-8345-1097a6bcc348",
+      "name": "Telegram Channel",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1776,
+        320
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.channel }}",
+              "rightValue": "telegram",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "5ebfb7d4-6d35-42cf-b716-2adddea1d1f5",
+      "name": "Send Telegram Reminder",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2000,
+        224
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $json.recipient }}",
+        "text": "={{ $json.message.replace(/&/g, \"&amp;\").replace(/</g, \"&lt;\").replace(/>/g, \"&gt;\") }}",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "04e006c1-a6b1-4f62-826e-7b8a52ad7fc4",
+      "retryOnFail": false
+    },
+    {
+      "id": "32b54ad1-0fad-41fa-a1fc-f35888655920",
+      "name": "Record Telegram Outcome",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        224
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const job = $('Validate Send Authorization').item.json; const r = $input.first().json; const result = r.result ?? r; const id = result.message_id; const sent = !r.error && (r.ok === true || !!result.chat) && id !== undefined; return [{json:{...job,status:sent?'sent':'unknown',provider_message_id:sent?String(id):null,reason:sent?null:'provider_outcome_requires_review'},pairedItem:{item:0}}];"
+      }
+    },
+    {
+      "id": "b0b5431e-e9b3-4390-ad0b-eea28ab83797",
+      "name": "Save Channel Outcome",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2448,
+        416
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/reminders/outcome\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {job_id:$json.job_id,claim_token:$json.claim_token,attempt_id:$json.attempt_id,attempt_token:$json.attempt_token,status:$json.status,provider_message_id:$json.provider_message_id ?? null,reason:$json.reason ?? null,retryable:$json.retryable === true,execution_id:$execution.id} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "id": "fe4cd437-683e-45ad-a1df-d47057c5e9ec",
+      "name": "One Reminder at a Time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        752,
+        96
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "430d465d-b112-4985-b339-633ff9ed6791",
+      "name": "Send Termii SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2000,
+        416
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.termii_send_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {to:$json.recipient,from:$(\"Edvora Configuration\").first().json.sms_sender,sms:$json.message,type:\"plain\",channel:\"dnd\"} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": false
+    },
+    {
+      "id": "1feed03f-b4eb-4018-af56-9003dbf9d17e",
+      "name": "Record SMS Outcome",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        416
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const job = $('Validate Send Authorization').item.json;\nconst r = $input.first().json; const b = r.body ?? {}; const status = Number(r.statusCode);\nconst accepted = !r.error && status >= 200 && status < 300 && typeof b.message_id === 'string' && !!b.message_id;\nconst rateLimited = !r.error && status === 429;\nconst rejected = !r.error && status >= 400 && status < 500 && status !== 408 && status !== 429;\nreturn [{json:{...job,status:accepted?'accepted':rateLimited?'failed':rejected?'rejected':'unknown',retryable:rateLimited,provider_message_id:accepted?b.message_id:null,reason:accepted?null:rateLimited?'provider_rate_limit':rejected?'provider_rejected_request':'provider_outcome_requires_review'},pairedItem:{item:0}}];"
+      }
+    },
+    {
+      "id": "176b5a05-0c3c-4cf2-bbdd-6667b66669a8",
+      "name": "Record Skipped Reminder",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2224,
+        608
+      ],
+      "parameters": {
+        "mode": "manual",
+        "includeOtherFields": true,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s",
+              "name": "status",
+              "type": "string",
+              "value": "skipped"
+            },
+            {
+              "id": "r",
+              "name": "reason",
+              "type": "string",
+              "value": "={{ $json.skip_reason }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "752feb07-2e53-4f74-9a83-7505224db9c2",
+      "name": "Manual Review Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "e8eca25c-195a-46bd-8e4f-b5dd109d8ddf",
+      "name": "Sticky Note 360775cc",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        608
+      ],
+      "parameters": {
+        "content": "## Edvora fee reminders — inactive until integration\nDaily 09:00 Africa/Lagos; claims at most 10 jobs. Backend /api/automation/reminders/{claim,authorize,outcome} owns the due queue and committed records. Claims use 15-minute leases; authorization consumes one claim and creates a single attempt with a fresh 3-minute send window.\nRecheck current term, due window, active pupil/guardian, fee pause, authorized guardian, channel consent/private chat and positive authoritative balance. Zero balance stops reminders. Each rule/child/guardian/channel is queued once for this term.\nEvery outcome includes job_id, claim_token, attempt_id, attempt_token. A denied send with no attempt is an acknowledgement only. SMS accepted is not delivered; Telegram sent is not read. Unknown/timeouts require review. HTTP 429 can use bounded backend backoff; providers are never automatically retried here. Outcome HTTP writes may retry idempotently.\nConfigure deployed HTTPS origin, approved Termii sender/account send URL, Edvora Backend Service and dedicated provider credentials. SMS and Telegram only; no linking flow. No messages sent during this update.",
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Daily 9am Lagos": {
+      "main": [
+        [
+          {
+            "node": "Edvora Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edvora Configuration": {
+      "main": [
+        [
+          {
+            "node": "Claim Due Reminder Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Due Reminder Jobs": {
+      "main": [
+        [
+          {
+            "node": "Validate Claimed Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Claimed Jobs": {
+      "main": [
+        [
+          {
+            "node": "One Reminder at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recheck Balance and Authorize": {
+      "main": [
+        [
+          {
+            "node": "Validate Send Authorization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Send Authorization": {
+      "main": [
+        [
+          {
+            "node": "Eligible to Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Eligible to Send": {
+      "main": [
+        [
+          {
+            "node": "Telegram Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record Skipped Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Channel": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Termii SMS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Reminder": {
+      "main": [
+        [
+          {
+            "node": "Record Telegram Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Telegram Outcome": {
+      "main": [
+        [
+          {
+            "node": "Save Channel Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Channel Outcome": {
+      "main": [
+        [
+          {
+            "node": "One Reminder at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One Reminder at a Time": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Recheck Balance and Authorize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Termii SMS": {
+      "main": [
+        [
+          {
+            "node": "Record SMS Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record SMS Outcome": {
+      "main": [
+        [
+          {
+            "node": "Save Channel Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Skipped Reminder": {
+      "main": [
+        [
+          {
+            "node": "Save Channel Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Review Run": {
+      "main": [
+        [
+          {
+            "node": "Edvora Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 180
+  }
+}

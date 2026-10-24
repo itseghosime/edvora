@@ -113,6 +113,7 @@ describe('Codex Defect Regressions', () => {
     it('rejects staff login when Supabase Auth reports invalid credentials with HTTP 401', async () => {
       // Mock Supabase Auth returning invalid credentials error
       vi.spyOn(supabaseClientModule, 'getSupabaseAdmin').mockReturnValue({
+        rpc:vi.fn().mockResolvedValue({data:{allowed:true},error:null}),
         auth: {
           signInWithPassword: vi.fn().mockResolvedValue({
             error: { message: 'Invalid login credentials' },
@@ -138,8 +139,10 @@ describe('Codex Defect Regressions', () => {
     });
 
     it('authenticates staff login when Supabase Auth verifies credentials and issues signed session cookie', async () => {
+      vi.spyOn(db,'getStaffByEmail').mockResolvedValue({...store.staffProfiles[0],userId:adminStaffId});
       // Mock Supabase Auth returning successful user authentication
       vi.spyOn(supabaseClientModule, 'getSupabaseAdmin').mockReturnValue({
+        rpc:vi.fn().mockResolvedValue({data:{allowed:true},error:null}),
         auth: {
           signInWithPassword: vi.fn().mockResolvedValue({
             error: null,
@@ -163,7 +166,7 @@ describe('Codex Defect Regressions', () => {
       const json = await res.json();
       expect(json.success).toBe(true);
       expect(json.user.role).toBe('admin');
-      expect(json.token).toBeDefined();
+      expect(json.token).toBeUndefined();
 
       const cookieHeader = res.headers.get('set-cookie');
       expect(cookieHeader).toMatch(/edvora_session=/);
@@ -255,7 +258,7 @@ describe('Codex Defect Regressions', () => {
       const json = await res.json();
       expect(json.success).toBe(true);
       expect(json.user.role).toBe('student');
-      expect(json.token).toBeDefined();
+      expect(json.token).toBeUndefined();
     });
 
     it('rejects unauthenticated result publishing with HTTP 401 even if body contains actorRole: admin', async () => {
@@ -937,3 +940,4 @@ describe('Codex Defect Regressions', () => {
     });
   });
 });
+

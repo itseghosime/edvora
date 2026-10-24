@@ -1,7 +1,8 @@
 // UI smoke only: responses are mocked; real transactions are verified separately in PostgreSQL.
 import { chromium } from "playwright";
+import { createServer } from "node:http";
 import { spawn } from "node:child_process";
-import { createHmac, randomBytes } from "node:crypto";
+import { createHmac, createHash, randomBytes, randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import assert from "node:assert/strict";
 const secret = randomBytes(48).toString("hex");
@@ -9,6 +10,8 @@ const port = 3217;
 const base = `http://127.0.0.1:${port}`;
 const uid = (n) => `${String(n).padStart(8, "0")}-1111-4111-8111-111111111111`;
 const actor = {
+  authVersion: 0,
+  jti: randomUUID(),
   type: "staff",
   userId: uid(10),
   staffId: uid(10),
@@ -107,6 +110,44 @@ const snapshot = {
     feeWaiverAllowed: false,
   },
 };
+// Local PostgREST stub for the server-side session boundary; never a production bypass.
+const revoked = new Set();
+let signedHash = "";
+const authDatabase = createServer(async (req, res) => {
+  let text = "";
+  for await (const chunk of req) text += chunk;
+  res.setHeader("content-type", "application/json");
+  if (
+    req.url === "/rest/v1/rpc/check_portal_session" &&
+    req.method === "POST"
+  ) {
+    const body = JSON.parse(text);
+    const valid =
+      body.p_hash === signedHash &&
+      body.p_subject === actor.staffId &&
+      body.p_version === 0 &&
+      !revoked.has(body.p_hash);
+    res.end(
+      JSON.stringify(
+        valid
+          ? { role: actor.role, assignedClassIds: [], name: actor.name }
+          : null,
+      ),
+    );
+  } else if (
+    req.url?.startsWith("/rest/v1/revoked_portal_tokens") &&
+    req.method === "POST"
+  ) {
+    const body = JSON.parse(text);
+    revoked.add(body.token_hash);
+    res.statusCode = 201;
+    res.end("");
+  } else {
+    res.statusCode = 500;
+    res.end(JSON.stringify({ message: "Unexpected auth DB request" }));
+  }
+});
+await new Promise((r) => authDatabase.listen(port + 1, "127.0.0.1", r));
 const server = spawn(
   process.execPath,
   [
@@ -118,7 +159,12 @@ const server = spawn(
     String(port),
   ],
   {
-    env: { ...process.env, SESSION_SECRET: secret },
+    env: {
+      ...process.env,
+      SESSION_SECRET: secret,
+      NEXT_PUBLIC_SUPABASE_URL: `http://127.0.0.1:${port + 1}`,
+      SUPABASE_SERVICE_ROLE_KEY: "ci-only-mock-key",
+    },
     stdio: ["ignore", "pipe", "pipe"],
   },
 );
@@ -155,6 +201,7 @@ try {
     payload +
     "." +
     createHmac("sha256", secret).update(payload).digest("base64url");
+  signedHash = createHash("sha256").update(token).digest("hex");
   await context.addCookies([
     {
       name: "edvora_session",
@@ -306,6 +353,12 @@ try {
   await page
     .getByText("Your staff role does not have access to this section.")
     .waitFor();
+  const logout = await context.request.delete(base + "/api/auth/login");
+  assert.equal(logout.status(), 200);
+  const replay = await context.request.get(base + "/api/pupils", {
+    headers: { authorization: `Bearer ${token}` },
+  });
+  assert.equal(replay.status(), 401, "Replaying a logged-out token must fail");
   assert.deepEqual(errors, []);
   console.log(
     "Staff UI smoke passed: seven routes on desktop/mobile, enrollment errors/retry key, result payload, role guard; API responses mocked.",
@@ -324,4 +377,5 @@ try {
 } finally {
   await browser?.close();
   server.kill("SIGTERM");
+  await new Promise((r) => authDatabase.close(r));
 }

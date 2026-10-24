@@ -1,0 +1,612 @@
+{
+  "id": "YWD3GloqWM7HhZpq",
+  "name": "EDVORA — WF05 — Receipts Results & School Notifications",
+  "active": false,
+  "versionId": "230d7584-d8de-4473-927a-f2cae6a4341d",
+  "nodes": [
+    {
+      "id": "c4d1de19-c44c-4606-8ea7-1411d2d8910b",
+      "name": "Notifications Every 2 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "daddae2d-aa69-44b6-bdea-8e03dd3440a8",
+      "name": "Edvora Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        272,
+        224
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "api",
+              "name": "backend_url",
+              "type": "string",
+              "value": "<__PLACEHOLDER_VALUE__Edvora backend HTTPS origin — no trailing slash__>"
+            },
+            {
+              "id": "sms",
+              "name": "termii_send_url",
+              "type": "string",
+              "value": "<__PLACEHOLDER_VALUE__Termii dashboard base URL plus /api/sms/send__>"
+            },
+            {
+              "id": "sender",
+              "name": "sms_sender",
+              "type": "string",
+              "value": "<__PLACEHOLDER_VALUE__Approved Edvora Termii sender ID__>"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "6ffdeb7d-040e-43fa-aae2-78e0bfb7a2a1",
+      "name": "Claim Pending School Notifications",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        496,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/notifications/claim\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {run_id:$execution.id,limit:10} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "id": "9f24692b-f8a9-4f81-b0e5-0f245b7f3e3e",
+      "name": "Validate Notification Jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        224
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const payload = $input.first().json;\nif (!Array.isArray(payload.jobs)) throw new Error('Backend must return {jobs: []}.');\nconst seen = new Set();\nreturn payload.jobs.map((job, index) => {\n if (!job || typeof job.job_id !== 'string' || !job.job_id || typeof job.claim_token !== 'string' || !job.claim_token || seen.has(job.job_id)) throw new Error('Invalid or duplicate claimed job.');\n seen.add(job.job_id);\n return {json:{job_id:job.job_id,claim_token:job.claim_token},pairedItem:{item:0}};\n});"
+      }
+    },
+    {
+      "id": "d8fd2a9b-36f8-4ec8-ae2a-84a53a9edbff",
+      "name": "Recheck Balance and Authorize",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1024,
+        144
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/notifications/authorize\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {job_id:$json.job_id,claim_token:$json.claim_token,execution_id:$execution.id} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "0351d266-068b-41a8-b492-66b2dfabb774",
+      "name": "Validate Send Authorization",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        144
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const original = $('One Notification at a Time').item.json;\nconst a = $input.first().json;\nconst channel = a.channel;\nconst recipient = String(a.recipient ?? '');\nconst lease = Date.parse(a.lease_expires_at ?? '');\nconst validRecipient = channel === 'telegram' ? /^[1-9][0-9]{0,15}$/.test(recipient) : channel === 'sms' && /^[1-9][0-9]{7,14}$/.test(recipient);\nconst eligible = a.authorized === true && a.job_id === original.job_id && typeof a.attempt_id === 'string' && !!a.attempt_id && typeof a.attempt_token === 'string' && !!a.attempt_token && a.active === true && a.paused === false && a.consented === true && ['payment_receipt','results_published','account_invitation','operational_alert'].includes(a.event_type) && typeof a.source_event_id === 'string' && !!a.source_event_id && Number.isFinite(lease) && lease > Date.now() + 30000 && validRecipient && typeof a.message === 'string' && a.message.trim().length > 0 && a.message.length <= (channel === 'telegram' ? 4000 : 480);\nreturn [{json:{...original,attempt_id:a.attempt_id ?? null,attempt_token:a.attempt_token ?? null,channel,event_type:a.event_type,source_event_id:a.source_event_id,recipient,message:a.message ?? '',eligible,skip_reason:eligible ? null : 'authorization_or_eligibility_check_failed'},pairedItem:{item:0}}];"
+      }
+    },
+    {
+      "id": "382a4b0d-0004-42be-b12d-c29cebc3b721",
+      "name": "Notification Eligible to Send",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1552,
+        416
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.eligible }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "de020e88-58ad-44b8-9bed-7703fca27ff8",
+      "name": "Telegram Channel",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1776,
+        320
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.channel }}",
+              "rightValue": "telegram",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "dbdeefaa-a768-46d9-8c5e-1f413dc27454",
+      "name": "Send Telegram Notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2000,
+        224
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $json.recipient }}",
+        "text": "={{ $json.message.replace(/&/g, \"&amp;\").replace(/</g, \"&lt;\").replace(/>/g, \"&gt;\") }}",
+        "additionalFields": {
+          "parse_mode": "HTML",
+          "appendAttribution": false,
+          "disable_web_page_preview": true
+        }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "3e851eff-fb85-49b6-9624-3b3de671771c",
+      "retryOnFail": false
+    },
+    {
+      "id": "7026eb95-5dde-4c03-a54b-4add3914af2f",
+      "name": "Record Telegram Outcome",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        224
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const job = $('Validate Send Authorization').item.json; const r = $input.first().json; const result = r.result ?? r; const id = result.message_id; const sent = !r.error && (r.ok === true || !!result.chat) && id !== undefined; return [{json:{...job,status:sent?'sent':'unknown',provider_message_id:sent?String(id):null,reason:sent?null:'provider_outcome_requires_review'},pairedItem:{item:0}}];"
+      }
+    },
+    {
+      "id": "39849508-be1c-4914-b75b-9e665abbb6cd",
+      "name": "Save Channel Outcome",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2448,
+        416
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/notifications/outcome\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {job_id:$json.job_id,claim_token:$json.claim_token,attempt_id:$json.attempt_id,attempt_token:$json.attempt_token,status:$json.status,provider_message_id:$json.provider_message_id ?? null,reason:$json.reason ?? null,retryable:$json.retryable === true,execution_id:$execution.id} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "id": "5a13a803-4f11-464e-a41d-6db1eef1c802",
+      "name": "One Notification at a Time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        752,
+        96
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "32471e58-a326-456a-bc00-385782aa5e0a",
+      "name": "Send Termii SMS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2000,
+        416
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.termii_send_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {to:$json.recipient,from:$(\"Edvora Configuration\").first().json.sms_sender,sms:$json.message,type:\"plain\",channel:\"dnd\"} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": false
+    },
+    {
+      "id": "efc130ce-03be-4455-add8-9e2e596a6c59",
+      "name": "Record SMS Outcome",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        416
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const job = $('Validate Send Authorization').item.json;\nconst r = $input.first().json; const b = r.body ?? {}; const status = Number(r.statusCode);\nconst accepted = !r.error && status >= 200 && status < 300 && typeof b.message_id === 'string' && !!b.message_id;\nconst rateLimited = !r.error && status === 429;\nconst rejected = !r.error && status >= 400 && status < 500 && status !== 408 && status !== 429;\nreturn [{json:{...job,status:accepted?'accepted':rateLimited?'failed':rejected?'rejected':'unknown',retryable:rateLimited,provider_message_id:accepted?b.message_id:null,reason:accepted?null:rateLimited?'provider_rate_limit':rejected?'provider_rejected_request':'provider_outcome_requires_review'},pairedItem:{item:0}}];"
+      }
+    },
+    {
+      "id": "e1250137-6e9c-476c-9d00-952434320481",
+      "name": "Record Skipped Notification",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2224,
+        608
+      ],
+      "parameters": {
+        "mode": "manual",
+        "includeOtherFields": true,
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s",
+              "name": "status",
+              "type": "string",
+              "value": "skipped"
+            },
+            {
+              "id": "r",
+              "name": "reason",
+              "type": "string",
+              "value": "={{ $json.skip_reason }}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "e5213c73-1c53-4edd-b53e-ecb817fcfbe4",
+      "name": "Manual Review Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "ca1f4545-6e26-48d3-b97d-2e79ab2c36f1",
+      "name": "Sticky Note 8c698132",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        608
+      ],
+      "parameters": {
+        "content": "## Edvora school notifications — inactive until integration\nEvery 2 minutes; claims at most 10 jobs via /api/automation/notifications/{claim,authorize,outcome}. Same lease/attempt ownership rules as reminders. Receipts and published reports remain eligible at zero fee balance.\nBackend verifies the committed receipt/report and linked guardian permission/consent. Withdrawn reports cancel queued notices. Staff operational alerts use authorized server-only contact records; no invented recipients. Unimplemented/expired invitation sources are denied.\nSMS accepted is not delivered; Telegram sent is not read. Unknown provider results require review, never blind resend. HTTP 429 may be retried with capped backend backoff; outcome writes may safely retry. WF05 failures are record-only to prevent recursive alerts.\nConfigure public HTTPS origin and dedicated Edvora credentials before integration. No WhatsApp or Telegram linking. No messages sent during this update.",
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Notifications Every 2 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Edvora Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edvora Configuration": {
+      "main": [
+        [
+          {
+            "node": "Claim Pending School Notifications",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Pending School Notifications": {
+      "main": [
+        [
+          {
+            "node": "Validate Notification Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Notification Jobs": {
+      "main": [
+        [
+          {
+            "node": "One Notification at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recheck Balance and Authorize": {
+      "main": [
+        [
+          {
+            "node": "Validate Send Authorization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Send Authorization": {
+      "main": [
+        [
+          {
+            "node": "Notification Eligible to Send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notification Eligible to Send": {
+      "main": [
+        [
+          {
+            "node": "Telegram Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record Skipped Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Channel": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Termii SMS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Notification": {
+      "main": [
+        [
+          {
+            "node": "Record Telegram Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Telegram Outcome": {
+      "main": [
+        [
+          {
+            "node": "Save Channel Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Channel Outcome": {
+      "main": [
+        [
+          {
+            "node": "One Notification at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One Notification at a Time": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Recheck Balance and Authorize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Termii SMS": {
+      "main": [
+        [
+          {
+            "node": "Record SMS Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record SMS Outcome": {
+      "main": [
+        [
+          {
+            "node": "Save Channel Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Skipped Notification": {
+      "main": [
+        [
+          {
+            "node": "Save Channel Outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Review Run": {
+      "main": [
+        [
+          {
+            "node": "Edvora Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 180
+  }
+}

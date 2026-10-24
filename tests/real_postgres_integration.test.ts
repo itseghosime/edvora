@@ -71,6 +71,10 @@ describe('Real PostgreSQL Integration: Migrations, RLS, Stored Functions & Concu
       await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',balanceMigration),'utf8'));
       const classMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_harden_staff_class_checks.sql'))!;
       await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',classMigration),'utf8'));
+      for(const suffix of ['_notification_leases_and_session_revocation.sql','_notification_send_authorization.sql','_notification_outcome_recovery.sql','_login_attempt_limits.sql']){
+        const migration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith(suffix))!;
+        await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',migration),'utf8'));
+      }
       // Test-owned prerequisites; never rely on a developer's existing database seed.
       await client.query(`
         INSERT INTO academic_sessions (id,name,start_date,end_date)
@@ -1157,6 +1161,12 @@ describe('Real PostgreSQL Integration: Migrations, RLS, Stored Functions & Concu
     const balances=results.map(r=>Number(r.rows[0].result.new_balance_minor)).sort((a,b)=>a-b);
     expect(balances).toEqual([Math.max(0,before-2*amount),Math.max(0,before-amount)]);
     expect(results.every(r=>r.rows[0].result.success&&!r.rows[0].result.duplicate)).toBe(true);
+  });
+
+  it('verifies notification ownership, early/late callbacks, uncertain sends, retry caps and revoked sessions',async()=>{
+    const client=await pool.connect();
+    try{await client.query('BEGIN');await client.query(fs.readFileSync(path.join(__dirname,'fixtures/notification_contracts.sql'),'utf8'));}
+    finally{await client.query('ROLLBACK');client.release();}
   });
 
 });

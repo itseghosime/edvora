@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll,vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { POST as publishRoute } from '../src/app/api/results/publish/route';
 import { POST as remindersClaimRoute } from '../src/app/api/automation/reminders/claim/route';
 import { POST as authLoginRoute } from '../src/app/api/auth/login/route';
 import { POST as termiiWebhookRoute } from '../src/app/api/webhooks/termii/route';
 import { createSessionToken } from '../src/lib/auth/session';
+import { db } from '../src/lib/db/supabaseRepository';
 import { config } from '../src/lib/config';
 
 describe('Route-Level Authorization & Security Boundaries', () => {
@@ -85,6 +86,7 @@ describe('Route-Level Authorization & Security Boundaries', () => {
   });
 
   it('accepts valid automation service Bearer credentials', async () => {
+    vi.spyOn(db,'claimReminderJobs').mockResolvedValueOnce([]);
     const req = new NextRequest('http://localhost:3000/api/automation/reminders/claim', {
       method: 'POST',
       headers: {
@@ -117,7 +119,7 @@ describe('Route-Level Authorization & Security Boundaries', () => {
     expect(json.error).toMatch(/No pupil record matches/i);
   });
 
-  it('quarantines unauthenticated Termii webhook delivery reports', async () => {
+  it('rejects unauthenticated Termii webhook delivery reports before persistence', async () => {
     const req = new NextRequest('http://localhost:3000/api/webhooks/termii', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -128,10 +130,11 @@ describe('Route-Level Authorization & Security Boundaries', () => {
     });
 
     const res = await termiiWebhookRoute(req);
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(401);
     const json = await res.json();
     // Must NOT be marked authenticated
-    expect(json.source_authenticated).toBe(false);
+    expect(json.error).toMatch(/authentication failed/i);
   });
 });
+
 

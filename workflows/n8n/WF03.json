@@ -1,0 +1,288 @@
+{
+  "id": "TGHcEQyTlco1v2WB",
+  "name": "EDVORA — WF03 — SMS Delivery Tracking",
+  "active": false,
+  "versionId": "b5658f13-1667-47bf-bea4-a440fe22ad6e",
+  "nodes": [
+    {
+      "id": "f2eb8106-ea8b-4d27-97fb-eee12d8bbca1",
+      "name": "Process SMS Reports Every Minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ae37450f-975c-4823-b68c-880f2cbc6bae",
+      "name": "Edvora Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        272,
+        224
+      ],
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "backend",
+              "name": "backend_url",
+              "type": "string",
+              "value": "<__PLACEHOLDER_VALUE__Edvora backend HTTPS origin — no trailing slash__>"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "097aacde-f873-4e88-9f15-d8d9117fbf3f",
+      "name": "Claim Authenticated SMS Reports",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        496,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/sms-delivery/claim\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {run_id:$execution.id,limit:100} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "id": "35bd5da2-0e92-4c99-98c3-c84f9bd28b17",
+      "name": "Validate Delivery Event IDs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        224
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const p=$input.first().json;if(!Array.isArray(p.events))throw new Error('Expected delivery events array');const seen=new Set();return p.events.map(e=>{if(!e||typeof e.event_id!=='string'||!e.event_id||typeof e.claim_token!=='string'||!e.claim_token||seen.has(e.event_id))throw new Error('Invalid or duplicate delivery event');seen.add(e.event_id);return {json:e,pairedItem:{item:0}};});"
+      }
+    },
+    {
+      "id": "bb9753ff-4c25-422c-8c1e-cf8351b6e2cc",
+      "name": "Validate Authenticated Delivery Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        224
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const e=$input.first().json;const allowed=['sent','delivered','failed','expired','rejected','unknown'];const ok=e.provider==='termii'&&e.channel==='sms'&&e.source_authenticated===true&&typeof e.provider_message_id==='string'&&!!e.provider_message_id&&allowed.includes(e.status)&&Number.isFinite(Date.parse(e.occurred_at??''));return [{json:{event_id:e.event_id,claim_token:e.claim_token,decision:ok?'apply':'quarantine',provider:'termii',channel:'sms',provider_message_id:typeof e.provider_message_id==='string'?e.provider_message_id:null,status:ok?e.status:'unknown',occurred_at:ok?e.occurred_at:null,reason:ok?null:'invalid_or_untrusted_delivery_event'},pairedItem:{item:0}}];"
+      }
+    },
+    {
+      "id": "eacfdd46-01ca-4d03-883e-5b3a8a3c9d85",
+      "name": "Apply Delivery Status and Acknowledge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1248,
+        224
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $(\"Edvora Configuration\").first().json.backend_url + \"/api/automation/sms-delivery/apply\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpTemplatedCustomAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {...$json,execution_id:$execution.id} }}",
+        "options": {
+          "timeout": 15000,
+          "redirect": {
+            "redirect": {
+              "followRedirects": false
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "id": "aa9efdab-7daa-46d0-b6ea-acef45133077",
+      "name": "One Delivery Event at a Time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        752,
+        96
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      }
+    },
+    {
+      "id": "753928d2-2e83-464f-bd14-9c42b11b45e8",
+      "name": "Manual Review Run",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "dbcbe19e-cbe0-4b1e-bb5f-1c881ec7333c",
+      "name": "Sticky Note 1ba35e12",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        560,
+        224
+      ],
+      "parameters": {
+        "content": "## Edvora SMS callbacks — inactive until integration\nThe backend /api/webhooks/termii requires the dedicated TERMII_WEBHOOK_SECRET using ?token= or x-termii-token. It rejects unsigned reports and missing provider message IDs. No API-key fallback. Raw reports persist before processing.\n/api/automation/sms-delivery/claim returns authenticated, leased inbox records. /apply verifies event/claim ownership and uses the persisted provider ID and status; a caller cannot replace event data. Updates and inbox acknowledgement are atomic.\nEarly unmatched callbacks stay pending with 5-minute backoff, up to five matches before quarantine; ambiguous matches and unknown statuses are quarantined. Delivered is never downgraded by delayed sent/failed reports. No outgoing messages originate here, and Telegram read receipts are never invented.\nConfigure the backend URL/service credential and verify actual Termii callback fields before publishing.",
+        "color": 5
+      }
+    }
+  ],
+  "connections": {
+    "Process SMS Reports Every Minute": {
+      "main": [
+        [
+          {
+            "node": "Edvora Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edvora Configuration": {
+      "main": [
+        [
+          {
+            "node": "Claim Authenticated SMS Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Authenticated SMS Reports": {
+      "main": [
+        [
+          {
+            "node": "Validate Delivery Event IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Delivery Event IDs": {
+      "main": [
+        [
+          {
+            "node": "One Delivery Event at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Authenticated Delivery Status": {
+      "main": [
+        [
+          {
+            "node": "Apply Delivery Status and Acknowledge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Delivery Status and Acknowledge": {
+      "main": [
+        [
+          {
+            "node": "One Delivery Event at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One Delivery Event at a Time": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Validate Authenticated Delivery Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Review Run": {
+      "main": [
+        [
+          {
+            "node": "Edvora Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 180
+  }
+}

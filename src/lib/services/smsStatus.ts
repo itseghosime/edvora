@@ -15,7 +15,6 @@ export const TERMII_STATUS_MAPPING: Record<string, SMSDeliveryStatus> = {
   // Delivered status variants
   'delivered': 'delivered',
   'dlr:delivered': 'delivered',
-  'success': 'delivered',
   'successful': 'delivered',
 
   // Sent / in-transit variants
@@ -75,4 +74,5 @@ export function canTransitionAttemptStatus(
 
   return true;
 }
+
 

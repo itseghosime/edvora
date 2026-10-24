@@ -3,16 +3,16 @@
 // Never trusts client-supplied actorRole or actorId.
 // ==============================================================================
 
-import crypto from 'crypto';
-import { NextRequest, NextResponse } from 'next/server';
-import { StaffRole } from '../types/backend';
-import { config } from '../config';
+import crypto from "crypto";
+import { NextRequest, NextResponse } from "next/server";
+import { StaffRole } from "../types/backend";
+import { validateStoredSession, revokeStoredToken } from "./sessionStore";
 
-const SESSION_COOKIE_NAME = 'edvora_session';
+const SESSION_COOKIE_NAME = "edvora_session";
 const SESSION_EXPIRY_SECONDS = 7 * 24 * 60 * 60; // 7 days
 
 export interface StaffSessionActor {
-  type: 'staff';
+  type: "staff";
   userId: string;
   staffId: string;
   role: StaffRole;
@@ -20,10 +20,12 @@ export interface StaffSessionActor {
   name: string;
   assignedClassIds: string[];
   exp: number;
+  authVersion?: number;
+  jti?: string;
 }
 
 export interface StudentSessionActor {
-  type: 'student';
+  type: "student";
   userId: string;
   pupilId: string;
   admissionNumber: string;
@@ -31,32 +33,46 @@ export interface StudentSessionActor {
   className: string;
   guardianId?: string;
   exp: number;
+  authVersion?: number;
+  jti?: string;
 }
 
 export type SessionActor = StaffSessionActor | StudentSessionActor;
 
 function getSessionSecret(): string {
-  const secret = process.env.SESSION_SECRET || config.supabase.serviceRoleKey;
+  const secret = process.env.SESSION_SECRET;
   if (!secret) {
-    if (process.env.NODE_ENV === 'test') {
-      return 'test-environment-ephemeral-session-secret-key-32b';
+    if (process.env.NODE_ENV === "test") {
+      return "test-environment-ephemeral-session-secret-key-32b";
     }
-    throw new Error('FATAL: SESSION_SECRET or SUPABASE_SERVICE_ROLE_KEY must be configured in environment. Insecure session signing fallback is forbidden.');
+    throw new Error(
+      "FATAL: SESSION_SECRET must be configured in environment. Insecure session signing fallback is forbidden.",
+    );
   }
   return secret;
 }
 
 function signPayload(payloadStr: string): string {
-  return crypto.createHmac('sha256', getSessionSecret()).update(payloadStr).digest('base64url');
+  return crypto
+    .createHmac("sha256", getSessionSecret())
+    .update(payloadStr)
+    .digest("base64url");
 }
 
 /**
  * Creates a signed session token.
  */
-export function createSessionToken(actor: Omit<StaffSessionActor, 'exp'> | Omit<StudentSessionActor, 'exp'>): string {
+export function createSessionToken(
+  actor: Omit<StaffSessionActor, "exp"> | Omit<StudentSessionActor, "exp">,
+): string {
   const exp = Math.floor(Date.now() / 1000) + SESSION_EXPIRY_SECONDS;
-  const payload: SessionActor = { ...actor, exp } as SessionActor;
-  const payloadStr = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const payload: SessionActor = {
+    ...actor,
+    authVersion: actor.authVersion ?? 0,
+    jti: crypto.randomUUID(),
+    exp,
+  } as SessionActor;
+  const payloadStr = Buffer.from(JSON.stringify(payload)).toString("base64url");
   const signature = signPayload(payloadStr);
   return `${payloadStr}.${signature}`;
 }
@@ -65,9 +81,9 @@ export function createSessionToken(actor: Omit<StaffSessionActor, 'exp'> | Omit<
  * Verifies and parses a signed session token.
  */
 export function verifySessionToken(token: string): SessionActor | null {
-  if (!token || !token.includes('.')) return null;
+  if (!token || !token.includes(".")) return null;
 
-  const parts = token.split('.');
+  const parts = token.split(".");
   if (parts.length !== 2) return null;
   const [payloadStr, signature] = parts;
   if (!payloadStr || !signature) return null;
@@ -80,12 +96,37 @@ export function verifySessionToken(token: string): SessionActor | null {
   if (!crypto.timingSafeEqual(signatureBuffer, expectedBuffer)) return null;
 
   try {
-    const payload = JSON.parse(Buffer.from(payloadStr, 'base64url').toString('utf-8')) as SessionActor;
-    if (!Number.isFinite(payload.exp) || payload.exp <= Math.floor(Date.now() / 1000) || !['staff', 'student'].includes(payload.type)) {
+    const payload = JSON.parse(
+      Buffer.from(payloadStr, "base64url").toString("utf-8"),
+    ) as SessionActor;
+    if (
+      !Number.isFinite(payload.exp) ||
+      payload.exp <= Math.floor(Date.now() / 1000) ||
+      !["staff", "student"].includes(payload.type)
+    ) {
       return null; // Expired
     }
-    if (payload.type === 'staff' && (!['admin','bursar','teacher'].includes(payload.role) || !Array.isArray(payload.assignedClassIds) || !payload.assignedClassIds.every(id => typeof id === 'string') || typeof payload.staffId !== 'string')) return null;
-    if (payload.type === 'student' && (typeof payload.pupilId !== 'string' || typeof payload.admissionNumber !== 'string')) return null;
+    if (
+      typeof payload.jti !== "string" ||
+      !/^[0-9a-f-]{36}$/i.test(payload.jti) ||
+      !Number.isSafeInteger(payload.authVersion) ||
+      Number(payload.authVersion) < 0
+    )
+      return null;
+    if (
+      payload.type === "staff" &&
+      (!["admin", "bursar", "teacher"].includes(payload.role) ||
+        !Array.isArray(payload.assignedClassIds) ||
+        !payload.assignedClassIds.every((id) => typeof id === "string") ||
+        typeof payload.staffId !== "string")
+    )
+      return null;
+    if (
+      payload.type === "student" &&
+      (typeof payload.pupilId !== "string" ||
+        typeof payload.admissionNumber !== "string")
+    )
+      return null;
     return payload;
   } catch {
     return null;
@@ -98,10 +139,10 @@ export function verifySessionToken(token: string): SessionActor | null {
 export function setSessionCookie(res: NextResponse, token: string): void {
   res.cookies.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: SESSION_EXPIRY_SECONDS,
-    path: '/',
+    path: "/",
   });
 }
 
@@ -109,42 +150,63 @@ export function setSessionCookie(res: NextResponse, token: string): void {
  * Clears the session cookie on a NextResponse.
  */
 export function clearSessionCookie(res: NextResponse): void {
-  res.cookies.set(SESSION_COOKIE_NAME, '', {
+  res.cookies.set(SESSION_COOKIE_NAME, "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: 0,
-    path: '/',
+    path: "/",
   });
 }
 
 /**
  * Extracts and verifies the session from an incoming NextRequest.
  */
-export async function getSession(req: NextRequest | Request): Promise<SessionActor | null> {
+export function extractSessionToken(
+  req: NextRequest | Request,
+): string | undefined {
   let token: string | undefined;
 
-  if ('cookies' in req && typeof req.cookies.get === 'function') {
+  if ("cookies" in req && typeof req.cookies.get === "function") {
     token = req.cookies.get(SESSION_COOKIE_NAME)?.value;
   } else {
-    const cookieHeader = req.headers.get('cookie') || '';
-    const match = cookieHeader.match(new RegExp(`(?:^|; )${SESSION_COOKIE_NAME}=([^;]*)`));
-    token = match ? decodeURIComponent(match[1]) : undefined;
+    const cookieHeader = req.headers.get("cookie") || "";
+    const match = cookieHeader.match(
+      new RegExp(`(?:^|; )${SESSION_COOKIE_NAME}=([^;]*)`),
+    );
+    try {
+      token = match ? decodeURIComponent(match[1]) : undefined;
+    } catch {
+      return undefined;
+    }
   }
 
   // Also support Authorization: Bearer <token> for testing/API clients
   if (!token) {
-    const authHeader = req.headers.get('authorization');
-    if (authHeader && authHeader.toLowerCase().startsWith('bearer ')) {
+    const authHeader = req.headers.get("authorization");
+    if (authHeader && authHeader.toLowerCase().startsWith("bearer ")) {
       const candidate = authHeader.slice(7).trim();
-      if (candidate.includes('.')) {
+      if (candidate.includes(".")) {
         token = candidate;
       }
     }
   }
 
+  return token;
+}
+export async function getSession(
+  req: NextRequest | Request,
+): Promise<SessionActor | null> {
+  const token = extractSessionToken(req);
   if (!token) return null;
-  return verifySessionToken(token);
+  const actor = verifySessionToken(token);
+  if (!actor) return null;
+  return validateStoredSession(actor, token);
+}
+export async function revokeRequestSession(req: NextRequest | Request) {
+  const token = extractSessionToken(req);
+  const actor = token ? verifySessionToken(token) : null;
+  if (token && actor) await revokeStoredToken(actor, token);
 }
 
 /**
@@ -152,23 +214,25 @@ export async function getSession(req: NextRequest | Request): Promise<SessionAct
  */
 export async function requireStaffSession(
   req: NextRequest | Request,
-  allowedRoles?: StaffRole[]
+  allowedRoles?: StaffRole[],
 ): Promise<StaffSessionActor> {
   const session = await getSession(req);
   if (!session) {
-    const err = new Error('Authentication required');
+    const err = new Error("Authentication required");
     (err as any).statusCode = 401;
     throw err;
   }
 
-  if (session.type !== 'staff') {
-    const err = new Error('Forbidden: Staff access required');
+  if (session.type !== "staff") {
+    const err = new Error("Forbidden: Staff access required");
     (err as any).statusCode = 403;
     throw err;
   }
 
   if (allowedRoles && !allowedRoles.includes(session.role)) {
-    const err = new Error(`Forbidden: Role '${session.role}' is not authorized for this operation`);
+    const err = new Error(
+      `Forbidden: Role '${session.role}' is not authorized for this operation`,
+    );
     (err as any).statusCode = 403;
     throw err;
   }
@@ -182,18 +246,20 @@ export async function requireStaffSession(
  */
 export async function requireStudentOrStaffSession(
   req: NextRequest | Request,
-  pupilId?: string
+  pupilId?: string,
 ): Promise<SessionActor> {
   const session = await getSession(req);
   if (!session) {
-    const err = new Error('Authentication required');
+    const err = new Error("Authentication required");
     (err as any).statusCode = 401;
     throw err;
   }
 
-  if (session.type === 'student') {
+  if (session.type === "student") {
     if (pupilId && session.pupilId !== pupilId) {
-      const err = new Error('Forbidden: You can only access your own pupil records');
+      const err = new Error(
+        "Forbidden: You can only access your own pupil records",
+      );
       (err as any).statusCode = 403;
       throw err;
     }
@@ -201,5 +267,3 @@ export async function requireStudentOrStaffSession(
 
   return session;
 }
-
-
