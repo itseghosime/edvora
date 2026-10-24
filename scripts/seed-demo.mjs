@@ -2,17 +2,14 @@
 // Edvora Demonstration Seeder
 // Seeds exactly 50 synthetic pupils, 8 nursery/primary classes, fee plans,
 // demonstration session/term, and provisions admin@edvora.com.
-// Safe to rerun (idempotent); synthetic data clearly marked for later cleanup.
+// Local disposable databases only; existing result records and fee adjustments are preserved.
 // ==============================================================================
 
 import { Client } from "pg";
-import { createClient } from "@supabase/supabase-js";
+import { requireLocalDemoDatabase } from "./demo-database.mjs";
 import { DEMO_SESSION, DEMO_TERM, DEMO_CLASSES, DEMO_FEE_PLANS, DEMO_PUPILS } from "./demo-data.mjs";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://hphytqeqhjwvuqkxvvmh.supabase.co";
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-const databaseUrl = process.env.DATABASE_URL || "postgres://postgres@localhost:5433/edvora_test";
-const adminPassword = process.env.ADMIN_PASSWORD || "";
+const databaseUrl = requireLocalDemoDatabase(process.env.DATABASE_URL);
 
 async function seed() {
   console.log("=== Edvora Demonstration Preparation ===");
@@ -21,58 +18,8 @@ async function seed() {
   console.log(`Target Classes: ${DEMO_CLASSES.length}`);
   console.log(`Target Synthetic Pupils: ${DEMO_PUPILS.length}`);
 
-  let adminAuthUserId = null;
-
-  // 1. Supabase Auth Provisioning (if SUPABASE_SERVICE_ROLE_KEY is present)
-  if (supabaseServiceKey) {
-    console.log("\n[1/3] Supabase Auth: Checking admin@edvora.com via Admin API...");
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-
-    try {
-      // List existing users to find admin@edvora.com
-      const { data: listData, error: listError } = await supabase.auth.admin.listUsers();
-      if (listError) throw listError;
-
-      const existingUser = listData.users.find(
-        (u) => u.email?.toLowerCase() === "admin@edvora.com"
-      );
-
-      if (existingUser) {
-        adminAuthUserId = existingUser.id;
-        console.log(`Found existing Supabase Auth user admin@edvora.com (UUID: ${adminAuthUserId})`);
-
-        if (adminPassword) {
-          const { error: updateErr } = await supabase.auth.admin.updateUserById(existingUser.id, {
-            password: adminPassword,
-            email_confirm: true,
-          });
-          if (updateErr) throw updateErr;
-          console.log("Updated admin@edvora.com password privately in Supabase Auth.");
-        }
-      } else {
-        if (!adminPassword) {
-          console.warn("NOTE: ADMIN_PASSWORD is not set. admin@edvora.com user cannot be created in Supabase Auth without ADMIN_PASSWORD.");
-        } else {
-          const { data: createData, error: createError } = await supabase.auth.admin.createUser({
-            email: "admin@edvora.com",
-            password: adminPassword,
-            email_confirm: true,
-            user_metadata: { role: "admin", full_name: "Edvora Administrator" },
-          });
-          if (createError) throw createError;
-          adminAuthUserId = createData.user.id;
-          console.log(`Created Supabase Auth user admin@edvora.com (UUID: ${adminAuthUserId}) without sending invite email.`);
-        }
-      }
-    } catch (err) {
-      console.error("Supabase Auth Admin API error:", err.message);
-    }
-  } else {
-    console.log("\n[1/3] SUPABASE_SERVICE_ROLE_KEY is not configured in local environment.");
-    console.log("      Skipping Supabase Auth provisioning. Existing staff_profiles.user_id will be preserved without fabricated fallbacks.");
-  }
+  // Authentication provisioning is separate; this local seeder never contacts Supabase Auth.
+  const adminAuthUserId = null;
 
   // 2. Persisted PostgreSQL Seed
   console.log("\n[2/3] Connecting to persisted PostgreSQL database...");
@@ -82,10 +29,11 @@ async function seed() {
     console.log("Connected to PostgreSQL successfully.");
 
     await pgClient.query("BEGIN;");
+    await pgClient.query("SELECT pg_advisory_xact_lock(7240425)");
 
     // A. Academic Session & Term
     console.log("Seeding demonstration session and term...");
-    await pgClient.query(
+    const sessionResult = await pgClient.query(
       `
       INSERT INTO academic_sessions (id, name, start_date, end_date, is_current)
       VALUES ($1, $2, $3, $4, $5)
@@ -98,13 +46,15 @@ async function seed() {
       [DEMO_SESSION.id, DEMO_SESSION.name, DEMO_SESSION.startDate, DEMO_SESSION.endDate, DEMO_SESSION.isCurrent]
     );
 
+    const actualSessionId = sessionResult.rows[0].id;
+
     // Make sure other sessions aren't marked current if this one is current
     await pgClient.query(
       `UPDATE academic_sessions SET is_current = false WHERE id <> $1 AND is_current = true;`,
-      [DEMO_SESSION.id]
+      [actualSessionId]
     );
 
-    await pgClient.query(
+    const termResult = await pgClient.query(
       `
       INSERT INTO academic_terms (id, session_id, name, term_code, start_date, end_date, is_current)
       VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -115,12 +65,14 @@ async function seed() {
         is_current = EXCLUDED.is_current
       RETURNING id;
       `,
-      [DEMO_TERM.id, DEMO_TERM.sessionId, DEMO_TERM.name, DEMO_TERM.termCode, DEMO_TERM.startDate, DEMO_TERM.endDate, DEMO_TERM.isCurrent]
+      [DEMO_TERM.id, actualSessionId, DEMO_TERM.name, DEMO_TERM.termCode, DEMO_TERM.startDate, DEMO_TERM.endDate, DEMO_TERM.isCurrent]
     );
+
+    const actualTermId = termResult.rows[0].id;
 
     await pgClient.query(
       `UPDATE academic_terms SET is_current = false WHERE id <> $1 AND is_current = true;`,
-      [DEMO_TERM.id]
+      [actualTermId]
     );
 
     // B. Classes
@@ -160,7 +112,7 @@ async function seed() {
           components = EXCLUDED.components
         RETURNING id;
         `,
-        [plan.id, DEMO_TERM.id, actualClassId, plan.name, plan.totalAmountMinor, JSON.stringify(plan.components)]
+        [plan.id, actualTermId, actualClassId, plan.name, plan.totalAmountMinor, JSON.stringify(plan.components)]
       );
       feePlanIdMap.set(actualClassId, res.rows[0].id);
     }
@@ -274,7 +226,7 @@ async function seed() {
         [
           `88888888-0000-4000-a000-000000000${String(pupil.admissionNumber.slice(-3))}`,
           actualPupilId,
-          DEMO_TERM.id,
+          actualTermId,
           actualFeePlanId,
           pupil.feeAmountMinor,
         ]
@@ -301,17 +253,12 @@ async function seed() {
         `
         INSERT INTO academic_results (id, pupil_id, term_id, class_id, subjects, total_score, max_score, average_score, class_size, teacher_remarks, head_remarks, status, published_at)
         VALUES ($1, $2, $3, $4, $5::jsonb, 524, 600, 87.33, 7, 'Exceptional performance and attentive class participation.', 'Well done, keep up the excellent standard.', 'published', now())
-        ON CONFLICT (pupil_id, term_id) DO UPDATE SET
-          subjects = EXCLUDED.subjects,
-          total_score = EXCLUDED.total_score,
-          average_score = EXCLUDED.average_score,
-          status = 'published',
-          published_at = now();
+        ON CONFLICT (pupil_id, term_id) DO NOTHING;
         `,
         [
           "dddddddd-0000-4000-a000-000000000025",
-          osaserePupil.id,
-          DEMO_TERM.id,
+          (await pgClient.query("SELECT id FROM pupils WHERE admission_number = $1", [osaserePupil.admissionNumber])).rows[0].id,
+          actualTermId,
           osasereClassId,
           JSON.stringify(demoSubjects),
         ]

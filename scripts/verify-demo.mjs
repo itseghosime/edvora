@@ -14,6 +14,7 @@
 // ==============================================================================
 
 import assert from "node:assert/strict";
+import { requireLocalDemoDatabase } from "./demo-database.mjs";
 import { Client } from "pg";
 import { randomBytes, randomUUID, createHash } from "node:crypto";
 import { DEMO_SESSION, DEMO_TERM, DEMO_CLASSES, DEMO_PUPILS } from "./demo-data.mjs";
@@ -24,13 +25,14 @@ import {
   deriveStudentAccessToken,
 } from "../src/lib/auth/studentPasswords.ts";
 
-const databaseUrl = process.env.DATABASE_URL || "postgres://postgres@localhost:5433/edvora_test";
+const databaseUrl = requireLocalDemoDatabase(process.env.DATABASE_URL);
 const isMutative = process.argv.includes("--mutative") || process.argv.includes("--write");
 
 async function verify() {
   console.log(`=== Running Edvora Demonstration Verification [Mode: ${isMutative ? "MUTATIVE" : "READ-ONLY (Default)"}] ===\n`);
   const pg = new Client({ connectionString: databaseUrl });
   await pg.connect();
+  await pg.query(isMutative ? "BEGIN" : "BEGIN READ ONLY");
 
   try {
     // --------------------------------------------------------------------------
@@ -113,7 +115,7 @@ async function verify() {
       assert.ok(verifiedAdmin, "Admin session token must verify correctly");
       assert.equal(verifiedAdmin.role, "admin");
       assert.equal(verifiedAdmin.email, "admin@edvora.com");
-      console.log("✓ Live session token creation & verification verified.");
+      console.log("✓ Local session signing verified (does not verify Supabase login).");
     } else {
       console.log("ℹ SESSION_SECRET is not configured in local environment; verified active staff profile role directly.");
     }
@@ -356,7 +358,7 @@ async function verify() {
       "SELECT count(*) FROM reminder_jobs rj JOIN pupils p ON p.id = rj.pupil_id WHERE p.admission_number LIKE 'EDV/DEMO/%'"
     );
     assert.equal(Number(reminderJobs.rows[0].count), 0, "No reminder jobs must be generated for demonstration pupils");
-    console.log("✓ SMS sending and n8n notification/reminder queues verified inactive.");
+    console.log("✓ Local demo queues are empty. This does not verify n8n schedule state or provider delivery.");
 
     // --------------------------------------------------------------------------
     // 7. Summary & Final Report
@@ -385,6 +387,7 @@ async function verify() {
     console.log(`\n✅ All demonstration readiness checks passed successfully in ${isMutative ? "MUTATIVE" : "READ-ONLY"} mode!`);
     return counts;
   } finally {
+    await pg.query("ROLLBACK");
     await pg.end();
   }
 }

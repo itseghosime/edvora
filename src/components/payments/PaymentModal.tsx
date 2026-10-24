@@ -90,7 +90,7 @@ export default function PaymentModal({
         onClick={checkoutStep === "processing" ? undefined : handleClose}
       />
 
-      <div className="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-ink-border z-10 animate-in zoom-in-95 duration-200">
+      <div className="relative bg-white rounded-3xl max-w-lg w-full max-h-[calc(100dvh-2rem)] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-ink-border z-10 animate-in zoom-in-95 duration-200">
         {checkoutStep === "form" && (
           <div>
             <div className="flex items-start justify-between pb-4 border-b border-ink-border">
@@ -218,7 +218,7 @@ export default function PaymentModal({
                   autoComplete="email"
                 />
                 <p className="text-[11px] text-ink-muted">
-                  Official payment receipt and confirmation will be sent here.
+                  Used by Paystack for checkout and payment communication.
                 </p>
               </div>
 

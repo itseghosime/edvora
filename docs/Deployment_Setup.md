@@ -49,32 +49,15 @@ Configure the backend HTTPS origin and dedicated Edvora credentials in each nati
 
 Only after provider acceptance: authorize publication, bind WF04 as the error workflow, then activate the required schedules. Verify timezone, delivery records and recovery. Merge/deploy the accepted code, verify the domain, database backup policy, error monitoring and recovery ownership. Automated UI mocks and separate SQL checks do not replace deployed end-to-end acceptance.
 
-## 6. Demonstration preparation and verification
+## 6. Disposable local demonstration scripts
 
-For class demonstrations, provision synthetic data and verify application services:
+The deployed school already has an administrator, 50 demo pupils, published results and a verified Paystack test payment. Do not rerun demo seeding against that database or reset its administrator password.
 
-1. **Environment Variables**: Configure in `.env.local` or deployment store:
-   - `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anon public key
-   - `SUPABASE_SERVICE_ROLE_KEY`: Supabase server-only service role key
-   - `SESSION_SECRET`: Session token HMAC secret
-   - `PAYSTACK_ENVIRONMENT`: `test`
-   - `PAYSTACK_PUBLIC_KEY` & `PAYSTACK_SECRET_KEY`: Paystack test API keys
-   - `ADMIN_PASSWORD`: (Optional) Set privately to provision or update `admin@edvora.com` password without printing.
+Both scripts require an explicit DATABASE_URL targeting localhost, 127.0.0.1 or ::1 and a database named edvora_test, edvora_ci or edvora_demo. They reject remote and production targets. Never forward a local database port to production.
 
-2. **Seed Demonstration Data**:
-   ```bash
-   npm run seed:demo
-   ```
-   - Provisions `admin@edvora.com` via Supabase Auth Admin API (no invite email sent) and creates matching active `staff_profiles` row with exact Auth UUID.
-   - Idempotently creates 8 nursery/primary classes, fee plans for First Term 2026/2027, and exactly 50 synthetic pupils (`EDV/DEMO/001` - `EDV/DEMO/050`).
-   - Disables SMS and Telegram consent on all fictional guardians (`consent_sms: false`, `consent_telegram: false`), uses fictional non-routable numbers, and leaves Paystack in test mode.
+- npm run seed:demo populates a disposable local database. It never contacts Supabase Auth, preserves existing fee adjustments and result records, and consumes actual session, term and pupil IDs returned by the database. Authentication provisioning is a separate operator task.
+- npm run verify:demo inspects the pristine local fixture within a read-only transaction. It expects unpaid pupils and empty queues; it is not a production readiness check.
+- npm run verify:demo -- --mutative exercises database commands within a transaction that always rolls back, including access links, credentials and result changes.
+- Local token signing checks do not establish Supabase login. Empty database queues do not establish n8n inactivity. SQL payment-intent checks do not establish Paystack checkout or provider delivery.
 
-3. **Verify Demonstration Readiness**:
-   ```bash
-   npm run verify:demo
-   ```
-   - Verifies 50 synthetic pupils, active administrator, class filtering, assigned fees, and student access workflow.
-   - Validates student single-use access link issuance and password setup (no DOB login).
-   - Validates academic result drafting and publication while confirming zero notification jobs dispatched.
-   - Confirms Paystack checkout in test mode with zero fabricated receipts.
+Use deployed browser acceptance and the n8n instance to verify those integrations separately. Do not publish workflows as part of seeding or deployment.
