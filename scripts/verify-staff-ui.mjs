@@ -513,6 +513,8 @@ try {
     for (const path of ["/", "/about", "/academics", "/admissions", "/fees", "/school-life", "/contact"]) {
       await page.goto(base + path, { waitUntil: "domcontentloaded" });
       assert.equal(await page.locator("main h1").count(), 1, path + " heading");
+      await page.evaluate(() => document.fonts.ready);
+      await page.waitForFunction(() => document.documentElement.scrollWidth <= innerWidth + 1, { timeout: 5000 });
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
       if (overflow) console.log("Overflow elements", path, width, await page.evaluate(() => [...document.querySelectorAll("body *")].filter(e => { const r=e.getBoundingClientRect(); return r.right>innerWidth+1 && r.width>0; }).slice(0,12).map(e=>({tag:e.tagName,cls:e.className,text:e.textContent.slice(0,60),right:e.getBoundingClientRect().right}))));
       assert.equal(overflow, false, `${path} overflows at ${width}`);
