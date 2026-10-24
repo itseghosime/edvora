@@ -91,12 +91,8 @@ export default function PaymentModal({
       />
 
       <div className="relative bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-ink-border z-10 animate-in zoom-in-95 duration-200">
-        {paymentError && <p role="alert" className="text-error text-sm mb-4">{paymentError}</p>}
         {checkoutStep === "form" && (
           <div>
-            <label className="block text-sm mb-4">Receipt email
-              <input type="email" required value={payerEmail} onChange={e => setPayerEmail(e.target.value)} className="mt-1 block w-full rounded-xl border border-outline-variant p-3" autoComplete="email" />
-            </label>
             <div className="flex items-start justify-between pb-4 border-b border-ink-border">
               <div>
                 <span className="text-xs uppercase tracking-wider text-forest font-bold">
@@ -112,11 +108,18 @@ export default function PaymentModal({
               <button
                 type="button"
                 onClick={handleClose}
+                aria-label="Close payment modal"
                 className="p-1.5 text-ink-muted hover:text-ink hover:bg-gray-100 rounded-xl transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {paymentError && (
+              <p role="alert" className="text-error text-sm mt-3 p-3 bg-error-container/20 rounded-xl border border-error/30">
+                {paymentError}
+              </p>
+            )}
 
             <div className="mt-5 space-y-4">
               {/* Current balance reminder */}
@@ -197,6 +200,26 @@ export default function PaymentModal({
                 <span className="font-bold text-sm">
                   {formatNaira(remainingBalancePreview)}
                 </span>
+              </div>
+
+              {/* Receipt email input */}
+              <div className="space-y-1.5 pt-1">
+                <label htmlFor="payer-receipt-email" className="block text-xs font-bold text-ink">
+                  Receipt Email Address
+                </label>
+                <input
+                  id="payer-receipt-email"
+                  type="email"
+                  required
+                  value={payerEmail}
+                  onChange={(e) => setPayerEmail(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-ink-border text-sm font-medium focus:outline-none focus:ring-2 focus:ring-forest bg-white"
+                  placeholder="parent@example.com"
+                  autoComplete="email"
+                />
+                <p className="text-[11px] text-ink-muted">
+                  Official payment receipt and confirmation will be sent here.
+                </p>
               </div>
 
               {/* Payment Channel Selection */}

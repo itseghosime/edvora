@@ -82,11 +82,14 @@ describe('Real PostgreSQL Integration: Migrations, RLS, Stored Functions & Concu
       // Test-owned prerequisites; never rely on a developer's existing database seed.
       await client.query(`
         INSERT INTO academic_sessions (id,name,start_date,end_date)
-        VALUES ('11111111-0000-0000-0000-000000000000','2026/2027 Test','2026-09-01','2027-07-31');
+        VALUES ('11111111-0000-0000-0000-000000000000','2026/2027 Test','2026-09-01','2027-07-31')
+        ON CONFLICT (id) DO NOTHING;
         INSERT INTO academic_terms (id,session_id,name,term_code,start_date,end_date)
-        VALUES ('66666666-7777-8888-9999-000000000000','11111111-0000-0000-0000-000000000000','RLS Test Term','RLS-TEST','2026-09-01','2026-12-31');
+        VALUES ('66666666-7777-8888-9999-000000000000','11111111-0000-0000-0000-000000000000','RLS Test Term','RLS-TEST','2026-09-01','2026-12-31')
+        ON CONFLICT (id) DO NOTHING;
         INSERT INTO school_classes (id,name,stage)
-        VALUES ('22222222-0000-0000-0000-000000000000','Primary 3A Test','primary');
+        VALUES ('22222222-0000-0000-0000-000000000000','Primary 3A Test','primary')
+        ON CONFLICT (id) DO NOTHING;
       `);
 
     } finally {

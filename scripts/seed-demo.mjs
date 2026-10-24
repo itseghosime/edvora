@@ -53,26 +53,25 @@ async function seed() {
         }
       } else {
         if (!adminPassword) {
-          console.warn("WARNING: ADMIN_PASSWORD environment variable is not set. Generating a secure one-time password...");
+          console.warn("NOTE: ADMIN_PASSWORD is not set. admin@edvora.com user cannot be created in Supabase Auth without ADMIN_PASSWORD.");
+        } else {
+          const { data: createData, error: createError } = await supabase.auth.admin.createUser({
+            email: "admin@edvora.com",
+            password: adminPassword,
+            email_confirm: true,
+            user_metadata: { role: "admin", full_name: "Edvora Administrator" },
+          });
+          if (createError) throw createError;
+          adminAuthUserId = createData.user.id;
+          console.log(`Created Supabase Auth user admin@edvora.com (UUID: ${adminAuthUserId}) without sending invite email.`);
         }
-        const initialPassword = adminPassword || `Edvora!${Math.random().toString(36).slice(2)}${Date.now()}`;
-        const { data: createData, error: createError } = await supabase.auth.admin.createUser({
-          email: "admin@edvora.com",
-          password: initialPassword,
-          email_confirm: true,
-          user_metadata: { role: "admin", full_name: "Edvora Administrator" },
-        });
-        if (createError) throw createError;
-        adminAuthUserId = createData.user.id;
-        console.log(`Created Supabase Auth user admin@edvora.com (UUID: ${adminAuthUserId}) without sending invite email.`);
       }
     } catch (err) {
       console.error("Supabase Auth Admin API error:", err.message);
     }
   } else {
     console.log("\n[1/3] SUPABASE_SERVICE_ROLE_KEY is not configured in local environment.");
-    console.log("      admin@edvora.com will be linked with demonstration UUID in PostgreSQL.");
-    adminAuthUserId = "00000000-0000-4000-a000-000000000001";
+    console.log("      Skipping Supabase Auth provisioning. Existing staff_profiles.user_id will be preserved without fabricated fallbacks.");
   }
 
   // 2. Persisted PostgreSQL Seed
@@ -171,15 +170,15 @@ async function seed() {
     await pgClient.query(
       `
       INSERT INTO staff_profiles (id, user_id, full_name, email, role, assigned_class_ids, is_active, auth_version)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, 0)
+      VALUES (gen_random_uuid(), $1, 'Edvora Administrator', 'admin@edvora.com', 'admin', '{}', true, 0)
       ON CONFLICT (email) DO UPDATE SET
-        user_id = COALESCE($2, staff_profiles.user_id),
+        user_id = COALESCE($1, staff_profiles.user_id),
         full_name = EXCLUDED.full_name,
         role = 'admin',
         is_active = true,
         assigned_class_ids = '{}';
       `,
-      ["00000000-0000-4000-a000-000000000001", adminAuthUserId, "Edvora Administrator", "admin@edvora.com", "admin", "{}", true]
+      [adminAuthUserId]
     );
 
     // E. 50 Synthetic Pupils & Fictional Guardians
@@ -264,7 +263,13 @@ async function seed() {
         ON CONFLICT (pupil_id, term_id) DO UPDATE SET
           fee_plan_id = EXCLUDED.fee_plan_id,
           base_amount_minor = EXCLUDED.base_amount_minor,
-          adjusted_amount_minor = EXCLUDED.adjusted_amount_minor;
+          adjusted_amount_minor = CASE
+            WHEN EXISTS (
+              SELECT 1 FROM fee_adjustments fa WHERE fa.fee_assignment_id = fee_assignments.id
+            ) OR fee_assignments.adjusted_amount_minor <> fee_assignments.base_amount_minor
+            THEN fee_assignments.adjusted_amount_minor
+            ELSE EXCLUDED.adjusted_amount_minor
+          END;
         `,
         [
           `88888888-0000-4000-a000-000000000${String(pupil.admissionNumber.slice(-3))}`,
@@ -330,3 +335,4 @@ seed().catch((err) => {
   console.error("Fatal seed error:", err);
   process.exit(1);
 });
+
