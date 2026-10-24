@@ -75,7 +75,7 @@ export default function PublicNavbar() {
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-0.5">
+        <nav aria-label="Main navigation" className="hidden xl:flex items-center gap-0.5">
           {links.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -110,7 +110,7 @@ export default function PublicNavbar() {
             aria-label={open ? "Close navigation menu" : "Open navigation menu"}
             aria-expanded={open}
             aria-controls="mobile-navigation"
-            className="lg:hidden w-11 h-11 flex items-center justify-center rounded-lg border border-ink-border text-forest hover:bg-forest-50 transition-colors"
+            className="xl:hidden w-11 h-11 flex items-center justify-center rounded-lg border border-ink-border text-forest hover:bg-forest-50 transition-colors"
           >
             {open ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -122,7 +122,7 @@ export default function PublicNavbar() {
         <nav
           id="mobile-navigation"
           aria-label="Mobile navigation"
-          className="lg:hidden absolute top-full inset-x-0 max-h-[calc(100dvh-116px)] overflow-y-auto border-b border-ink-border bg-white px-5 py-4 shadow-lg space-y-1"
+          className="xl:hidden absolute top-full inset-x-0 max-h-[calc(100dvh-116px)] overflow-y-auto border-b border-ink-border bg-white px-5 py-4 shadow-lg space-y-1"
         >
           <div className="text-[11px] uppercase tracking-wider font-semibold text-ink-muted px-3 pb-2 pt-1">
             Navigation Menu

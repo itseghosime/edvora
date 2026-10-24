@@ -514,6 +514,7 @@ try {
       await page.goto(base + path, { waitUntil: "domcontentloaded" });
       assert.equal(await page.locator("main h1").count(), 1, path + " heading");
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1);
+      if (overflow) console.log("Overflow elements", path, width, await page.evaluate(() => [...document.querySelectorAll("body *")].filter(e => { const r=e.getBoundingClientRect(); return r.right>innerWidth+1 && r.width>0; }).slice(0,12).map(e=>({tag:e.tagName,cls:e.className,text:e.textContent.slice(0,60),right:e.getBoundingClientRect().right}))));
       assert.equal(overflow, false, `${path} overflows at ${width}`);
       const missingAnchors = await page.evaluate(() => [...document.querySelectorAll('a[href^="#"]')].map(a=>a.getAttribute('href')).filter(h=>h.length>1 && !document.getElementById(h.slice(1))));
       assert.deepEqual(missingAnchors, [], `${path} broken anchors`);
