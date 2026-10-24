@@ -2,36 +2,37 @@
 
 import React from "react";
 import Link from "next/link";
+import { GraduationCap, ArrowUpRight } from "lucide-react";
 
 export default function PublicFooter() {
   return (
-    <footer className="w-full bg-surface-container-lowest border-t border-outline-variant/30 shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-14 pb-10 font-body-md text-on-surface">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="w-full bg-surface-container-lowest border-t border-ink-border pt-14 pb-10 font-body-md text-on-surface">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10 mb-12">
           {/* Identity & Mission (2 cols) */}
           <div className="lg:col-span-2 space-y-4">
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary shadow-sm">
-                <span aria-hidden="true" className="material-symbols-outlined text-[24px]">school</span>
+              <div className="w-10 h-10 rounded-xl bg-forest text-white flex items-center justify-center shadow-sm">
+                <GraduationCap size={22} aria-hidden="true" />
               </div>
               <div>
-                <div className="font-display font-bold text-xl text-primary tracking-tight">
-                  edvora<span className="text-secondary">.</span>
+                <div className="font-heading font-bold text-xl text-forest-800 tracking-tight">
+                  Edvora<span className="text-secondary">.</span>
                 </div>
-                <div className="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-wider">
-                  Nursery &amp; Primary School · Edo State
+                <div className="font-label-sm text-[11px] text-ink-muted uppercase tracking-wider">
+                  Nursery &amp; Primary School · Benin City
                 </div>
               </div>
             </Link>
 
             <p className="font-body-md text-sm text-on-surface-variant leading-relaxed max-w-md">
-              Nurturing inquisitive minds and confident leaders with dignified academic stewardship,
-              botanical play environments, and parental partnership from early years through primary education.
+              Nurturing inquisitive minds and confident young leaders with thoughtful teaching,
+              curated learning spaces, and close parental partnership from early childhood through primary education.
             </p>
 
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container text-on-surface font-label-sm text-xs">
-              <span className="w-2 h-2 rounded-full bg-primary" />
-              <span>Admissions open for 2026/2027 Academic Session</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-forest-50 border border-forest-200/60 text-forest-800 font-label-sm text-xs">
+              <span className="w-2 h-2 rounded-full bg-forest" />
+              <span>Now Enrolling · 2026/2027 Academic Session</span>
             </div>
           </div>
 
@@ -43,27 +44,27 @@ export default function PublicFooter() {
             <ul className="space-y-2 text-sm text-on-surface-variant font-medium">
               <li>
                 <Link href="/academics" className="hover:text-primary transition-colors">
-                  Creche &amp; Toddlers
+                  Creche &amp; Toddlers (18mo+)
                 </Link>
               </li>
               <li>
                 <Link href="/academics" className="hover:text-primary transition-colors">
-                  Nursery I &amp; II
+                  Nursery I &amp; II (Ages 3–5)
                 </Link>
               </li>
               <li>
                 <Link href="/academics" className="hover:text-primary transition-colors">
-                  Lower Primary (1–3)
+                  Lower Primary (Grades 1–3)
                 </Link>
               </li>
               <li>
                 <Link href="/academics" className="hover:text-primary transition-colors">
-                  Upper Primary (4–6)
+                  Upper Primary (Grades 4–6)
                 </Link>
               </li>
               <li>
                 <Link href="/school-life" className="hover:text-primary transition-colors">
-                  Co-curricular Clubs
+                  Co-curricular &amp; Arts
                 </Link>
               </li>
             </ul>
@@ -77,7 +78,7 @@ export default function PublicFooter() {
             <ul className="space-y-2 text-sm text-on-surface-variant font-medium">
               <li>
                 <Link href="/admissions" className="hover:text-primary transition-colors">
-                  Admission Criteria
+                  Admissions Process
                 </Link>
               </li>
               <li>
@@ -86,18 +87,26 @@ export default function PublicFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="hover:text-primary transition-colors font-semibold text-primary">
-                  Student Portal Login
+                <Link
+                  href="/login"
+                  className="hover:text-primary transition-colors font-semibold text-primary inline-flex items-center gap-1"
+                >
+                  Student Portal (Parents)
+                  <ArrowUpRight size={13} aria-hidden="true" />
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="hover:text-primary transition-colors">
-                  Staff Login
+                <Link
+                  href="/login"
+                  className="hover:text-primary transition-colors inline-flex items-center gap-1"
+                >
+                  Staff Portal
+                  <ArrowUpRight size={13} aria-hidden="true" />
                 </Link>
               </li>
               <li>
                 <Link href="/school-life" className="hover:text-primary transition-colors">
-                  Term Dates &amp; Calendar
+                  Daily Rhythm &amp; Facilities
                 </Link>
               </li>
             </ul>
@@ -110,22 +119,34 @@ export default function PublicFooter() {
             </div>
             <div className="space-y-2.5 text-sm text-on-surface-variant">
               <p className="flex items-start gap-2">
-                <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">
+                <span
+                  aria-hidden="true"
+                  className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5"
+                >
                   schedule
                 </span>
                 <span>Mon – Fri: 8:00 AM – 3:30 PM</span>
               </p>
               <p className="flex items-start gap-2">
-                <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">
+                <span
+                  aria-hidden="true"
+                  className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5"
+                >
                   location_on
                 </span>
-                <span>Contact the school for directions</span>
+                <span>Airport Road Campus, GRA · Benin City, Edo State</span>
               </p>
               <p className="flex items-start gap-2">
-                <span aria-hidden="true" className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5">
-                  call
+                <span
+                  aria-hidden="true"
+                  className="material-symbols-outlined text-[18px] text-primary shrink-0 mt-0.5"
+                >
+                  contact_support
                 </span>
-                <Link href="/contact" className="hover:text-primary transition-colors font-semibold text-on-surface">
+                <Link
+                  href="/contact"
+                  className="hover:text-primary transition-colors font-semibold text-primary underline underline-offset-4"
+                >
                   Contact school office
                 </Link>
               </p>
@@ -134,14 +155,17 @@ export default function PublicFooter() {
         </div>
 
         {/* Bottom Sub-Footer */}
-        <div className="pt-6 border-t border-outline-variant/20 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-on-surface-variant">
+        <div className="pt-6 border-t border-ink-border/70 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-on-surface-variant">
           <div>© 2026 Edvora Nursery &amp; Primary School. All rights reserved.</div>
           <div className="flex items-center gap-6">
             <Link href="/contact" className="hover:text-primary transition-colors">
-              Privacy Notice &amp; Safeguards
+              Campus Visits &amp; Enquiries
             </Link>
-            <Link href="/contact" className="hover:text-primary transition-colors">
+            <Link href="/about" className="hover:text-primary transition-colors">
               Parent Partnership Charter
+            </Link>
+            <Link href="/fees" className="hover:text-primary transition-colors">
+              Fee Policy &amp; Portal Guide
             </Link>
           </div>
         </div>
