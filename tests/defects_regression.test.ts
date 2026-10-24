@@ -11,6 +11,7 @@ import { initializePayment, verifyPayment, processPaystackWebhookEvent } from '.
 import { mapTermiiProviderStatus, canTransitionAttemptStatus } from '../src/lib/services/smsStatus';
 import { store } from '../src/lib/db/store';
 import { db } from '../src/lib/db/supabaseRepository';
+import * as studentPasswords from '../src/lib/auth/studentPasswords';
 import { config } from '../src/lib/config';
 import * as supabaseClientModule from '../src/lib/supabase/client';
 
@@ -172,93 +173,20 @@ describe('Codex Defect Regressions', () => {
       expect(cookieHeader).toMatch(/edvora_session=/);
     });
 
-    it('rejects student login with admission number alone when credentials (DOB) are missing with HTTP 401', async () => {
-      const req = new NextRequest('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'student',
-          admissionNumber: 'EDV/2024/0042',
-        }),
-      });
-
-      const res = await loginRoute(req);
-      expect(res.status).toBe(401);
-      const json = await res.json();
-      expect(json.error).toMatch(/Date of birth is required/i);
+    it('rejects admission number alone and admission plus DOB as credentials',async()=>{
+      for(const payload of [{type:'student',admissionNumber:'EDV/2024/0042'},{type:'student',admissionNumber:'EDV/2024/0042',dateOfBirth:'2018-05-14'}]){
+        const res=await loginRoute(new NextRequest('http://localhost/api/auth/login',{method:'POST',body:JSON.stringify(payload)}));expect(res.status).toBe(401);expect((await res.json()).error).toMatch(/password/i);
+      }
     });
-
-    it('rejects student login if the persisted DOB is missing in school records with HTTP 401', async () => {
-      // EDV/2025/0118 (Tamara Ehigiator) has no persisted dateOfBirth in records
-      const req = new NextRequest('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'student',
-          admissionNumber: 'EDV/2025/0118',
-          dateOfBirth: '2019-06-20',
-        }),
-      });
-
-      const res = await loginRoute(req);
-      expect(res.status).toBe(401);
-      const json = await res.json();
-      expect(json.error).toMatch(/no registered date of birth/i);
+    it('authenticates with a verified Student password and issues only an HttpOnly cookie',async()=>{
+      vi.spyOn(studentPasswords,'readStudentCredential').mockResolvedValue({pupilId,admissionNumber:'EDV/2024/0042',passwordHash:'private-hash',authVersion:2,name:'Student',className:'Primary 3A'});
+      vi.spyOn(studentPasswords,'verifyStudentPassword').mockResolvedValue(true);
+      const res=await loginRoute(new NextRequest('http://localhost/api/auth/login',{method:'POST',body:JSON.stringify({type:'student',admissionNumber:'EDV/2024/0042',password:'chosen-private-password'})}));
+      expect(res.status).toBe(200);expect((await res.json()).token).toBeUndefined();expect(res.headers.get('set-cookie')).toContain('HttpOnly');
     });
-
-    it('rejects student login with arbitrary supplied date of birth not matching records with HTTP 401', async () => {
-      // EDV/2024/0042 (Osasere) has DOB 2018-05-14; supplying arbitrary DOB must fail
-      const req = new NextRequest('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'student',
-          admissionNumber: 'EDV/2024/0042',
-          dateOfBirth: '2021-12-31', // Arbitrary non-matching DOB
-        }),
-      });
-
-      const res = await loginRoute(req);
-      expect(res.status).toBe(401);
-      const json = await res.json();
-      expect(json.error).toMatch(/Date of birth does not match/i);
-    });
-
-    it('rejects student login for inactive or withdrawn pupils with HTTP 403', async () => {
-      // EDV/2023/0099 (Chinedu Okeke) has status: 'withdrawn'
-      const req = new NextRequest('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'student',
-          admissionNumber: 'EDV/2023/0099',
-          dateOfBirth: '2017-03-21',
-        }),
-      });
-
-      const res = await loginRoute(req);
-      expect(res.status).toBe(403);
-      const json = await res.json();
-      expect(json.error).toMatch(/withdrawn|inactive/i);
-    });
-
-    it('authenticates student login with valid admission number and matching date of birth', async () => {
-      const req = new NextRequest('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'student',
-          admissionNumber: 'EDV/2024/0042',
-          dateOfBirth: '2018-05-14', // Valid matching DOB
-        }),
-      });
-
-      const res = await loginRoute(req);
-      expect(res.status).toBe(200);
-      const json = await res.json();
-      expect(json.success).toBe(true);
-      expect(json.user.role).toBe('student');
-      expect(json.token).toBeUndefined();
+    it('uses one generic error for unknown, inactive, locked or incorrect Student credentials',async()=>{
+      vi.spyOn(studentPasswords,'readStudentCredential').mockResolvedValue(null);vi.spyOn(studentPasswords,'verifyStudentPassword').mockResolvedValue(false);
+      const res=await loginRoute(new NextRequest('http://localhost/api/auth/login',{method:'POST',body:JSON.stringify({type:'student',admissionNumber:'EDV/2024/0042',password:'wrong-password'})}));expect(res.status).toBe(401);expect((await res.json()).error).toMatch(/Invalid admission number or password/);
     });
 
     it('rejects unauthenticated result publishing with HTTP 401 even if body contains actorRole: admin', async () => {

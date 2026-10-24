@@ -39,7 +39,7 @@ export interface StudentSessionActor {
 
 export type SessionActor = StaffSessionActor | StudentSessionActor;
 
-function getSessionSecret(): string {
+export function getSessionSecret(): string {
   const secret = process.env.SESSION_SECRET;
   if (!secret) {
     if (process.env.NODE_ENV === "test") {

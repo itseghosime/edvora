@@ -116,7 +116,7 @@ describe('Route-Level Authorization & Security Boundaries', () => {
     const res = await authLoginRoute(req);
     expect(res.status).toBe(401);
     const json = await res.json();
-    expect(json.error).toMatch(/No pupil record matches/i);
+    expect(json.error).toMatch(/password/i);
   });
 
   it('rejects unauthenticated Termii webhook delivery reports before persistence', async () => {

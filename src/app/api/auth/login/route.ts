@@ -8,99 +8,65 @@ import {
   revokeRequestSession,
 } from "@/lib/auth/session";
 import { consumeLoginBudget } from "@/lib/auth/loginBudget";
+import {
+  readStudentCredential,
+  verifyStudentPassword,
+} from "@/lib/auth/studentPasswords";
 import { StaffRole } from "@/lib/types/backend";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { type, admissionNumber, dateOfBirth, email, password } = body;
+    const { type, admissionNumber, email, password } = body;
 
     if (type === "student") {
-      // 1. Require credentials: admission number alone must NEVER authenticate
-      if (!admissionNumber || !admissionNumber.trim()) {
+      if (
+        typeof admissionNumber !== "string" ||
+        !admissionNumber.trim() ||
+        typeof password !== "string" ||
+        !password
+      ) {
         return NextResponse.json(
-          { error: "Admission number is required" },
+          { error: "Admission number and password are required." },
           { status: 401 },
         );
       }
-      if (!dateOfBirth || !dateOfBirth.trim()) {
-        return NextResponse.json(
-          {
-            error: "Date of birth is required to authenticate student access.",
-          },
-          { status: 401 },
-        );
-      }
-
-      // 2. Query persisted record from database repository
       const cleanAdmission = admissionNumber.trim().toUpperCase();
       await consumeLoginBudget(type, cleanAdmission);
-      const pupil = await db.getPupilByAdmissionNumber(cleanAdmission);
-
-      if (!pupil) {
+      const credential = await readStudentCredential(cleanAdmission);
+      const valid = await verifyStudentPassword(
+        password,
+        credential?.passwordHash ?? null,
+      );
+      if (!valid || !credential)
         return NextResponse.json(
           {
             error:
-              "No pupil record matches this admission number. Please check your admission letter or contact the school office.",
+              "Invalid admission number or password. Use a school-issued setup link if your account is new.",
           },
           { status: 401 },
         );
-      }
-
-      // 3. Check pupil account status before issuing a session
-      if (pupil.status !== "active") {
-        return NextResponse.json(
-          {
-            error: `Student account is ${pupil.status || "inactive"}. Please contact the school administration.`,
-          },
-          { status: 403 },
-        );
-      }
-
-      // 4. Reject student login if the persisted DOB is missing or does not match
-      if (!pupil.dateOfBirth || !pupil.dateOfBirth.trim()) {
-        return NextResponse.json(
-          {
-            error:
-              "Pupil account record has no registered date of birth. Please contact the school office.",
-          },
-          { status: 401 },
-        );
-      }
-
-      if (pupil.dateOfBirth.trim() !== dateOfBirth.trim()) {
-        return NextResponse.json(
-          {
-            error:
-              "Invalid credentials: Date of birth does not match school records for this admission number.",
-          },
-          { status: 401 },
-        );
-      }
-
       const token = createSessionToken({
         type: "student",
-        authVersion: pupil.authVersion ?? 0,
-        userId: pupil.id,
-        pupilId: pupil.id,
-        admissionNumber: pupil.admissionNumber,
-        name: `${pupil.firstName} ${pupil.lastName}`,
-        className: pupil.className || "",
-        guardianId: pupil.guardianId,
+        authVersion: credential.authVersion,
+        userId: credential.pupilId,
+        pupilId: credential.pupilId,
+        admissionNumber: credential.admissionNumber,
+        name: credential.name,
+        className: credential.className,
+        guardianId: credential.guardianId,
       });
-
       const response = NextResponse.json({
         success: true,
         user: {
           role: "student",
-          pupilId: pupil.id,
-          name: `${pupil.firstName} ${pupil.lastName}`,
-          admissionNumber: pupil.admissionNumber,
-          className: pupil.className || "",
+          pupilId: credential.pupilId,
+          name: credential.name,
+          admissionNumber: credential.admissionNumber,
+          className: credential.className,
         },
         redirect: "/student",
       });
-
       setSessionCookie(response, token);
       return response;
     }
@@ -201,8 +167,16 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   } catch (err: unknown) {
-    const error=err as Error & {statusCode?:number;retryAfter?:number};
-    return NextResponse.json({error:error.message},{status:error.statusCode??400,headers:error.retryAfter?{'Retry-After':String(error.retryAfter)}:undefined});
+    const error = err as Error & { statusCode?: number; retryAfter?: number };
+    return NextResponse.json(
+      { error: error.message },
+      {
+        status: error.statusCode ?? 400,
+        headers: error.retryAfter
+          ? { "Retry-After": String(error.retryAfter) }
+          : undefined,
+      },
+    );
   }
 }
 

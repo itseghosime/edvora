@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import StudentAccessIssuer from "./StudentAccessIssuer";
 import PageHeader from "../shared/PageHeader";
 import { formatNaira } from "@/lib/utils";
 import {
@@ -20,6 +21,7 @@ import {
 export default function StaffPupils() {
   const data = useStaffData();
   const action = useStaffAction();
+  const [accessPupil, setAccessPupil] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("");
@@ -59,10 +61,20 @@ export default function StaffPupils() {
         }
       />
       <Feedback action={action} />
+      {admin && accessPupil && (
+        <StudentAccessIssuer
+          key={accessPupil}
+          pupilId={accessPupil}
+          name={
+            data.pupils.find((p) => p.id === accessPupil)?.fullName ?? "Pupil"
+          }
+          onClose={() => setAccessPupil(null)}
+        />
+      )}
       {admission && (
         <p role="status" className="bg-primary/10 p-4 rounded-xl text-primary">
-          Admission number: <strong>{admission}</strong>. The pupil can sign in
-          with this number and their registered date of birth.
+          Admission number: <strong>{admission}</strong>. Issue a private setup
+          link so the family can choose a password.
         </p>
       )}
       {open && admin && (
@@ -317,6 +329,14 @@ export default function StaffPupils() {
                     >
                       {p.status === "Active" ? "Suspend" : "Activate"}
                     </button>
+                    {p.status === "Active" && (
+                      <button
+                        className={secondaryClass + " mt-2"}
+                        onClick={() => setAccessPupil(p.id)}
+                      >
+                        Set up / reset access
+                      </button>
+                    )}
                   </td>
                 )}
               </tr>

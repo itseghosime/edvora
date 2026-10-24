@@ -124,7 +124,8 @@ const authDatabase = createServer(async (req, res) => {
     const body = JSON.parse(text);
     const valid =
       body.p_hash === signedHash &&
-      body.p_subject === actor.staffId &&
+      body.p_subject ===
+        (actor.type === "student" ? actor.pupilId : actor.staffId) &&
       body.p_version === 0 &&
       !revoked.has(body.p_hash);
     res.end(
@@ -217,6 +218,27 @@ try {
       return route.fulfill({ json: { actor } });
     if (url.pathname === "/api/portal")
       return route.fulfill({ json: snapshot });
+    if (url.pathname === "/api/auth/student-access") {
+      const body = route.request().postDataJSON();
+      requests.push({ accessIssue: body });
+      return route.fulfill({
+        json: {
+          admissionNumber: "EDV/UI/001",
+          expiresAt: new Date(Date.now() + 30 * 60000).toISOString(),
+          activationUrl: base + "/account/access#" + "a".repeat(43),
+        },
+      });
+    }
+    if (url.pathname === "/api/auth/student-access/redeem") {
+      requests.push({ accessRedeem: route.request().postDataJSON() });
+      return route.fulfill({
+        json: { success: true, admissionNumber: "EDV/UI/001" },
+      });
+    }
+    if (url.pathname === "/api/auth/student-password") {
+      requests.push({ passwordChange: route.request().postDataJSON() });
+      return route.fulfill({ json: { success: true, redirect: "/login" } });
+    }
     if (url.pathname === "/api/staff/commands") {
       const body = route.request().postDataJSON();
       requests.push(body);
@@ -293,6 +315,27 @@ try {
     path: "test-results/staff-ui/pupils-desktop.png",
     fullPage: true,
   });
+  await page
+    .getByRole("button", { name: "Set up / reset access", exact: true })
+    .click();
+  await page
+    .getByLabel("Reason for setup or recovery", { exact: true })
+    .fill("Verified guardian recovery request");
+  await page.getByLabel(/I have verified this pupil/).check();
+  await page
+    .getByRole("button", { name: "Issue setup / recovery link", exact: true })
+    .click();
+  const privateLink = await page
+    .getByLabel("Private setup link", { exact: true })
+    .inputValue();
+  assert.equal(new URL(privateLink).hash, "#" + "a".repeat(43));
+  assert.equal(
+    requests.find((r) => r.accessIssue).accessIssue.verifiedGuardian,
+    true,
+  );
+  await page
+    .getByRole("button", { name: "Close access panel", exact: true })
+    .click();
   await page.goto(base + "/admin/results");
   await page
     .getByLabel("Start or edit a report", { exact: true })
@@ -334,6 +377,34 @@ try {
     path: "test-results/staff-ui/navigation-mobile.png",
     fullPage: true,
   });
+  await page.goto(base + "/account/access#" + "a".repeat(43));
+  await page
+    .getByLabel("New password", { exact: true })
+    .fill("My private school password");
+  await page
+    .getByLabel("Confirm password", { exact: true })
+    .fill("My private school password");
+  assert.equal(new URL(page.url()).hash, "");
+  await page.getByRole("button", { name: "Set password", exact: true }).click();
+  await page
+    .getByRole("status")
+    .filter({ hasText: "Password saved for EDV/UI/001" })
+    .waitFor();
+  assert.equal(
+    requests.find((r) => r.accessRedeem).accessRedeem.token,
+    "a".repeat(43),
+  );
+  await page.screenshot({
+    path: "test-results/staff-ui/student-access-mobile.png",
+    fullPage: true,
+  });
+  await page.goto(base + "/account/access");
+  await page
+    .getByRole("link", { name: "Contact the school office", exact: true })
+    .waitFor();
+  await page.goto(base + "/login");
+  await page.getByLabel("Pupil Admission Number", { exact: true }).waitFor();
+  await page.getByLabel("Password", { exact: true }).waitFor();
   actor.role = "teacher";
   snapshot.staffRole = "teacher";
   snapshot.feePlans = [];
@@ -359,6 +430,52 @@ try {
     headers: { authorization: `Bearer ${token}` },
   });
   assert.equal(replay.status(), 401, "Replaying a logged-out token must fail");
+  Object.assign(actor, {
+    type: "student",
+    pupilId: uid(20),
+    userId: uid(20),
+    admissionNumber: "EDV/UI/001",
+    className: "Primary 1A",
+    jti: randomUUID(),
+  });
+  const studentPayload = Buffer.from(JSON.stringify(actor)).toString(
+    "base64url",
+  );
+  const studentToken =
+    studentPayload +
+    "." +
+    createHmac("sha256", secret).update(studentPayload).digest("base64url");
+  signedHash = createHash("sha256").update(studentToken).digest("hex");
+  await context.addCookies([
+    {
+      name: "edvora_session",
+      value: studentToken,
+      url: base,
+      httpOnly: true,
+      sameSite: "Lax",
+    },
+  ]);
+  await page.goto(base + "/student/account");
+  await page
+    .getByRole("heading", { name: "Account security", exact: true })
+    .waitFor();
+  await page
+    .getByLabel("Current password", { exact: true })
+    .fill("My old school password");
+  await page
+    .getByLabel("New password", { exact: true })
+    .fill("My changed school password");
+  await page
+    .getByLabel("Confirm password", { exact: true })
+    .fill("My changed school password");
+  await page
+    .getByRole("button", { name: "Change password and sign out", exact: true })
+    .click();
+  await page.waitForURL("**/login");
+  assert.equal(
+    requests.find((r) => r.passwordChange).passwordChange.currentPassword,
+    "My old school password",
+  );
   assert.deepEqual(errors, []);
   console.log(
     "Staff UI smoke passed: seven routes on desktop/mobile, enrollment errors/retry key, result payload, role guard; API responses mocked.",
