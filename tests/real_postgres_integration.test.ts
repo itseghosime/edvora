@@ -19,6 +19,10 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
     path.join(__dirname, '../supabase/migrations/20261024000000_harden_rls_and_grants.sql'),
     'utf-8'
   );
+  const staffBoundariesSql = fs.readFileSync(
+    path.join(__dirname, '../supabase/migrations/20261024000001_staff_role_class_boundaries.sql'),
+    'utf-8'
+  );
 
   beforeAll(async () => {
     // Connect to postgres server and setup test database
@@ -53,6 +57,7 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
       await client.query(schemaSql);
       await client.query(functionsSql);
       await client.query(hardenSql);
+      await client.query(staffBoundariesSql);
     } finally {
       client.release();
     }
@@ -503,6 +508,244 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
       `);
       const checkIncident = await client.query(`SELECT * FROM operational_incidents WHERE incident_key = '${testIncidentKey}';`);
       expect(checkIncident.rows).toHaveLength(1);
+    } finally {
+      await client.query('RESET ROLE;');
+      client.release();
+    }
+  });
+
+  it('proves Teacher A cannot read Class B pupils/results or financial records, while assigned-class access works (tests inactive staff and unrelated guardians too)', async () => {
+    const client = await pool.connect();
+    try {
+      const runId = Date.now().toString().slice(-6);
+
+      // Unique IDs for classes
+      const classAId = `20000000-0000-0000-0000-${runId}000001`;
+      const classBId = `20000000-0000-0000-0000-${runId}000002`;
+
+      // Unique IDs for users / auth.uid()
+      const adminUserId = `10000000-0000-0000-0000-${runId}000001`;
+      const bursarUserId = `10000000-0000-0000-0000-${runId}000002`;
+      const teacherAUserId = `10000000-0000-0000-0000-${runId}000003`;
+      const inactiveTeacherUserId = `10000000-0000-0000-0000-${runId}000004`;
+      const unrelatedGuardianUserId = `10000000-0000-0000-0000-${runId}000005`;
+
+      // Unique IDs for entities
+      const guardianAId = `30000000-0000-0000-0000-${runId}000001`;
+      const guardianBId = `30000000-0000-0000-0000-${runId}000002`;
+      const unrelatedGuardianId = `30000000-0000-0000-0000-${runId}000003`;
+
+      const pupilAId = `40000000-0000-0000-0000-${runId}000001`;
+      const pupilBId = `40000000-0000-0000-0000-${runId}000002`;
+      const pupilCId = `40000000-0000-0000-0000-${runId}000003`;
+
+      const termId = '66666666-7777-8888-9999-000000000000';
+      const resultAId = `50000000-0000-0000-0000-${runId}000001`;
+      const resultBId = `50000000-0000-0000-0000-${runId}000002`;
+      const resultCId = `50000000-0000-0000-0000-${runId}000003`;
+
+      const intentAId = `60000000-0000-0000-0000-${runId}000001`;
+      const intentBId = `60000000-0000-0000-0000-${runId}000002`;
+      const intentCId = `60000000-0000-0000-0000-${runId}000003`;
+
+      const txAId = `70000000-0000-0000-0000-${runId}000001`;
+      const txBId = `70000000-0000-0000-0000-${runId}000002`;
+
+      // 1. Setup seed data as service_role / superuser
+      await client.query('RESET ROLE;');
+
+      // Classes
+      await client.query(`
+        INSERT INTO school_classes (id, name, stage) VALUES
+          ('${classAId}', 'Class A-${runId}', 'primary'),
+          ('${classBId}', 'Class B-${runId}', 'primary')
+        ON CONFLICT DO NOTHING;
+      `);
+
+      // Guardians
+      await client.query(`
+        INSERT INTO guardians (id, user_id, full_name, phone_number, email) VALUES
+          ('${guardianAId}', gen_random_uuid(), 'Guardian A', '+2348011111111', 'parentA_${runId}@edvora.org'),
+          ('${guardianBId}', gen_random_uuid(), 'Guardian B', '+2348022222222', 'parentB_${runId}@edvora.org'),
+          ('${unrelatedGuardianId}', '${unrelatedGuardianUserId}', 'Unrelated Guardian', '+2348033333333', 'unrelated_${runId}@edvora.org')
+        ON CONFLICT DO NOTHING;
+      `);
+
+      // Pupils: A in Class A, B in Class B, C (child of Unrelated Guardian) in Class A
+      await client.query(`
+        INSERT INTO pupils (id, admission_number, first_name, last_name, class_id, guardian_id, status) VALUES
+          ('${pupilAId}', 'EDV/RLS/A-${runId}', 'Alice', 'Pupil', '${classAId}', '${guardianAId}', 'active'),
+          ('${pupilBId}', 'EDV/RLS/B-${runId}', 'Bob', 'Pupil', '${classBId}', '${guardianBId}', 'active'),
+          ('${pupilCId}', 'EDV/RLS/C-${runId}', 'Charlie', 'Pupil', '${classAId}', '${unrelatedGuardianId}', 'active')
+        ON CONFLICT DO NOTHING;
+      `);
+
+      // Staff Profiles:
+      // - Admin: school-wide
+      // - Bursar: school-wide pupils + finance, no academic results
+      // - Teacher A: assigned only to Class A
+      // - Inactive Teacher: assigned to Class A, but is_active = false
+      await client.query(`
+        INSERT INTO staff_profiles (id, user_id, full_name, email, role, assigned_class_ids, is_active) VALUES
+          (gen_random_uuid(), '${adminUserId}', 'Admin User', 'admin_${runId}@edvora.org', 'admin', '{}', true),
+          (gen_random_uuid(), '${bursarUserId}', 'Bursar User', 'bursar_${runId}@edvora.org', 'bursar', '{}', true),
+          (gen_random_uuid(), '${teacherAUserId}', 'Teacher A', 'teacherA_${runId}@edvora.org', 'teacher', ARRAY['${classAId}'::uuid], true),
+          (gen_random_uuid(), '${inactiveTeacherUserId}', 'Inactive Teacher', 'inactive_${runId}@edvora.org', 'teacher', ARRAY['${classAId}'::uuid], false)
+        ON CONFLICT DO NOTHING;
+      `);
+
+      // Academic Results: Result A in Class A, Result B in Class B, Result C in Class A (all published)
+      await client.query(`
+        INSERT INTO academic_results (id, pupil_id, term_id, class_id, subjects, total_score, max_score, average_score, status) VALUES
+          ('${resultAId}', '${pupilAId}', '${termId}', '${classAId}', '[]', 92.00, 100.00, 92.00, 'published'),
+          ('${resultBId}', '${pupilBId}', '${termId}', '${classBId}', '[]', 85.00, 100.00, 85.00, 'published'),
+          ('${resultCId}', '${pupilCId}', '${termId}', '${classAId}', '[]', 88.00, 100.00, 88.00, 'published')
+        ON CONFLICT DO NOTHING;
+      `);
+
+      // Payment Intents & Transactions:
+      await client.query(`
+        INSERT INTO payment_intents (id, pupil_id, term_id, reference, amount_minor, status, payer_email, expires_at) VALUES
+          ('${intentAId}', '${pupilAId}', '${termId}', 'REF-RLS-A-${runId}', 5000000, 'successful', 'payerA@edvora.org', now() + interval '30 minutes'),
+          ('${intentBId}', '${pupilBId}', '${termId}', 'REF-RLS-B-${runId}', 5000000, 'successful', 'payerB@edvora.org', now() + interval '30 minutes'),
+          ('${intentCId}', '${pupilCId}', '${termId}', 'REF-RLS-C-${runId}', 5000000, 'successful', 'payerC@edvora.org', now() + interval '30 minutes')
+        ON CONFLICT DO NOTHING;
+
+        INSERT INTO payment_transactions (id, intent_id, reference, provider, provider_transaction_id, amount_minor, status) VALUES
+          ('${txAId}', '${intentAId}', 'TX-RLS-A-${runId}', 'paystack', 'PSTK-A-${runId}', 5000000, 'success'),
+          ('${txBId}', '${intentBId}', 'TX-RLS-B-${runId}', 'paystack', 'PSTK-B-${runId}', 5000000, 'success')
+        ON CONFLICT DO NOTHING;
+      `);
+
+      // =========================================================================
+      // Test 1: Teacher A (Assigned Class A only)
+      // =========================================================================
+      await client.query('SET ROLE authenticated;');
+      await client.query(`SET request.jwt.claim.sub = '${teacherAUserId}';`);
+
+      // 1.1 Pupil Access: Can read Class A pupil, CANNOT read Class B pupil
+      const teacherPupils = await client.query(`
+        SELECT id, admission_number FROM pupils WHERE id IN ('${pupilAId}', '${pupilBId}');
+      `);
+      expect(teacherPupils.rows).toHaveLength(1);
+      expect(teacherPupils.rows[0].id).toBe(pupilAId);
+
+      // 1.2 Academic Results: Can read Class A result, CANNOT read Class B result
+      const teacherResults = await client.query(`
+        SELECT id, pupil_id FROM academic_results WHERE id IN ('${resultAId}', '${resultBId}');
+      `);
+      expect(teacherResults.rows).toHaveLength(1);
+      expect(teacherResults.rows[0].id).toBe(resultAId);
+
+      // 1.3 Financial Access: CANNOT read payment intents or transactions
+      const teacherIntents = await client.query(`
+        SELECT id FROM payment_intents WHERE id IN ('${intentAId}', '${intentBId}');
+      `);
+      expect(teacherIntents.rows).toHaveLength(0);
+
+      const teacherTxs = await client.query(`
+        SELECT id FROM payment_transactions WHERE id IN ('${txAId}', '${txBId}');
+      `);
+      expect(teacherTxs.rows).toHaveLength(0);
+
+      // =========================================================================
+      // Test 2: Inactive Staff (is_active = false)
+      // =========================================================================
+      await client.query(`SET request.jwt.claim.sub = '${inactiveTeacherUserId}';`);
+
+      const inactivePupils = await client.query(`
+        SELECT id FROM pupils WHERE id IN ('${pupilAId}', '${pupilBId}');
+      `);
+      expect(inactivePupils.rows).toHaveLength(0);
+
+      const inactiveResults = await client.query(`
+        SELECT id FROM academic_results WHERE id IN ('${resultAId}', '${resultBId}');
+      `);
+      expect(inactiveResults.rows).toHaveLength(0);
+
+      const inactiveIntents = await client.query(`
+        SELECT id FROM payment_intents WHERE id IN ('${intentAId}', '${intentBId}');
+      `);
+      expect(inactiveIntents.rows).toHaveLength(0);
+
+      // =========================================================================
+      // Test 3: Unrelated Guardian (Linked only to Pupil C)
+      // =========================================================================
+      await client.query(`SET request.jwt.claim.sub = '${unrelatedGuardianUserId}';`);
+
+      // Cannot read Pupil A or Pupil B; CAN read own child Pupil C
+      const guardianPupils = await client.query(`
+        SELECT id FROM pupils WHERE id IN ('${pupilAId}', '${pupilBId}', '${pupilCId}');
+      `);
+      expect(guardianPupils.rows).toHaveLength(1);
+      expect(guardianPupils.rows[0].id).toBe(pupilCId);
+
+      // Cannot read Result A or Result B; CAN read published Result C
+      const guardianResults = await client.query(`
+        SELECT id FROM academic_results WHERE id IN ('${resultAId}', '${resultBId}', '${resultCId}');
+      `);
+      expect(guardianResults.rows).toHaveLength(1);
+      expect(guardianResults.rows[0].id).toBe(resultCId);
+
+      // Cannot read Intent A or Intent B; CAN read own child's Intent C
+      const guardianIntents = await client.query(`
+        SELECT id FROM payment_intents WHERE id IN ('${intentAId}', '${intentBId}', '${intentCId}');
+      `);
+      expect(guardianIntents.rows).toHaveLength(1);
+      expect(guardianIntents.rows[0].id).toBe(intentCId);
+
+      // =========================================================================
+      // Test 4: Bursar (School-wide pupils and finance, NO academic results)
+      // =========================================================================
+      await client.query(`SET request.jwt.claim.sub = '${bursarUserId}';`);
+
+      // Can read school-wide pupils
+      const bursarPupils = await client.query(`
+        SELECT id FROM pupils WHERE id IN ('${pupilAId}', '${pupilBId}');
+      `);
+      expect(bursarPupils.rows).toHaveLength(2);
+
+      // Can read school-wide financial records
+      const bursarIntents = await client.query(`
+        SELECT id FROM payment_intents WHERE id IN ('${intentAId}', '${intentBId}');
+      `);
+      expect(bursarIntents.rows).toHaveLength(2);
+
+      const bursarTxs = await client.query(`
+        SELECT id FROM payment_transactions WHERE id IN ('${txAId}', '${txBId}');
+      `);
+      expect(bursarTxs.rows).toHaveLength(2);
+
+      // CANNOT read academic results
+      const bursarResults = await client.query(`
+        SELECT id FROM academic_results WHERE id IN ('${resultAId}', '${resultBId}');
+      `);
+      expect(bursarResults.rows).toHaveLength(0);
+
+      // =========================================================================
+      // Test 5: Admin (School-wide access across all entities)
+      // =========================================================================
+      await client.query(`SET request.jwt.claim.sub = '${adminUserId}';`);
+
+      const adminPupils = await client.query(`
+        SELECT id FROM pupils WHERE id IN ('${pupilAId}', '${pupilBId}');
+      `);
+      expect(adminPupils.rows).toHaveLength(2);
+
+      const adminResults = await client.query(`
+        SELECT id FROM academic_results WHERE id IN ('${resultAId}', '${resultBId}');
+      `);
+      expect(adminResults.rows).toHaveLength(2);
+
+      const adminIntents = await client.query(`
+        SELECT id FROM payment_intents WHERE id IN ('${intentAId}', '${intentBId}');
+      `);
+      expect(adminIntents.rows).toHaveLength(2);
+
+      const adminTxs = await client.query(`
+        SELECT id FROM payment_transactions WHERE id IN ('${txAId}', '${txBId}');
+      `);
+      expect(adminTxs.rows).toHaveLength(2);
     } finally {
       await client.query('RESET ROLE;');
       client.release();
