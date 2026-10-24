@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { currentActor } from '@/lib/auth/currentActor';
 import { requireStaffSession } from '@/lib/auth/session';
 import { getSupabaseAdmin } from '@/lib/supabase/client';
 
@@ -6,7 +7,9 @@ export async function POST(req: NextRequest) {
   try {
     const origin = req.headers.get('origin');
     if (origin && origin !== new URL(req.url).origin) return NextResponse.json({error:'Request origin is not allowed'}, {status:403});
-    const actor = await requireStaffSession(req);
+    const verified=await currentActor(await requireStaffSession(req));
+    if(verified.type!=='staff')return NextResponse.json({error:'Staff access required'},{status:403});
+    const actor=verified;
     const body = await req.json();
     const client = getSupabaseAdmin();
     if (!client) return NextResponse.json({error:'The school database is not configured.'}, {status:503});

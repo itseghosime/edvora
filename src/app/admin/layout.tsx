@@ -4,7 +4,8 @@ import StaffShell from "@/components/shells/StaffShell";
 
 export const metadata = {
   title: "Staff Administration | Edvora School Portal",
-  description: "Administrative, bursary and teacher operations portal for Edvora Nursery & Primary School.",
+  description:
+    "Administrative, bursary and teacher operations portal for Edvora Nursery & Primary School.",
 };
 
 export default async function AdminLayout({
@@ -15,4 +16,3 @@ export default async function AdminLayout({
   await requirePageSession("staff");
   return <StaffShell>{children}</StaffShell>;
 }
-

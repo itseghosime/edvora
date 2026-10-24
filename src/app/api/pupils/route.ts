@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
+import { executeStaffCommand } from '@/lib/services/staffCommands';
 import { db } from '@/lib/db/supabaseRepository';
 import { getSession, requireStaffSession } from '@/lib/auth/session';
 
@@ -31,7 +33,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     // Only Admin staff can register new pupils
-    await requireStaffSession(req, ['admin']);
+    const actor=await requireStaffSession(req, ['admin']);
 
     const body = await req.json();
     const { firstName, lastName, gender, classId, guardianName, guardianPhone, guardianEmail, dateOfBirth } = body;
@@ -43,22 +45,9 @@ export async function POST(req: NextRequest) {
     if (typeof dateOfBirth !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth) || !Number.isFinite(Date.parse(dateOfBirth)) || new Date(dateOfBirth).toISOString().slice(0,10) !== dateOfBirth || Date.parse(dateOfBirth) > Date.now()) {
       return NextResponse.json({error:'Provide a valid date of birth'}, {status:400});
     }
-    const result = await db.registerPupil({
-      dateOfBirth,
-      firstName,
-      lastName,
-      gender: gender || 'male',
-      classId,
-      guardianName,
-      guardianPhone,
-      guardianEmail,
-    });
+    const result=await executeStaffCommand(actor,{requestId:body.requestId??randomUUID(),command:'register_pupil',payload:{firstName,lastName,gender:gender??'male',classId,guardianName,guardianPhone,guardianEmail:guardianEmail??'',dateOfBirth,smsConsent:body.smsConsent===true}});
+    return NextResponse.json({success:true,pupil:{id:result.id,admissionNumber:result.admissionNumber,admission_number:result.admissionNumber}});
 
-    return NextResponse.json({
-      success: true,
-      pupil: result.pupil,
-      guardian: result.guardian,
-    });
   } catch (err: any) {
     const status = err.statusCode || 400;
     return NextResponse.json({ error: err.message }, { status });

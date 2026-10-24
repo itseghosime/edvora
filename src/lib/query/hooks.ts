@@ -11,6 +11,7 @@ export async function api<T>(url: string, body?: unknown, method = 'POST'): Prom
   return data as T;
 }
 export function useActorQuery() { return useQuery({queryKey:['actor'],queryFn:()=>api<{actor:SessionActor}>('/api/auth/session'),retry:false}); }
+export const usePortalQuery=()=>usePortal(p=>p);
 function usePortal<T>(select:(data:PortalSnapshot)=>T) { return useQuery({queryKey:['portal'],queryFn:()=>api<PortalSnapshot>('/api/portal'),select,retry:false,staleTime:15000}); }
 export const useSchoolSummaryQuery=()=>usePortal(p=>p.summary);
 export const useClassesQuery=()=>usePortal(p=>p.classes);

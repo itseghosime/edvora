@@ -3,6 +3,7 @@
 // Enforces true Postgres persistence, RLS compliance, and atomic transactions.
 // ==============================================================================
 
+import { randomUUID } from 'crypto';
 import { getSupabaseAdmin } from '../supabase/client';
 import { config } from '../config';
 import { store as memoryStore } from './store';
@@ -659,71 +660,28 @@ export class DatabaseRepository {
       return memoryStore.updateResultStatus(params);
     }
 
-    const updatePayload: Record<string, any> = {
-      status: params.status,
-      updated_at: new Date().toISOString(),
-    };
-
-    if (params.status === 'published') {
-      if (params.actorRole !== 'admin') {
-        throw new Error('Forbidden: Only School Administrators can publish academic report cards');
-      }
-      updatePayload.published_at = new Date().toISOString();
-      updatePayload.published_by = params.actorId;
-    } else if (params.status === 'under_correction') {
-      updatePayload.withdrawn_at = new Date().toISOString();
-      updatePayload.withdrawal_reason = params.reason || 'Under review for grade correction';
-
-      // Purge pending publication notifications to prevent stale send
-      await client
-        .from('notification_jobs')
-        .delete()
-        .eq('source_event_id', params.resultId)
-        .eq('event_type', 'results_published')
-        .in('status', ['pending', 'claimed']);
-    }
-
-    const { data, error } = await client
-      .from('academic_results')
-      .update(updatePayload)
-      .eq('id', params.resultId)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(`Failed to update result status in database: ${error.message}`);
-    }
-
+    const { data, error } = await client.rpc('execute_staff_command', {
+      p_request_id: randomUUID(), p_staff_id: params.actorId, p_command: 'set_result_status',
+      p_payload: {resultId:params.resultId,status:params.status,reason:params.reason??''},
+    });
+    if(error) throw Object.assign(new Error(error.message),{statusCode:error.code==='42501'?403:400});
     return data;
   }
 
   // --- Fee Adjustments ---
   public async adjustFee(params: {
-    assignmentId: string;
-    amountMinor: number;
+    assignmentId: string; amountMinor: number;
     adjustmentType: 'waiver' | 'scholarship' | 'staff_discount' | 'sibling_discount' | 'correction';
-    reason: string;
-    authorizedBy: string;
+    reason: string; authorizedBy: string;
   }) {
     const client = this.getClient();
-    if (!client) {
-      return memoryStore.adjustFee(params);
-    }
-
-    const { data: adj, error } = await client
-      .from('fee_adjustments')
-      .insert({
-        fee_assignment_id: params.assignmentId,
-        amount_minor: params.amountMinor,
-        adjustment_type: params.adjustmentType,
-        reason: params.reason,
-        authorized_by: params.authorizedBy,
-      })
-      .select()
-      .single();
-
-    if (error) throw new Error(`Failed to insert fee adjustment: ${error.message}`);
-    return { success: true, adjustment: adj };
+    if (!client) return memoryStore.adjustFee(params);
+    const {data,error}=await client.rpc('execute_staff_command',{
+      p_request_id:randomUUID(),p_staff_id:params.authorizedBy,p_command:'adjust_fee',
+      p_payload:{assignmentId:params.assignmentId,amountMinor:params.amountMinor,adjustmentType:params.adjustmentType,reason:params.reason},
+    });
+    if(error) throw Object.assign(new Error(error.message),{statusCode:error.code==='42501'?403:400});
+    return {success:true,adjustment:data};
   }
 
   // --- Pupil Registration ---
@@ -970,7 +928,8 @@ export class DatabaseRepository {
     }
 
     const { data, error } = await query;
-    if (error || !data) return [];
+    if (error) throw new Error('Unable to load pupil records');
+    if (!data) return [];
 
     return data.map((p: any) => ({
       id: p.id,

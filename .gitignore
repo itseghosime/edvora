@@ -42,3 +42,5 @@ coverage/
 
 # Supabase CLI runtime cache
 supabase/.temp/
+
+/test-results/

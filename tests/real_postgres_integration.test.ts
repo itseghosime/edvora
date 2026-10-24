@@ -65,6 +65,12 @@ describe('Real PostgreSQL Integration: Migrations, RLS, Stored Functions & Concu
       await client.query(guardianPermissionsSql);
       const integrationMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_portal_integration_foundation.sql'));
       if(integrationMigration) await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',integrationMigration),'utf8'));
+      const staffMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_staff_workspace_transactions.sql'))!;
+      await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',staffMigration),'utf8'));
+      const balanceMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_serialize_fee_balance_updates.sql'))!;
+      await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',balanceMigration),'utf8'));
+      const classMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_harden_staff_class_checks.sql'))!;
+      await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',classMigration),'utf8'));
       // Test-owned prerequisites; never rely on a developer's existing database seed.
       await client.query(`
         INSERT INTO academic_sessions (id,name,start_date,end_date)
@@ -1131,5 +1137,27 @@ describe('Real PostgreSQL Integration: Migrations, RLS, Stored Functions & Concu
     `);
     expect(tx.rows).toHaveLength(1);
   });
+  it('enforces transactional Staff commands, live roles, class scope, idempotency and result publication rules',async()=>{
+    const client=await pool.connect();
+    try {
+      await client.query('BEGIN');
+      await client.query(fs.readFileSync(path.join(__dirname,'fixtures/staff_commands.sql'),'utf8'));
+    } finally {
+      await client.query('ROLLBACK');
+      client.release();
+    }
+  });
+
+  it('serializes different payment references against the same fee balance',async()=>{
+    const fixture=await pool.query("SELECT a.pupil_id,a.term_id,a.adjusted_amount_minor-coalesce((SELECT sum(amount_minor) FROM fee_ledger_entries l WHERE l.pupil_id=a.pupil_id AND l.term_id=a.term_id AND l.entry_type='credit'),0) AS balance FROM fee_assignments a WHERE term_id='66666666-7777-8888-9999-000000000000' LIMIT 1");
+    const row=fixture.rows[0];const amount=100000;const before=Number(row.balance);
+    const references=[`EDV-RACE-A-${Date.now()}`,`EDV-RACE-B-${Date.now()}`];
+    for(const ref of references)await pool.query("INSERT INTO payment_intents(pupil_id,term_id,reference,amount_minor,payer_email) VALUES($1,$2,$3,$4,'race@test.invalid')",[row.pupil_id,row.term_id,ref,amount]);
+    const results=await Promise.all(references.map(ref=>pool.query("SELECT credit_payment_intent($1,$2,$3,'card') AS result",[ref,`PS-${ref}`,amount])));
+    const balances=results.map(r=>Number(r.rows[0].result.new_balance_minor)).sort((a,b)=>a-b);
+    expect(balances).toEqual([Math.max(0,before-2*amount),Math.max(0,before-amount)]);
+    expect(results.every(r=>r.rows[0].result.success&&!r.rows[0].result.duplicate)).toBe(true);
+  });
+
 });
 

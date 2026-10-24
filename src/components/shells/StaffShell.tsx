@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import SignOutButton from "@/components/shared/SignOutButton";
 import { usePathname } from "next/navigation";
-import { useActorQuery } from "@/lib/query/hooks";
+import { useActorQuery, usePortalQuery } from "@/lib/query/hooks";
 import PortalDataBoundary from "@/components/shared/PortalDataBoundary";
 
 interface StaffShellProps {
@@ -15,6 +15,7 @@ export default function StaffShell({ children }: StaffShellProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const {data:auth}=useActorQuery();
+  const {data:portal}=usePortalQuery();
   const role=auth?.actor.type === "staff" ? auth.actor.role : undefined;
   const currentRole=role === "admin" ? "Administrator" : role === "teacher" ? "Teacher" : role === "bursar" ? "Bursar" : "Staff";
 
@@ -92,10 +93,10 @@ export default function StaffShell({ children }: StaffShellProps) {
           <div className="w-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm px-4 sm:px-gutter py-space-xs flex items-center justify-between">
             <div className="flex items-center gap-space-xs">
               <span aria-hidden="true" className="material-symbols-outlined text-[16px] text-secondary">bolt</span>
-              <span>Edvora Internal School Operations Desk · Session 2026/2027</span>
+              <span>{portal?.settings.schoolShortName??"Edvora"} · Staff operations</span>
             </div>
             <span className="font-body-sm text-body-sm text-on-secondary-fixed hidden sm:inline">
-              Collection Target: ₦21,600,000
+              {auth?.actor.name}
             </span>
           </div>
 
@@ -112,14 +113,14 @@ export default function StaffShell({ children }: StaffShellProps) {
                 <span aria-hidden="true" className="material-symbols-outlined text-[24px]">menu</span>
               </button>
               <span className="font-title-md text-title-md text-on-surface font-semibold hidden xl:inline">
-                Edvora Nursery &amp; Primary School
+                {portal?.settings.schoolName??"Edvora"}
               </span>
               <span className="text-outline-variant font-body-sm text-body-sm hidden xl:inline">
                 /
               </span>
               <div className="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded-lg text-primary font-label-md text-label-md">
                 <span aria-hidden="true" className="material-symbols-outlined text-[16px]">calendar_month</span>
-                <span>2026/2027 First Term</span>
+                <span>{portal?.currentTerm?`${portal.currentTerm.sessionName} · ${portal.currentTerm.name}`:"No current term"}</span>
               </div>
             </div>
 
@@ -129,7 +130,7 @@ export default function StaffShell({ children }: StaffShellProps) {
               </span>
               <div className="flex items-center gap-space-sm">
                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-xs">
-                  AD
+                  {auth?.actor.name?.split(" ").map(n=>n[0]).slice(0,2).join("")??"ST"}
                 </div>
               </div>
             </div>
