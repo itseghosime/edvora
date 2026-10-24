@@ -48,3 +48,33 @@ Add consented guardian destinations. Telegram requires a pre-authorized positive
 Configure the backend HTTPS origin and dedicated Edvora credentials in each native workflow. Use the committed `workflows/n8n` snapshots as the reviewed contract reference. Test against isolated accounts before publishing. Outcome retries are idempotent; provider send retries stay disabled, and uncertain sends require review.
 
 Only after provider acceptance: authorize publication, bind WF04 as the error workflow, then activate the required schedules. Verify timezone, delivery records and recovery. Merge/deploy the accepted code, verify the domain, database backup policy, error monitoring and recovery ownership. Automated UI mocks and separate SQL checks do not replace deployed end-to-end acceptance.
+
+## 6. Demonstration preparation and verification
+
+For class demonstrations, provision synthetic data and verify application services:
+
+1. **Environment Variables**: Configure in `.env.local` or deployment store:
+   - `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anon public key
+   - `SUPABASE_SERVICE_ROLE_KEY`: Supabase server-only service role key
+   - `SESSION_SECRET`: Session token HMAC secret
+   - `PAYSTACK_ENVIRONMENT`: `test`
+   - `PAYSTACK_PUBLIC_KEY` & `PAYSTACK_SECRET_KEY`: Paystack test API keys
+   - `ADMIN_PASSWORD`: (Optional) Set privately to provision or update `admin@edvora.com` password without printing.
+
+2. **Seed Demonstration Data**:
+   ```bash
+   npm run seed:demo
+   ```
+   - Provisions `admin@edvora.com` via Supabase Auth Admin API (no invite email sent) and creates matching active `staff_profiles` row with exact Auth UUID.
+   - Idempotently creates 8 nursery/primary classes, fee plans for First Term 2026/2027, and exactly 50 synthetic pupils (`EDV/DEMO/001` - `EDV/DEMO/050`).
+   - Disables SMS and Telegram consent on all fictional guardians (`consent_sms: false`, `consent_telegram: false`), uses fictional non-routable numbers, and leaves Paystack in test mode.
+
+3. **Verify Demonstration Readiness**:
+   ```bash
+   npm run verify:demo
+   ```
+   - Verifies 50 synthetic pupils, active administrator, class filtering, assigned fees, and student access workflow.
+   - Validates student single-use access link issuance and password setup (no DOB login).
+   - Validates academic result drafting and publication while confirming zero notification jobs dispatched.
+   - Confirms Paystack checkout in test mode with zero fabricated receipts.

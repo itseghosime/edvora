@@ -29,10 +29,14 @@ ON CONFLICT (name) DO NOTHING;
 
 -- 3. Staff Profiles
 INSERT INTO staff_profiles (id, full_name, email, role, assigned_class_ids) VALUES
+('00000000-0000-4000-a000-000000000001', 'Edvora Administrator', 'admin@edvora.com', 'admin', '{}'),
 ('44444444-4444-4444-4444-000000000001', 'Mrs. Folashade Adeyemi', 'admin@edvora.ng', 'admin', '{}'),
 ('44444444-4444-4444-4444-000000000002', 'Mr. Chukwuma Obi', 'bursar@edvora.ng', 'bursar', '{}'),
 ('44444444-4444-4444-4444-000000000003', 'Mrs. Amina Danjuma', 'teacher@edvora.ng', 'teacher', ARRAY['33333333-3333-3333-3333-000000000005'::uuid])
-ON CONFLICT (email) DO NOTHING;
+ON CONFLICT (email) DO UPDATE SET
+  role = EXCLUDED.role,
+  is_active = true,
+  full_name = EXCLUDED.full_name;
 
 -- 4. Fee Plans (₦120,000 across classes: 12,000,000 kobo)
 INSERT INTO fee_plans (id, term_id, class_id, name, total_amount_minor, components) VALUES
