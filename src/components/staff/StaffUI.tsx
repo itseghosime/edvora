@@ -1,6 +1,6 @@
 "use client";
-import { useRef, useState } from "react";
-import type { ReactNode } from "react";
+import { cloneElement, isValidElement, useId, useRef, useState } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api, usePortalQuery } from "@/lib/query/hooks";
 import type { PortalSnapshot } from "@/lib/types/portal";
@@ -43,11 +43,14 @@ export function Field({
   label: string;
   children: ReactNode;
 }) {
+  const id = useId();
   return (
-    <label className="flex flex-col gap-1.5 text-sm font-medium">
-      <span>{label}</span>
-      {children}
-    </label>
+    <div className="flex flex-col gap-1.5 text-sm font-medium">
+      <label htmlFor={id}>{label}</label>
+      {isValidElement(children)
+        ? cloneElement(children as ReactElement<{ id?: string }>, { id })
+        : children}
+    </div>
   );
 }
 export function Empty({ children }: { children: ReactNode }) {
@@ -182,11 +185,13 @@ export function useStaffData() {
   return usePortalQuery().data;
 }
 export function ClassSelect({
+  id,
   classes,
   value,
   onChange,
   required = true,
 }: {
+  id?: string;
   classes: PortalSnapshot["classes"];
   value: string;
   onChange: (value: string) => void;
@@ -194,6 +199,7 @@ export function ClassSelect({
 }) {
   return (
     <select
+      id={id}
       className={inputClass}
       value={value}
       onChange={(e) => onChange(e.target.value)}
