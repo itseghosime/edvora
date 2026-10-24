@@ -4,7 +4,7 @@ import { requireLocalDemoDatabase } from "../scripts/demo-database.mjs";
 describe("demo database isolation", () => {
   it("requires an explicit disposable local target", () => {
     for (const value of [undefined, "", "postgres://u:p@db.example.com/edvora_test",
-      "postgres://u:p@localhost/production", "https://localhost/edvora_test"]) {
+      "postgres://u:p@localhost/edvora_test?host=remote.example", "postgres://u:p@localhost/production", "https://localhost/edvora_test"]) {
       expect(() => requireLocalDemoDatabase(value)).toThrow();
     }
   });
