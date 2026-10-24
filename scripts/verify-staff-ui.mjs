@@ -464,6 +464,27 @@ try {
       sameSite: "Lax",
     },
   ]);
+  // Student payment layout and modal: mocked data, no checkout submission.
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 700 });
+    await page.goto(base + "/student/payments");
+    const heading = page.getByRole("heading", { name: "Fees & Payments", exact: true });
+    await heading.waitFor();
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false);
+    await page.getByRole("button", { name: "Pay fees", exact: true }).click();
+    const title = page.getByRole("heading", { name: "Pay School Fees", exact: true });
+    const email = page.getByLabel("Receipt Email Address", { exact: true });
+    await email.waitFor();
+    const titleBox = await title.boundingBox();
+    const emailBox = await email.boundingBox();
+    assert.ok(titleBox.y >= 0 && titleBox.y < 700, "Payment modal title is within viewport");
+    assert.ok(emailBox.y > titleBox.y, "Email follows payment heading");
+    await email.scrollIntoViewIfNeeded();
+    const visibleEmail = await email.boundingBox();
+    assert.ok(visibleEmail.y >= 0 && visibleEmail.y + visibleEmail.height <= 700, "Receipt email remains reachable");
+    await page.screenshot({ path: `test-results/staff-ui/student-payments-${width}.png`, fullPage: true });
+    await page.getByRole("button", { name: "Close payment modal", exact: true }).click();
+  }
   await page.goto(base + "/student/account");
   await page
     .getByRole("heading", { name: "Account security", exact: true })
@@ -487,7 +508,7 @@ try {
   );
   // Public routes use real components; no enquiry is dispatched.
   await context.clearCookies();
-  for (const width of [1440, 390]) {
+  for (const width of [1440, 1024, 390]) {
     await page.setViewportSize({ width, height: 900 });
     for (const path of ["/", "/about", "/academics", "/admissions", "/fees", "/school-life", "/contact"]) {
       await page.goto(base + path, { waitUntil: "domcontentloaded" });
