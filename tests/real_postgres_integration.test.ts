@@ -23,6 +23,10 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
     path.join(__dirname, '../supabase/migrations/20261024000001_staff_role_class_boundaries.sql'),
     'utf-8'
   );
+  const guardianPermissionsSql = fs.readFileSync(
+    path.join(__dirname, '../supabase/migrations/20261024000002_guardian_result_and_financial_permissions.sql'),
+    'utf-8'
+  );
 
   beforeAll(async () => {
     // Connect to postgres server and setup test database
@@ -58,6 +62,7 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
       await client.query(functionsSql);
       await client.query(hardenSql);
       await client.query(staffBoundariesSql);
+      await client.query(guardianPermissionsSql);
     } finally {
       client.release();
     }
@@ -746,6 +751,235 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
         SELECT id FROM payment_transactions WHERE id IN ('${txAId}', '${txBId}');
       `);
       expect(adminTxs.rows).toHaveLength(2);
+    } finally {
+      await client.query('RESET ROLE;');
+      client.release();
+    }
+  });
+
+  it('proves guardian result permissions respect pupil_guardians.can_view_results, keeping academic and financial access separate and isolated to the correct child', async () => {
+    const client = await pool.connect();
+    try {
+      const runId = Date.now().toString().slice(-6);
+
+      // Unique IDs
+      const classId = `21000000-0000-0000-0000-${runId}000001`;
+      const termId = '66666666-7777-8888-9999-000000000000';
+
+      const p1UserId = `11000000-0000-0000-0000-${runId}000001`;
+      const s1DisabledUserId = `11000000-0000-0000-0000-${runId}000002`;
+      const p2UserId = `11000000-0000-0000-0000-${runId}000003`;
+      const s2EnabledUserId = `11000000-0000-0000-0000-${runId}000004`;
+
+      const guardianP1Id = `31000000-0000-0000-0000-${runId}000001`;
+      const guardianS1DisabledId = `31000000-0000-0000-0000-${runId}000002`;
+      const guardianP2Id = `31000000-0000-0000-0000-${runId}000003`;
+      const guardianS2EnabledId = `31000000-0000-0000-0000-${runId}000004`;
+
+      const pupil1Id = `41000000-0000-0000-0000-${runId}000001`;
+      const pupil2Id = `41000000-0000-0000-0000-${runId}000002`;
+
+      const result1Id = `51000000-0000-0000-0000-${runId}000001`;
+      const result2Id = `51000000-0000-0000-0000-${runId}000002`;
+
+      const intent1Id = `61000000-0000-0000-0000-${runId}000001`;
+      const intent2Id = `61000000-0000-0000-0000-${runId}000002`;
+
+      const tx1Id = `71000000-0000-0000-0000-${runId}000001`;
+      const tx2Id = `71000000-0000-0000-0000-${runId}000002`;
+
+      // 1. Setup seed data as service_role
+      await client.query('RESET ROLE;');
+
+      // Class
+      await client.query(`
+        INSERT INTO school_classes (id, name, stage) VALUES
+          ('${classId}', 'Guard-Test-${runId}', 'primary')
+        ON CONFLICT DO NOTHING;
+      `);
+
+      // Guardians
+      await client.query(`
+        INSERT INTO guardians (id, user_id, full_name, phone_number, email) VALUES
+          ('${guardianP1Id}', '${p1UserId}', 'Primary Guardian 1', '+2348041111111', 'p1_${runId}@edvora.org'),
+          ('${guardianS1DisabledId}', '${s1DisabledUserId}', 'Secondary S1 (Results Disabled)', '+2348042222222', 's1_${runId}@edvora.org'),
+          ('${guardianP2Id}', '${p2UserId}', 'Primary Guardian 2', '+2348043333333', 'p2_${runId}@edvora.org'),
+          ('${guardianS2EnabledId}', '${s2EnabledUserId}', 'Secondary S2 (Results Enabled)', '+2348044444444', 's2_${runId}@edvora.org')
+        ON CONFLICT DO NOTHING;
+      `);
+
+      // Pupils:
+      // Pupil 1 has Primary Guardian P1
+      // Pupil 2 has Primary Guardian P2
+      await client.query(`
+        INSERT INTO pupils (id, admission_number, first_name, last_name, class_id, guardian_id, status) VALUES
+          ('${pupil1Id}', 'EDV/G1-${runId}', 'Pupil One', 'Student', '${classId}', '${guardianP1Id}', 'active'),
+          ('${pupil2Id}', 'EDV/G2-${runId}', 'Pupil Two', 'Student', '${classId}', '${guardianP2Id}', 'active')
+        ON CONFLICT DO NOTHING;
+      `);
+
+      // Link Secondary Guardians in pupil_guardians:
+      // - Secondary Guardian S1 linked to Pupil 1 with can_view_results = false, can_pay_fees = true
+      // - Secondary Guardian S2 linked to Pupil 2 with can_view_results = true, can_pay_fees = false
+      await client.query(`
+        INSERT INTO pupil_guardians (pupil_id, guardian_id, is_primary, can_view_results, can_pay_fees) VALUES
+          ('${pupil1Id}', '${guardianS1DisabledId}', false, false, true),
+          ('${pupil2Id}', '${guardianS2EnabledId}', false, true, false)
+        ON CONFLICT (pupil_id, guardian_id) DO UPDATE SET 
+          can_view_results = EXCLUDED.can_view_results, 
+          can_pay_fees = EXCLUDED.can_pay_fees;
+      `);
+
+      // Published Academic Results for Pupil 1 and Pupil 2
+      await client.query(`
+        INSERT INTO academic_results (id, pupil_id, term_id, class_id, subjects, total_score, max_score, average_score, status) VALUES
+          ('${result1Id}', '${pupil1Id}', '${termId}', '${classId}', '[]', 95.00, 100.00, 95.00, 'published'),
+          ('${result2Id}', '${pupil2Id}', '${termId}', '${classId}', '[]', 89.00, 100.00, 89.00, 'published')
+        ON CONFLICT DO NOTHING;
+      `);
+
+      // Payment Intents & Transactions for Pupil 1 and Pupil 2
+      await client.query(`
+        INSERT INTO payment_intents (id, pupil_id, term_id, reference, amount_minor, status, payer_email, expires_at) VALUES
+          ('${intent1Id}', '${pupil1Id}', '${termId}', 'REF-G1-${runId}', 6000000, 'successful', 'p1pay@edvora.org', now() + interval '30 minutes'),
+          ('${intent2Id}', '${pupil2Id}', '${termId}', 'REF-G2-${runId}', 6000000, 'successful', 'p2pay@edvora.org', now() + interval '30 minutes')
+        ON CONFLICT DO NOTHING;
+
+        INSERT INTO payment_transactions (id, intent_id, reference, provider, provider_transaction_id, amount_minor, status) VALUES
+          ('${tx1Id}', '${intent1Id}', 'TX-G1-${runId}', 'paystack', 'PSTK-G1-${runId}', 6000000, 'success'),
+          ('${tx2Id}', '${intent2Id}', 'TX-G2-${runId}', 'paystack', 'PSTK-G2-${runId}', 6000000, 'success')
+        ON CONFLICT DO NOTHING;
+      `);
+
+      // =========================================================================
+      // Test 1: Secondary Guardian S1 (can_view_results = false, can_pay_fees = true)
+      // =========================================================================
+      await client.query('SET ROLE authenticated;');
+      await client.query(`SET request.jwt.claim.sub = '${s1DisabledUserId}';`);
+
+      // 1.1 Academic Results: CANNOT view Result 1 (disabled result access is denied)
+      const s1Result1 = await client.query(`
+        SELECT id, pupil_id FROM academic_results WHERE pupil_id = '${pupil1Id}';
+      `);
+      expect(s1Result1.rows).toHaveLength(0);
+
+      // 1.2 Academic Results: CANNOT view Result 2 (isolated to unrelated child)
+      const s1Result2 = await client.query(`
+        SELECT id, pupil_id FROM academic_results WHERE pupil_id = '${pupil2Id}';
+      `);
+      expect(s1Result2.rows).toHaveLength(0);
+
+      // 1.3 Financial Access: CAN view Intent 1 (can_pay_fees = true; kept separate from results)
+      const s1Intent1 = await client.query(`
+        SELECT id, pupil_id FROM payment_intents WHERE pupil_id = '${pupil1Id}';
+      `);
+      expect(s1Intent1.rows).toHaveLength(1);
+      expect(s1Intent1.rows[0].id).toBe(intent1Id);
+
+      const s1Tx1 = await client.query(`
+        SELECT id FROM payment_transactions WHERE intent_id = '${intent1Id}';
+      `);
+      expect(s1Tx1.rows).toHaveLength(1);
+      expect(s1Tx1.rows[0].id).toBe(tx1Id);
+
+      // 1.4 Financial Access: CANNOT view Intent 2 (isolated to unrelated child)
+      const s1Intent2 = await client.query(`
+        SELECT id, pupil_id FROM payment_intents WHERE pupil_id = '${pupil2Id}';
+      `);
+      expect(s1Intent2.rows).toHaveLength(0);
+
+      // =========================================================================
+      // Test 2: Secondary Guardian S2 (can_view_results = true, can_pay_fees = false)
+      // =========================================================================
+      await client.query(`SET request.jwt.claim.sub = '${s2EnabledUserId}';`);
+
+      // 2.1 Academic Results: CAN view Result 2 (enabled access works)
+      const s2Result2 = await client.query(`
+        SELECT id, pupil_id FROM academic_results WHERE pupil_id = '${pupil2Id}';
+      `);
+      expect(s2Result2.rows).toHaveLength(1);
+      expect(s2Result2.rows[0].id).toBe(result2Id);
+
+      // 2.2 Academic Results: CANNOT view Result 1 (isolated to unrelated child)
+      const s2Result1 = await client.query(`
+        SELECT id, pupil_id FROM academic_results WHERE pupil_id = '${pupil1Id}';
+      `);
+      expect(s2Result1.rows).toHaveLength(0);
+
+      // 2.3 Financial Access: CANNOT view Intent 2 (can_pay_fees = false; kept separate from results)
+      const s2Intent2 = await client.query(`
+        SELECT id, pupil_id FROM payment_intents WHERE pupil_id = '${pupil2Id}';
+      `);
+      expect(s2Intent2.rows).toHaveLength(0);
+
+      const s2Tx2 = await client.query(`
+        SELECT id FROM payment_transactions WHERE intent_id = '${intent2Id}';
+      `);
+      expect(s2Tx2.rows).toHaveLength(0);
+
+      // 2.4 Financial Access: CANNOT view Intent 1 (isolated to unrelated child)
+      const s2Intent1 = await client.query(`
+        SELECT id, pupil_id FROM payment_intents WHERE pupil_id = '${pupil1Id}';
+      `);
+      expect(s2Intent1.rows).toHaveLength(0);
+
+      // =========================================================================
+      // Test 3: Primary Guardian P1 (Child 1 only)
+      // =========================================================================
+      await client.query(`SET request.jwt.claim.sub = '${p1UserId}';`);
+
+      // Can view own child's result & financial records
+      const p1Result = await client.query(`
+        SELECT id FROM academic_results WHERE pupil_id = '${pupil1Id}';
+      `);
+      expect(p1Result.rows).toHaveLength(1);
+      expect(p1Result.rows[0].id).toBe(result1Id);
+
+      const p1Intent = await client.query(`
+        SELECT id FROM payment_intents WHERE pupil_id = '${pupil1Id}';
+      `);
+      expect(p1Intent.rows).toHaveLength(1);
+      expect(p1Intent.rows[0].id).toBe(intent1Id);
+
+      // Cannot view unrelated Child 2's result or financial records
+      const p1UnrelatedResult = await client.query(`
+        SELECT id FROM academic_results WHERE pupil_id = '${pupil2Id}';
+      `);
+      expect(p1UnrelatedResult.rows).toHaveLength(0);
+
+      const p1UnrelatedIntent = await client.query(`
+        SELECT id FROM payment_intents WHERE pupil_id = '${pupil2Id}';
+      `);
+      expect(p1UnrelatedIntent.rows).toHaveLength(0);
+
+      // =========================================================================
+      // Test 4: Primary Guardian P2 (Child 2 only)
+      // =========================================================================
+      await client.query(`SET request.jwt.claim.sub = '${p2UserId}';`);
+
+      // Can view own child's result & financial records
+      const p2Result = await client.query(`
+        SELECT id FROM academic_results WHERE pupil_id = '${pupil2Id}';
+      `);
+      expect(p2Result.rows).toHaveLength(1);
+      expect(p2Result.rows[0].id).toBe(result2Id);
+
+      const p2Intent = await client.query(`
+        SELECT id FROM payment_intents WHERE pupil_id = '${pupil2Id}';
+      `);
+      expect(p2Intent.rows).toHaveLength(1);
+      expect(p2Intent.rows[0].id).toBe(intent2Id);
+
+      // Cannot view unrelated Child 1's result or financial records
+      const p2UnrelatedResult = await client.query(`
+        SELECT id FROM academic_results WHERE pupil_id = '${pupil1Id}';
+      `);
+      expect(p2UnrelatedResult.rows).toHaveLength(0);
+
+      const p2UnrelatedIntent = await client.query(`
+        SELECT id FROM payment_intents WHERE pupil_id = '${pupil1Id}';
+      `);
+      expect(p2UnrelatedIntent.rows).toHaveLength(0);
     } finally {
       await client.query('RESET ROLE;');
       client.release();
