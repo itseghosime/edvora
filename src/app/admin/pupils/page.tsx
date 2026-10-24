@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import {
   useSchoolSummaryQuery,
+  useClassesQuery,
   usePupilsQuery,
   usePaymentsQuery,
   useRemindersQuery,
@@ -16,12 +17,14 @@ export default function PupilsManagementPage() {
   const { data: pupils = [] } = usePupilsQuery();
   const { data: payments = [] } = usePaymentsQuery();
 
+  const { data: classes = [] } = useClassesQuery();
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registerSuccess, setRegisterSuccess] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     fullName: "",
-    classId: "33333333-3333-3333-3333-000000000005",
+    classId: "",
+    dateOfBirth: "",
     gender: "male" as "male" | "female",
     guardianName: "",
     guardianPhone: "",
@@ -46,6 +49,7 @@ export default function PupilsManagementPage() {
           lastName,
           classId: formData.classId,
           gender: formData.gender,
+          dateOfBirth: formData.dateOfBirth,
           guardianName: formData.guardianName,
           guardianPhone: formData.guardianPhone,
           guardianEmail: formData.guardianEmail || undefined,
@@ -53,7 +57,7 @@ export default function PupilsManagementPage() {
       });
       const data = await res.json();
       if (res.ok) {
-        setRegisterSuccess(`Pupil ${data.pupil.admissionNumber} enrolled successfully!`);
+        setRegisterSuccess(`Pupil ${data.pupil.admission_number ?? data.pupil.admissionNumber} enrolled successfully!`);
         setTimeout(() => {
           setIsRegisterOpen(false);
           setRegisterSuccess(null);
@@ -907,20 +911,15 @@ export default function PupilsManagementPage() {
 </div>
 <div className="flex flex-col gap-1">
 <label className="font-label-md text-label-md text-on-surface">Admission Number (Auto-assigned)</label>
-<input className="bg-surface-container text-outline font-label-md text-label-md px-3.5 py-2.5 rounded-lg cursor-not-allowed" disabled type="text" value={`EDV/2026/${String(pupils.length + 43).padStart(4, '0')}`}/>
+<input className="bg-surface-container text-outline font-label-md text-label-md px-3.5 py-2.5 rounded-lg cursor-not-allowed" disabled type="text" value="Assigned after registration"/>
 </div>
 </div>
 <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-md">
 <div className="flex flex-col gap-1">
 <label className="font-label-md text-label-md text-on-surface">Class Arm *</label>
 <select value={formData.classId} onChange={(e) => setFormData({ ...formData, classId: e.target.value })} className="bg-surface-container-low text-on-surface font-body-md text-body-md px-3 py-2.5 rounded-lg focus:outline-none cursor-pointer">
-<option value="33333333-3333-3333-3333-000000000001">Nursery 1</option>
-<option value="33333333-3333-3333-3333-000000000002">Nursery 2A</option>
-<option value="33333333-3333-3333-3333-000000000003">Primary 1A</option>
-<option value="33333333-3333-3333-3333-000000000004">Primary 2A</option>
-<option value="33333333-3333-3333-3333-000000000005">Primary 3A</option>
-<option value="33333333-3333-3333-3333-000000000006">Primary 4A</option>
-<option value="33333333-3333-3333-3333-000000000007">Primary 5A</option>
+<option value="">Select a configured class</option>
+{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
 </select>
 </div>
 <div className="flex flex-col gap-1">
@@ -932,7 +931,7 @@ export default function PupilsManagementPage() {
 </div>
 <div className="flex flex-col gap-1">
 <label className="font-label-md text-label-md text-on-surface">Date of Birth *</label>
-<input className="bg-surface-container-low text-on-surface font-body-md text-body-md px-3 py-2.5 rounded-lg focus:outline-none" required type="date" defaultValue="2018-05-12"/>
+<input className="bg-surface-container-low text-on-surface font-body-md text-body-md px-3 py-2.5 rounded-lg focus:outline-none" required type="date" value={formData.dateOfBirth} onChange={e => setFormData({...formData, dateOfBirth:e.target.value})}/>
 </div>
 </div>
 {/* Guardian Particulars Section */}
@@ -986,3 +985,4 @@ export default function PupilsManagementPage() {
     </div>
   );
 }
+

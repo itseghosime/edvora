@@ -34,13 +34,17 @@ export async function POST(req: NextRequest) {
     await requireStaffSession(req, ['admin']);
 
     const body = await req.json();
-    const { firstName, lastName, gender, classId, guardianName, guardianPhone, guardianEmail } = body;
+    const { firstName, lastName, gender, classId, guardianName, guardianPhone, guardianEmail, dateOfBirth } = body;
 
     if (!firstName || !lastName || !classId || !guardianName || !guardianPhone) {
       return NextResponse.json({ error: 'Please provide all required pupil and guardian details' }, { status: 400 });
     }
 
+    if (typeof dateOfBirth !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth) || !Number.isFinite(Date.parse(dateOfBirth)) || new Date(dateOfBirth).toISOString().slice(0,10) !== dateOfBirth || Date.parse(dateOfBirth) > Date.now()) {
+      return NextResponse.json({error:'Provide a valid date of birth'}, {status:400});
+    }
     const result = await db.registerPupil({
+      dateOfBirth,
       firstName,
       lastName,
       gender: gender || 'male',
@@ -60,3 +64,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: err.message }, { status });
   }
 }
+

@@ -38,3 +38,7 @@ coverage/
 .turbo
 .eslintcache
 *.tsbuildinfo
+
+
+# Supabase CLI runtime cache
+supabase/.temp/

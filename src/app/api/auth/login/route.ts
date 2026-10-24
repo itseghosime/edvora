@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
 
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
-        password: password.trim(),
+        password,
       });
 
       if (authError || !authData?.user) {
@@ -166,3 +166,4 @@ export async function DELETE() {
   clearSessionCookie(response);
   return response;
 }
+

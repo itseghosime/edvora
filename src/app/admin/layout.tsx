@@ -1,3 +1,4 @@
+import { requirePageSession } from "@/lib/auth/pageSession";
 import React from "react";
 import StaffShell from "@/components/shells/StaffShell";
 
@@ -6,10 +7,12 @@ export const metadata = {
   description: "Administrative, bursary and teacher operations portal for Edvora Nursery & Primary School.",
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await requirePageSession("staff");
   return <StaffShell>{children}</StaffShell>;
 }
+

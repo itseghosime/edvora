@@ -67,7 +67,9 @@ export function createSessionToken(actor: Omit<StaffSessionActor, 'exp'> | Omit<
 export function verifySessionToken(token: string): SessionActor | null {
   if (!token || !token.includes('.')) return null;
 
-  const [payloadStr, signature] = token.split('.');
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const [payloadStr, signature] = parts;
   if (!payloadStr || !signature) return null;
 
   const expectedSignature = signPayload(payloadStr);
@@ -79,9 +81,11 @@ export function verifySessionToken(token: string): SessionActor | null {
 
   try {
     const payload = JSON.parse(Buffer.from(payloadStr, 'base64url').toString('utf-8')) as SessionActor;
-    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
+    if (!Number.isFinite(payload.exp) || payload.exp <= Math.floor(Date.now() / 1000) || !['staff', 'student'].includes(payload.type)) {
       return null; // Expired
     }
+    if (payload.type === 'staff' && (!['admin','bursar','teacher'].includes(payload.role) || !Array.isArray(payload.assignedClassIds) || !payload.assignedClassIds.every(id => typeof id === 'string') || typeof payload.staffId !== 'string')) return null;
+    if (payload.type === 'student' && (typeof payload.pupilId !== 'string' || typeof payload.admissionNumber !== 'string')) return null;
     return payload;
   } catch {
     return null;
@@ -197,4 +201,5 @@ export async function requireStudentOrStaffSession(
 
   return session;
 }
+
 

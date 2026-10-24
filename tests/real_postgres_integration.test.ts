@@ -3,7 +3,7 @@ import { Client, Pool } from 'pg';
 import fs from 'fs';
 import path from 'path';
 
-describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Concurrency', () => {
+describe('Real PostgreSQL Integration: Migrations, RLS, Stored Functions & Concurrency', () => {
   const connectionString = process.env.DATABASE_URL || 'postgres://postgres@localhost:5433/edvora_test';
   let pool: Pool;
 
@@ -63,6 +63,8 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
       await client.query(hardenSql);
       await client.query(staffBoundariesSql);
       await client.query(guardianPermissionsSql);
+      const integrationMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_portal_integration_foundation.sql'));
+      if(integrationMigration) await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',integrationMigration),'utf8'));
     } finally {
       client.release();
     }
@@ -1073,8 +1075,10 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
   it('guarantees database atomicity and single-credit during concurrent duplicate verification', async () => {
     const testRunId = Date.now();
     const concurrentRef = `EDV-CONCURRENT-REF-${testRunId}`;
-    const pupilId = '11111111-2222-3333-4444-555555555555';
-    const termId = '66666666-7777-8888-9999-000000000000';
+    const fixture = await pool.query("SELECT pupil_id, term_id FROM fee_assignments WHERE term_id = '66666666-7777-8888-9999-000000000000' LIMIT 1");
+    expect(fixture.rows).toHaveLength(1);
+    const pupilId = fixture.rows[0].pupil_id;
+    const termId = fixture.rows[0].term_id;
 
     // Insert intent for concurrency test
     await pool.query(`
@@ -1118,3 +1122,4 @@ describe('Real PostgreSQL 18 Integration: Migrations, RLS, Stored Functions & Co
     expect(tx.rows).toHaveLength(1);
   });
 });
+

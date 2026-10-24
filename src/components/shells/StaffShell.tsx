@@ -2,7 +2,10 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import SignOutButton from "@/components/shared/SignOutButton";
 import { usePathname } from "next/navigation";
+import { useActorQuery } from "@/lib/query/hooks";
+import PortalDataBoundary from "@/components/shared/PortalDataBoundary";
 
 interface StaffShellProps {
   children: React.ReactNode;
@@ -11,7 +14,9 @@ interface StaffShellProps {
 export default function StaffShell({ children }: StaffShellProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentRole, setCurrentRole] = useState<"Administrator" | "Bursar" | "Teacher">("Bursar");
+  const {data:auth}=useActorQuery();
+  const role=auth?.actor.type === "staff" ? auth.actor.role : undefined;
+  const currentRole=role === "admin" ? "Administrator" : role === "teacher" ? "Teacher" : role === "bursar" ? "Bursar" : "Staff";
 
   const navItems = [
     { label: "Overview", href: "/admin", icon: "space_dashboard" },
@@ -42,7 +47,7 @@ export default function StaffShell({ children }: StaffShellProps) {
 
           {/* Navigation Links */}
           <nav className="flex flex-col gap-space-xs px-gutter mt-4">
-            {navItems.map((item) => {
+            {navItems.filter(item => role === "admin" || (role === "teacher" ? ["/admin", "/admin/pupils", "/admin/results"].includes(item.href) : role === "bursar" ? !["/admin/results", "/admin/settings"].includes(item.href) : false)).map((item) => {
               const isActive =
                 item.href === "/admin"
                   ? pathname === "/admin"
@@ -72,24 +77,10 @@ export default function StaffShell({ children }: StaffShellProps) {
             <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline block">
               Active Permission
             </span>
-            <select
-              value={currentRole}
-              onChange={(e) => setCurrentRole(e.target.value as any)}
-              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-lg px-2 py-1 text-xs font-semibold text-primary focus:outline-none"
-            >
-              <option value="Administrator">Administrator (Superuser)</option>
-              <option value="Bursar">Bursar (Financials)</option>
-              <option value="Teacher">Class Teacher (Scores)</option>
-            </select>
+            <span className="font-semibold text-primary">{currentRole}</span>
           </div>
 
-          <Link
-            href="/login"
-            className="flex items-center gap-2 text-xs font-semibold text-error hover:underline px-2"
-          >
-            <span aria-hidden="true" className="material-symbols-outlined text-[18px]">logout</span>
-            <span>Sign Out Workstation</span>
-          </Link>
+          <SignOutButton />
         </div>
       </aside>
 
@@ -149,7 +140,7 @@ export default function StaffShell({ children }: StaffShellProps) {
         {mobileMenuOpen && (
           <div className="lg:hidden bg-surface-container-lowest border-b border-outline-variant/20 p-4 space-y-2 shadow-lg">
             <nav className="space-y-1">
-              {navItems.map((item) => {
+              {navItems.filter(item => role === "admin" || (role === "teacher" ? ["/admin", "/admin/pupils", "/admin/results"].includes(item.href) : role === "bursar" ? !["/admin/results", "/admin/settings"].includes(item.href) : false)).map((item) => {
                 const isActive =
                   item.href === "/admin"
                     ? pathname === "/admin"
@@ -173,18 +164,17 @@ export default function StaffShell({ children }: StaffShellProps) {
               })}
             </nav>
             <div className="pt-2 border-t border-outline-variant/20 flex justify-end">
-              <Link href="/login" className="text-xs font-semibold text-error">
-                Sign Out Workstation
-              </Link>
+              <SignOutButton />
             </div>
           </div>
         )}
 
         {/* Main Content Area */}
         <main className="flex-1 min-w-0 w-full p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-          {children}
+          <PortalDataBoundary>{children}</PortalDataBoundary>
         </main>
       </div>
     </div>
   );
 }
+

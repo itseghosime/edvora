@@ -728,6 +728,7 @@ export class DatabaseRepository {
 
   // --- Pupil Registration ---
   public async registerPupil(params: {
+    dateOfBirth?: string;
     firstName: string;
     lastName: string;
     gender: 'male' | 'female';
@@ -767,6 +768,8 @@ export class DatabaseRepository {
       .from('pupils')
       .insert({
         admission_number: admissionNumber,
+        date_of_birth: params.dateOfBirth,
+        guardian_id: guardian.id,
         first_name: params.firstName,
         last_name: params.lastName,
         gender: params.gender,
@@ -936,6 +939,7 @@ export class DatabaseRepository {
   }
 
   public async listPupils(filter?: { classIds?: string[]; pupilId?: string }) {
+    if (filter?.classIds && filter.classIds.length === 0) return [];
     const client = this.getClient();
     if (!client) {
       let list = memoryStore.pupils;
@@ -977,6 +981,7 @@ export class DatabaseRepository {
       classId: p.class_id,
       className: p.school_classes?.name || '',
       status: p.status,
+      dateOfBirth: p.date_of_birth ?? '',
       guardianId: p.guardian_id,
       guardianName: p.guardians?.full_name || 'Not linked',
       guardianPhone: p.guardians?.phone_number || '',
@@ -988,3 +993,4 @@ export class DatabaseRepository {
 }
 
 export const db = new DatabaseRepository();
+

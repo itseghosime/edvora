@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<"student" | "staff">("student");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [staffRole, setStaffRole] = useState("bursar");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -25,7 +25,7 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(
           activeTab === "student"
-            ? { type: "student", admissionNumber: identifier }
+            ? { type: "student", admissionNumber: identifier, dateOfBirth }
             : { type: "staff", email: identifier, password }
         ),
       });
@@ -39,37 +39,10 @@ export default function LoginPage() {
 
       router.push(data.redirect || (activeTab === "student" ? "/student" : "/admin"));
     } catch {
-      // Fallback
-      if (activeTab === "student") {
-        router.push("/student");
-      } else {
-        router.push("/admin");
-      }
+      setErrorMessage("Unable to reach the school portal. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleQuickStudentLogin = () => {
-    setActiveTab("student");
-    setIdentifier("EDV/2024/0042");
-    setPassword("••••••••");
-    setErrorMessage(null);
-    setIsLoading(true);
-    setTimeout(() => {
-      router.push("/student");
-    }, 250);
-  };
-
-  const handleQuickStaffLogin = () => {
-    setActiveTab("staff");
-    setIdentifier("admin@edvora.ng");
-    setPassword("••••••••");
-    setErrorMessage(null);
-    setIsLoading(true);
-    setTimeout(() => {
-      router.push("/admin");
-    }, 250);
   };
 
   return (
@@ -215,7 +188,7 @@ export default function LoginPage() {
                   <>
                     <div className="space-y-1">
                       <label className="block font-label-md text-label-md text-on-surface">
-                        Registered Telephone or Pupil Admission ID
+                        Pupil Admission Number
                       </label>
                       <div className="relative flex items-center">
                         <span aria-hidden="true" className="material-symbols-outlined text-outline absolute left-3 text-[20px]">
@@ -226,37 +199,18 @@ export default function LoginPage() {
                           required
                           value={identifier}
                           onChange={(e) => setIdentifier(e.target.value)}
-                          placeholder="e.g. +234 803 555 0192 or EDV/2026/034"
+                          placeholder="Your school admission number"
                           className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant/50 bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
                         />
                       </div>
                       <span className="text-[11px] text-on-surface-variant block mt-1">
-                        Authorised parents use their registered mobile or child&apos;s admission number.
+                        Parents sign in using their child&apos;s school access details.
                       </span>
                     </div>
 
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <label className="block font-label-md text-label-md text-on-surface">
-                          Access PIN / Password
-                        </label>
-                        <Link href="/contact" className="text-xs text-primary hover:underline font-semibold">
-                          Forgot details?
-                        </Link>
-                      </div>
-                      <div className="relative flex items-center">
-                        <span aria-hidden="true" className="material-symbols-outlined text-outline absolute left-3 text-[20px]">
-                          lock
-                        </span>
-                        <input
-                          type="password"
-                          required
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="Enter your confidential PIN"
-                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant/50 bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
-                        />
-                      </div>
+                      <label htmlFor="student-dob" className="block font-label-md text-label-md text-on-surface">Date of Birth</label>
+                      <input id="student-dob" type="date" required value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-outline-variant/50 bg-surface-container-lowest focus:ring-2 focus:ring-primary" />
                     </div>
                   </>
                 ) : (
@@ -280,20 +234,7 @@ export default function LoginPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="block font-label-md text-label-md text-on-surface">
-                        Designated Staff Role
-                      </label>
-                      <select
-                        value={staffRole}
-                        onChange={(e) => setStaffRole(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-outline-variant/50 bg-surface-container-lowest text-on-surface font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm"
-                      >
-                        <option value="admin">Administrator (Superuser)</option>
-                        <option value="bursar">Bursar (Financials &amp; Payments)</option>
-                        <option value="teacher">Class Teacher (Scores Entry)</option>
-                      </select>
-                    </div>
+
 
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
@@ -336,30 +277,7 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              {/* Quick Preset Buttons for Testing */}
-              <div className="mt-space-lg pt-space-md border-t border-outline-variant/20">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-outline block text-center mb-2">
-                  Quick Testing Credentials
-                </span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={handleQuickStudentLogin}
-                    className="p-2.5 rounded-xl border border-outline-variant/40 bg-surface-container-low hover:bg-surface-container text-left transition-colors"
-                  >
-                    <div className="text-xs font-bold text-primary">Student / Parent</div>
-                    <div className="text-[10px] text-on-surface-variant">Osasere · Primary 3A</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleQuickStaffLogin}
-                    className="p-2.5 rounded-xl border border-outline-variant/40 bg-surface-container-low hover:bg-surface-container text-left transition-colors"
-                  >
-                    <div className="text-xs font-bold text-primary">Staff Desk</div>
-                    <div className="text-[10px] text-on-surface-variant">Bursar &amp; Admin</div>
-                  </button>
-                </div>
-              </div>
+
             </div>
           </div>
         </div>
@@ -367,8 +285,9 @@ export default function LoginPage() {
 
       {/* Footer */}
       <div className="text-center text-xs text-on-surface-variant mt-6">
-        <p>© 2026 Edvora Nursery &amp; Primary School. Protected by 256-bit Institutional Gateway encryption.</p>
+        <p>© 2026 Edvora Nursery &amp; Primary School. School account access. Contact the school office for assistance.</p>
       </div>
     </div>
   );
 }
+
