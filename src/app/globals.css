@@ -224,3 +224,5 @@ body { background:var(--edvora-paper); }
 .edvora-bar-row>div>span { display:block;height:100%;border-radius:10px;transition:width .65s cubic-bezier(.22,.68,.3,1),background .3s; }
 .edvora-bar-row strong { font-size:11px;font-weight:600;text-align:right; }
 @media(max-width:767px) { .edvora-collection { padding:20px; } .edvora-collection-heading { align-items:flex-start;flex-direction:column; } .edvora-bars { grid-template-columns:1fr; } }
+
+.portal-shell aside button { color:#f1c8b7; }
