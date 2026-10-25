@@ -37,7 +37,7 @@ BEGIN
  payload:=jsonb_build_object('resultId',report,'allowAccess',true,'reason','Approved payment arrangement');
  BEGIN PERFORM execute_staff_command(gen_random_uuid(),t,'set_result_fee_override',payload); RAISE EXCEPTION 'TEST teacher approved override'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
  BEGIN PERFORM execute_staff_command(gen_random_uuid(),b,'set_result_fee_override',payload); RAISE EXCEPTION 'TEST bursar approved override'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
- BEGIN PERFORM execute_staff_command(gen_random_uuid(),a,'set_result_fee_override',jsonb_set(payload,'reason','""')); RAISE EXCEPTION 'TEST missing reason accepted'; EXCEPTION WHEN invalid_parameter_value THEN NULL; END;
+ BEGIN PERFORM execute_staff_command(gen_random_uuid(),a,'set_result_fee_override',jsonb_set(payload,'{reason}','""')); RAISE EXCEPTION 'TEST missing reason accepted'; EXCEPTION WHEN invalid_parameter_value THEN NULL; END;
  response:=execute_staff_command(req,a,'set_result_fee_override',payload);
  IF execute_staff_command(req,a,'set_result_fee_override',payload)<>response THEN RAISE EXCEPTION 'TEST retry changed response'; END IF;
  IF (SELECT count(*) FROM audit_logs WHERE entity_id=report AND action='result_fee_override')<>1 THEN RAISE EXCEPTION 'TEST retry duplicated audit'; END IF;
