@@ -33,6 +33,7 @@ Thumbs.db
 # Testing & coverage
 coverage/
 .nyc_output/
+stitch_designs/
 
 # Cache & temporary files
 .turbo
