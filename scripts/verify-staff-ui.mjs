@@ -511,12 +511,16 @@ try {
     assert.equal(await reportDialog.getByRole("heading",{name:"Edvora UI Test School",exact:true}).count(),1);
     await reportDialog.getByText("No head teacher remark recorded.",{exact:true}).waitFor();
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,"Report fits viewport");
+    if (width === 390) assert.ok((await reportDialog.getByRole("heading",{name:"Edvora UI Test School",exact:true}).boundingBox()).width > 200,"School name gets readable mobile width");
     await page.screenshot({path:`test-results/staff-ui/report-card-${width}.png`,fullPage:true});
     await page.emulateMedia({media:"print"});
     assert.equal(await page.locator(".portal-shell").isVisible(),false,"Print excludes dashboard shell");
     assert.equal(await reportDialog.locator(".academic-report").isVisible(),true,"Print retains report");
     assert.equal(await page.locator(".report-preview-toolbar").isVisible(),false,"Print excludes toolbar");
-    if(width===1440) await page.pdf({path:"test-results/staff-ui/report-card.pdf",format:"A4",preferCSSPageSize:true,printBackground:true});
+    if(width===1440) {
+      const pdf = await page.pdf({path:"test-results/staff-ui/report-card.pdf",format:"A4",preferCSSPageSize:true,printBackground:true});
+      assert.equal((pdf.toString("latin1").match(/\/Type\s*\/Page\b/g) || []).length,1,"Short report prints on one A4 page");
+    }
     await page.emulateMedia({media:"screen"});
     await page.keyboard.press("Escape");
     assert.equal(await page.getByRole("dialog").count(),0);

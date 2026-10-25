@@ -409,3 +409,11 @@ body { background:var(--edvora-paper); }
  .academic-report__remarks{grid-template-columns:1fr 1fr}.academic-report__remarks p{min-height:35px}
  .academic-report__footer{padding:12px 20px}
 }
+
+@media screen and (max-width:640px){
+ .academic-report__masthead{display:grid;grid-template-columns:50px minmax(0,1fr);align-items:start}
+ .academic-report__masthead>div:nth-child(2){min-width:0}
+ .academic-report__masthead h2{font-size:20px;overflow-wrap:normal}
+ .academic-report__seal{grid-column:2;justify-self:start;margin-left:0}
+}
+.academic-report__contact{margin-top:7px!important;line-height:1.6}
