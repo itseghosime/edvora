@@ -9,7 +9,7 @@ export const metadata: Metadata = {"title": "About Edvora", "description": "Disc
 
 export default function AboutPage() {
   return (
-    <div className="public-site min-h-screen flex flex-col bg-surface font-body-md text-on-surface">
+    <div data-page="about" className="public-site min-h-screen flex flex-col bg-surface font-body-md text-on-surface">
       <PublicNavbar />
       <main id="main-content" className="public-main w-full flex-1">
         <div className="flex flex-col w-full">

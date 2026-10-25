@@ -49,7 +49,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface font-body-md text-on-surface flex flex-col justify-between p-4 sm:p-8">
+    <div className="access-page min-h-screen bg-surface font-body-md text-on-surface flex flex-col justify-between p-4 sm:p-8">
       {/* Top Bar */}
       <div className="max-w-7xl w-full mx-auto flex items-center justify-between mb-6">
         <BrandMark showSubtitle />

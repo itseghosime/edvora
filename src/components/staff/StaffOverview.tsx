@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import CollectionVisual from "./CollectionVisual";
 import PageHeader from "../shared/PageHeader";
 import { formatNaira } from "@/lib/utils";
 import { Panel, Empty, DataTable, useStaffData } from "./StaffUI";
@@ -52,6 +53,7 @@ export default function StaffOverview() {
           </Panel>
         ))}
       </section>
+      {!teacher && data.classStats.length > 0 && <CollectionVisual classes={data.classStats} />}
       <Panel title={teacher ? "Your classes" : "Collection by class"}>
         {data.classStats.length ? (
           <DataTable

@@ -21,7 +21,7 @@ export default function PageHeader({
   actions,
 }: PageHeaderProps) {
   return (
-    <div className="mb-6 md:mb-8 pb-5 border-b border-ink-border/60">
+    <div className="portal-page-header mb-6 md:mb-8">
       {breadcrumbs && breadcrumbs.length > 0 && (
         <nav aria-label="Breadcrumb" className="mb-2">
           <ol className="flex items-center gap-1.5 text-xs text-ink-muted">

@@ -545,6 +545,18 @@ try {
   await page.goto(base+"/fees");
   await page.getByRole("link",{name:"Open Student portal",exact:true}).click();
   await page.waitForURL("**/login");
+  await page.setViewportSize({ width:1440, height:1000 });
+  await page.goto(base + "/");
+  await page.getByRole("heading", { level:1 }).waitFor();
+  await page.screenshot({ path:"test-results/staff-ui/redesign-home-desktop.png", fullPage:true });
+  await page.setViewportSize({ width:390, height:844 });
+  await page.screenshot({ path:"test-results/staff-ui/redesign-home-mobile.png", fullPage:true });
+  await page.emulateMedia({ reducedMotion:"reduce" });
+  await page.goto(base + "/about");
+  assert.equal(await page.getByRole("heading", { level:1 }).isVisible(),true);
+  assert.equal(await page.evaluate(()=>matchMedia("(prefers-reduced-motion: reduce)").matches),true);
+  await page.screenshot({ path:"test-results/staff-ui/redesign-about-reduced-motion.png", fullPage:true });
+  await page.emulateMedia({ reducedMotion:"no-preference" });
   assert.deepEqual(errors, []);
   console.log(
     "Staff UI smoke passed: seven routes on desktop/mobile, enrollment errors/retry key, result payload, role guard; API responses mocked.",
