@@ -464,6 +464,12 @@ try {
       sameSite: "Lax",
     },
   ]);
+
+  snapshot.payments = [
+    {id:uid(70), reference:"EDV/UI/VERIFIED",pupilId:uid(20),pupilName:pupil.fullName,classGrade:pupil.classGrade,amount:20000,channel:"Paystack (Card)",status:"Verified",date:"2026-10-25",receiptNumber:"UI-RECEIPT-001",balanceAfter:80000},
+    {id:uid(71), reference:"EDV/UI/PENDING",pupilId:uid(20),pupilName:pupil.fullName,classGrade:pupil.classGrade,amount:5000,channel:"Bank Transfer",status:"Pending",date:"2026-10-24",receiptNumber:"",balanceAfter:80000}
+  ];
+  snapshot.results = [{id:uid(80),pupilId:uid(20),pupilName:pupil.fullName,admissionNo:pupil.admissionNo,classGrade:pupil.classGrade,session:"2026/2027",term:"First Term",subjects:[{subject:"Mathematics",continuousAssessment:32,examScore:48,totalScore:80,grade:"A",remarks:"Excellent",teacher:""}],totalMarks:80,maxMarks:100,percentage:80,classPosition:"—",attendanceDays:40,totalSchoolDays:45,teacherComment:"Keep up the good work.",headTeacherComment:"",status:"Published"}];
   // Student payment layout and modal: mocked data, no checkout submission.
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 700 });
@@ -471,6 +477,16 @@ try {
     const heading = page.getByRole("heading", { name: "Fees & Payments", exact: true });
     await heading.waitFor();
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false);
+
+    assert.equal(await page.getByRole("progressbar", {name:"Term fees paid"}).getAttribute("aria-valuenow"), "20", "Pending payment must not increase progress");
+    await page.locator(".payment-record summary").first().click();
+    await page.getByText("EDV/UI/VERIFIED", {exact:true}).waitFor();
+    await page.getByRole("button", {name:"Pending",exact:false}).click();
+    assert.equal(await page.locator(".payment-record").count(),1);
+    await page.locator(".payment-record summary").click();
+    await page.getByText("Awaiting verification — not credited",{exact:true}).waitFor();
+    await page.getByRole("button", {name:"All",exact:false}).filter({hasText:"All"}).click();
+    await page.screenshot({path:`test-results/staff-ui/payment-history-${width}.png`,fullPage:true});
     await page.getByRole("button", { name: "Pay fees", exact: true }).click();
     const title = page.getByRole("heading", { name: "Pay School Fees", exact: true });
     const email = page.getByLabel("Receipt Email Address", { exact: true });
@@ -485,6 +501,28 @@ try {
     await page.screenshot({ path: `test-results/staff-ui/student-payments-${width}.png`, fullPage: true });
     await page.getByRole("button", { name: "Close payment modal", exact: true }).click();
   }
+
+  for (const width of [1440,390]) {
+    await page.setViewportSize({width,height:900});
+    await page.goto(base + "/student/results");
+    await page.getByRole("button",{name:"Open report card",exact:true}).click();
+    const reportDialog=page.getByRole("dialog",{name:"Your school report card",exact:true});
+    await reportDialog.waitFor();
+    assert.equal(await reportDialog.getByRole("heading",{name:"Edvora UI Test School",exact:true}).count(),1);
+    await reportDialog.getByText("No head teacher remark recorded.",{exact:true}).waitFor();
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,"Report fits viewport");
+    await page.screenshot({path:`test-results/staff-ui/report-card-${width}.png`,fullPage:true});
+    await page.emulateMedia({media:"print"});
+    assert.equal(await page.locator(".portal-shell").isVisible(),false,"Print excludes dashboard shell");
+    assert.equal(await reportDialog.locator(".academic-report").isVisible(),true,"Print retains report");
+    assert.equal(await page.locator(".report-preview-toolbar").isVisible(),false,"Print excludes toolbar");
+    if(width===1440) await page.pdf({path:"test-results/staff-ui/report-card.pdf",format:"A4",preferCSSPageSize:true,printBackground:true});
+    await page.emulateMedia({media:"screen"});
+    await page.keyboard.press("Escape");
+    assert.equal(await page.getByRole("dialog").count(),0);
+    assert.equal(await page.getByRole("button",{name:"Open report card",exact:true}).evaluate(el=>document.activeElement===el),true);
+  }
+
   await page.goto(base + "/student/account");
   await page
     .getByRole("heading", { name: "Account security", exact: true })

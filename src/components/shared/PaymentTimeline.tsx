@@ -1,116 +1,81 @@
-import React from "react";
-import { CheckCircle2, Clock, AlertCircle } from "lucide-react";
-import { PaymentTransaction } from "@/lib/mockData";
+"use client";
+
+import { useState } from "react";
+import { ArrowUpRight, Check, CheckCircle2, ChevronDown, Clock3, Copy, CreditCard, Receipt, ShieldCheck, XCircle } from "lucide-react";
+import type { PaymentTransaction } from "@/lib/mockData";
 import { formatNaira, formatDate } from "@/lib/utils";
 
 interface PaymentTimelineProps {
   payments: PaymentTransaction[];
   totalCharges: number;
+  onPay?: () => void;
 }
+const filters = ["All", "Verified", "Pending", "Failed"] as const;
+type Filter = typeof filters[number];
 
-export default function PaymentTimeline({
-  payments,
-  totalCharges,
-}: PaymentTimelineProps) {
-  const verifiedPayments = payments.filter((p) => p.status === "Verified");
-  const totalPaid = verifiedPayments.reduce((sum, p) => sum + p.amount, 0);
+export default function PaymentTimeline({ payments, totalCharges, onPay }: PaymentTimelineProps) {
+  const [filter, setFilter] = useState<Filter>("All");
+  const [copied, setCopied] = useState("");
+  const [copyMessage, setCopyMessage] = useState("");
+  const verified = payments.filter(p => p.status === "Verified");
+  const totalPaid = verified.reduce((sum,p) => sum + p.amount, 0);
   const remaining = Math.max(0, totalCharges - totalPaid);
+  const percent = totalCharges > 0 ? Math.min(100, Math.max(0, Math.round(totalPaid / totalCharges * 100))) : 0;
+  const visible = [...payments].filter(p => filter === "All" || p.status === filter)
+    .sort((a,b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0));
+  async function copyReference(tx: PaymentTransaction) {
+    try { await navigator.clipboard.writeText(tx.reference); setCopied(tx.id); setCopyMessage("Payment reference copied."); }
+    catch { setCopied(""); setCopyMessage("Copy is unavailable. Select the reference below and copy it manually."); }
+  }
 
-  return (
-    <div className="bg-white rounded-2xl p-6 border border-ink-border shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-ink-border">
-        <div>
-          <h3 className="text-base font-bold text-ink font-heading">
-            Payment History & Timeline
-          </h3>
-          <p className="text-xs text-ink-muted mt-0.5">
-            Verified instalments credited to current academic term
-          </p>
+  return <section className="payment-journal" aria-labelledby="payment-history-title">
+    <div className="payment-journal-heading">
+      <div><span className="payment-eyebrow"><Receipt size={13} aria-hidden="true"/> Your term, in transactions</span><h2 id="payment-history-title">Payment history</h2><p>A clear record of every payment along the way.</p></div>
+      <span className="payment-trust"><ShieldCheck size={15} aria-hidden="true"/> Verified payments only reduce your balance</span>
+    </div>
+    <div className="payment-journal-grid">
+      <div className="payment-progress-card" aria-label="Term payment progress">
+        <div className="payment-progress-top"><span>Term progress</span><span className="payment-small-pill">{remaining === 0 && totalCharges > 0 ? "Fully settled" : totalPaid > 0 ? "In progress" : "Getting started"}</span></div>
+        <div className="payment-ring" role="progressbar" aria-label="Term fees paid" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}
+          style={{ background: `conic-gradient(#d6b579 ${percent * 3.6}deg, #426657 0deg)` }}>
+          <div><strong>{percent}<span>%</span></strong><span>of term fees paid</span></div>
         </div>
-        <div className="sm:text-right">
-          <span className="text-xs text-ink-muted">Term Clearance</span>
-          <div className="text-sm font-bold text-forest">
-            {totalCharges > 0
-              ? `${Math.round((totalPaid / totalCharges) * 100)}% Settled`
-              : "0%"}
-          </div>
-        </div>
+        <div className="payment-progress-totals"><div><span>Verified paid</span><strong>{formatNaira(totalPaid)}</strong></div><div><span>Term charges</span><strong>{formatNaira(totalCharges)}</strong></div></div>
+        <div className="payment-balance"><span>Left to pay</span><strong>{formatNaira(remaining)}</strong></div>
+        {remaining > 0 && onPay ? <button type="button" className="payment-next-action" onClick={onPay}>Make a payment <ArrowUpRight size={16} aria-hidden="true"/></button>
+          : <p className="payment-settled-note">{totalCharges > 0 ? "Your verified payments cover this term’s charges." : "Your school has not assigned term fees yet."}</p>}
       </div>
-
-      <div className="relative pl-6 space-y-6 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-ink-border">
-        {payments.length === 0 && (
-          <div className="p-4 rounded-xl bg-ivory-50/80 border border-ink-border/40 text-xs text-ink-muted">
-            No payments have been recorded for this term yet. Payments completed via debit card or bank transfer will reflect here once verified.
-          </div>
-        )}
-        {payments.map((tx) => (
-          <div key={tx.id} className="relative flex items-start gap-4">
-            {/* Status dot */}
-            <div className="absolute -left-6 mt-0.5">
-              {tx.status === "Verified" ? (
-                <div className="w-5 h-5 rounded-full bg-mint flex items-center justify-center text-forest">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                </div>
-              ) : tx.status === "Pending" ? (
-                <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center text-amber-700">
-                  <Clock className="w-3.5 h-3.5" />
-                </div>
-              ) : (
-                <div className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center text-rose-700">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                </div>
-              )}
-            </div>
-
-            <div className="flex-1 bg-ivory-50/70 rounded-xl p-3.5 border border-ink-border/50">
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-sm font-bold text-ink">
-                  {formatNaira(tx.amount)}
-                </span>
-                <span className="text-[11px] text-ink-muted">
-                  {formatDate(tx.date)}
-                </span>
+      <div className="payment-activity">
+        <div className="payment-activity-toolbar">
+          <div className="payment-filters" aria-label="Filter payment history">{filters.map(label => {
+            const count = label === "All" ? payments.length : payments.filter(p => p.status === label).length;
+            return <button key={label} type="button" aria-pressed={filter === label} onClick={()=>setFilter(label)}>{label}<span>{count}</span></button>;
+          })}</div><span className="payment-order">Newest first</span>
+        </div>
+        <div className="payment-records">
+          {visible.length === 0 ? <div className="payment-empty"><span><Receipt size={25} aria-hidden="true"/></span><h3>{payments.length === 0 ? "Your payment journey starts here" : "No " + filter.toLowerCase() + " payments"}</h3><p>{payments.length === 0 ? "Once a payment is recorded, you’ll find its status and details here." : "Try another status to see the rest of your payment history."}</p>{filter !== "All" && <button type="button" onClick={()=>setFilter("All")}>Show all payments <ArrowUpRight size={14} aria-hidden="true"/></button>}</div>
+          : visible.map(tx => {
+            const Icon = tx.status === "Verified" ? CheckCircle2 : tx.status === "Pending" ? Clock3 : XCircle;
+            return <details key={tx.id} className="payment-record">
+              <summary>
+                <span className={"payment-channel-icon status-" + tx.status.toLowerCase()}><CreditCard size={20} aria-hidden="true"/></span>
+                <span className="payment-record-main"><strong>{formatNaira(tx.amount)}</strong><span>{tx.channel} <span aria-hidden="true">·</span> {formatDate(tx.date)}</span></span>
+                <span className={"payment-status status-" + tx.status.toLowerCase()}><Icon size={12} aria-hidden="true"/>{tx.status}</span>
+                <span className="payment-expand"><span>View details</span><ChevronDown size={17} aria-hidden="true"/></span>
+              </summary>
+              <div className="payment-record-details">
+                <dl><div><dt>Payment reference</dt><dd>{tx.reference || "Not available"}</dd></div>
+                  <div><dt>Receipt number</dt><dd>{tx.receiptNumber || (tx.status === "Verified" ? "Contact the school for your receipt number" : "Available after verification")}</dd></div>
+                  <div><dt>Payment date</dt><dd>{formatDate(tx.date)}</dd></div><div><dt>Payment status</dt><dd>{tx.status === "Verified" ? "Confirmed and credited" : tx.status === "Pending" ? "Awaiting verification — not credited" : "Not credited"}</dd></div></dl>
+                {tx.notes && <p className="payment-record-note">{tx.notes}</p>}
+                {tx.reference && <button className="payment-copy" type="button" onClick={()=>void copyReference(tx)}>{copied === tx.id ? <Check size={14} aria-hidden="true"/> : <Copy size={14} aria-hidden="true"/>}{copied === tx.id ? "Reference copied" : "Copy reference"}</button>}
               </div>
-              <div className="flex items-center gap-2 mt-1 text-xs text-ink-muted">
-                <span>{tx.channel}</span>
-                <span>•</span>
-                <span className="font-mono text-[10px] text-ink">
-                  {tx.receiptNumber}
-                </span>
-              </div>
-              {tx.notes && (
-                <p className="mt-1.5 text-xs text-ink-muted/90 italic">
-                  {tx.notes}
-                </p>
-              )}
-            </div>
-          </div>
-        ))}
-
-        {remaining > 0 && (
-          <div className="relative flex items-start gap-4 pt-2">
-            <div className="absolute -left-6 mt-1">
-              <div className="w-5 h-5 rounded-full border-2 border-dashed border-marigold bg-white flex items-center justify-center text-marigold-dark">
-                <Clock className="w-3 h-3" />
-              </div>
-            </div>
-            <div className="flex-1 rounded-xl p-3 border border-dashed border-marigold/70 bg-marigold-light/40">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-ink">
-                  Remaining Outstanding Balance
-                </span>
-                <span className="text-sm font-extrabold text-amber-800">
-                  {formatNaira(remaining)}
-                </span>
-              </div>
-              <p className="text-[11px] text-ink-muted mt-0.5">
-                Payable via flexible parent card or bank transfer instalment
-              </p>
-            </div>
-          </div>
-        )}
+            </details>;
+          })}
+        </div>
+        <p className="payment-copy-message" role="status" aria-live="polite">{copyMessage}</p>
+        <p className="payment-help"><ShieldCheck size={14} aria-hidden="true"/> Pending and failed payments do not count towards your verified total.</p>
       </div>
     </div>
-  );
+  </section>;
 }
-

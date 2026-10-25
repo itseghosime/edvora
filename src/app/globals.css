@@ -226,3 +226,186 @@ body { background:var(--edvora-paper); }
 @media(max-width:767px) { .edvora-collection { padding:20px; } .edvora-collection-heading { align-items:flex-start;flex-direction:column; } .edvora-bars { grid-template-columns:1fr; } }
 
 .portal-shell aside button { color:#f1c8b7; }
+
+/* Payment journal: authoritative amounts with local, non-financial interactions. */
+.payment-journal { border:1px solid #dce4dc; border-radius:25px; background:#fffdf8; overflow:hidden; box-shadow:0 8px 30px -28px #173e3540; }
+.payment-journal-heading { display:flex;justify-content:space-between;align-items:center;gap:20px;padding:27px 28px 24px;border-bottom:1px solid #e5e9df; }
+.payment-eyebrow { display:flex;align-items:center;gap:7px;color:#7c8b78;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase; }
+.payment-journal-heading h2 { font-family:Georgia,serif;font-size:30px;line-height:1.2;letter-spacing:-.035em;margin-top:7px;color:#203e32; }
+.payment-journal-heading p { color:#75816f;font-size:12px;margin-top:6px; }
+.payment-trust { display:flex;align-items:center;gap:7px;font-size:10px;color:#72836e;max-width:190px;line-height:1.6; }
+.payment-trust svg { flex-shrink:0;color:#5a8066; }
+.payment-journal-grid { display:grid;grid-template-columns:260px minmax(0,1fr);gap:25px;padding:24px; }
+.payment-progress-card { border-radius:20px;background:#234e3e;color:#fff9e9;padding:22px;position:relative; }
+.payment-progress-top { display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:10px;color:#d4dfd0; }
+.payment-small-pill { border:1px solid #68836b70;background:#ffffff08;border-radius:30px;padding:4px 8px;font-size:8px;color:#e7d7ad;white-space:nowrap; }
+.payment-ring { width:148px;height:148px;padding:7px;border-radius:50%;margin:25px auto;transform:rotate(-8deg); }
+.payment-ring>div { height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;border-radius:50%;background:#234e3e;transform:rotate(8deg); }
+.payment-ring strong { font-size:43px;font-weight:500;letter-spacing:-.06em;line-height:1.2; }
+.payment-ring strong span { font-size:19px;margin-left:2px;letter-spacing:-.03em; }
+.payment-ring>div>span { color:#b9cfba;font-size:9px; }
+.payment-progress-totals { display:flex;justify-content:space-between;gap:12px;padding-bottom:18px;border-bottom:1px solid #ffffff20; }
+.payment-progress-totals>div { display:flex;flex-direction:column;gap:5px; }
+.payment-progress-totals>div:last-child { text-align:right; }
+.payment-progress-totals span { font-size:9px;color:#c2d2bc; }
+.payment-progress-totals strong { font-size:13px;font-weight:600;letter-spacing:-.02em; }
+.payment-balance { display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:12px; }
+.payment-balance>span { font-size:10px;color:#d9e2d2; }
+.payment-balance strong { font-size:20px;font-weight:550;letter-spacing:-.045em; }
+.payment-next-action { margin-top:18px;display:flex;align-items:center;justify-content:space-between;width:100%;border-radius:11px;background:#f3ead2;color:#244d3b;padding:12px 14px;font-size:11px;font-weight:700; }
+.payment-next-action:hover { background:#e7d7af; }
+.payment-settled-note { font-size:10px;line-height:1.7;color:#c7d9c4;margin-top:16px; }
+.payment-activity { display:flex;flex-direction:column;min-width:0;padding-top:2px; }
+.payment-activity-toolbar { display:flex;align-items:center;justify-content:space-between;gap:15px;padding-bottom:18px; }
+.payment-filters { display:flex;gap:3px;padding:4px;background:#edf1e8;border-radius:12px;overflow-x:auto;max-width:100%; }
+.payment-filters button { min-height:36px!important;display:flex;align-items:center;gap:7px;white-space:nowrap;font-size:10px;font-weight:600;padding:8px 10px;border-radius:9px;color:#6c7a66; }
+.payment-filters button[aria-pressed="true"] { background:white;color:#224c39;box-shadow:0 2px 8px #1e3e3310; }
+.payment-filters button>span { font-size:8px;background:#dfe7d8;color:#617457;min-width:16px;height:16px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center; }
+.payment-order { font-size:9px;color:#8b9685;white-space:nowrap; }
+.payment-records { display:flex;flex-direction:column;gap:11px; }
+.payment-record { background:white;border:1px solid #dfe6db;border-radius:15px;transition:border-color .2s,box-shadow .2s;overflow:hidden; }
+.payment-record:hover { border-color:#adbfaa;box-shadow:0 5px 20px -18px #214c3540; }
+.payment-record[open] { border-color:#a3b69a; }
+.payment-record summary { display:flex;align-items:center;gap:13px;cursor:pointer;list-style:none;padding:19px 17px; }
+.payment-record summary::-webkit-details-marker { display:none; }
+.payment-record summary::marker { content:""; }
+.payment-channel-icon { width:42px;height:42px;flex-shrink:0;border-radius:13px;display:flex;align-items:center;justify-content:center; }
+.payment-channel-icon.status-verified { background:#edf4e8;color:#4f7957; }
+.payment-channel-icon.status-pending { background:#faf0dc;color:#9d7b3a; }
+.payment-channel-icon.status-failed { background:#fae9e3;color:#b06a53; }
+.payment-record-main { display:flex;flex-direction:column;gap:5px;min-width:0;flex:1; }
+.payment-record-main strong { font-size:18px;letter-spacing:-.04em;font-weight:650;color:#234531; }
+.payment-record-main>span { color:#84917e;font-size:10px;line-height:1.5; }
+.payment-status { display:flex;align-items:center;gap:5px;font-size:9px;font-weight:650;white-space:nowrap;border-radius:50px;padding:5px 8px; }
+.payment-status.status-verified { background:#edf5e8;color:#52734a; }
+.payment-status.status-pending { background:#faf1db;color:#93722f; }
+.payment-status.status-failed { background:#f8e9e3;color:#a76049; }
+.payment-expand { display:flex;align-items:center;gap:8px;font-size:9px;color:#718269;margin-left:8px; }
+.payment-expand svg { transition:transform .25s; }
+.payment-record[open] .payment-expand svg { transform:rotate(180deg); }
+.payment-record-details { padding:20px;margin:0 17px 17px;background:#f4f6ef;border:1px solid #e6eadf;border-radius:12px;animation:payment-detail-enter .25s ease-out; }
+.payment-record-details dl { display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:19px 20px; }
+.payment-record-details dt { text-transform:uppercase;letter-spacing:.09em;font-size:8px;color:#83917b;margin-bottom:6px; }
+.payment-record-details dd { font-size:11px;font-weight:500;color:#3d5936;overflow-wrap:anywhere;line-height:1.6; }
+.payment-record-details dl>div:first-child dd { font-family:ui-monospace,monospace;font-size:10px;user-select:all; }
+.payment-copy { display:inline-flex;align-items:center;gap:7px;margin-top:18px;background:white;border:1px solid #dbe3d1;border-radius:8px;padding:8px 11px;font-size:9px;color:#46613b;font-weight:600;min-height:36px!important; }
+.payment-copy-message { min-height:16px;font-size:10px;color:#506b43;padding-top:8px; }
+.payment-record-note { font-size:10px;color:#6c7f61;margin-top:14px;line-height:1.7; }
+.payment-help { display:flex;align-items:flex-start;gap:7px;font-size:10px;color:#8a967f;line-height:1.7;border-top:1px solid #e6eadf;padding-top:17px;margin-top:auto; }
+.payment-help svg { flex-shrink:0;margin-top:2px; }
+.payment-empty { text-align:center;border:1px dashed #d9e2d0;border-radius:16px;padding:35px 20px;background:#f8faf3; }
+.payment-empty>span { display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:16px;margin:0 auto 16px;background:#e9efdf;color:#869a73; }
+.payment-empty h3 { font-family:Georgia,serif;font-size:20px;color:#3d5834; }
+.payment-empty p { max-width:35ch;margin:9px auto 0;font-size:11px;line-height:1.8;color:#85927c; }
+.payment-empty button { display:inline-flex;align-items:center;gap:8px;font-size:10px;color:#496b37;margin-top:15px;font-weight:650; }
+@keyframes payment-detail-enter { from { opacity:.4;transform:translateY(-4px); } to { opacity:1;transform:translateY(0); } }
+@media(max-width:1100px) { .payment-expand>span { display:none; } .payment-order { display:none; } .payment-journal-grid { grid-template-columns:230px minmax(0,1fr);gap:18px; } }
+@media(max-width:767px) {
+ .payment-journal-heading { padding:22px;align-items:flex-start;flex-direction:column;gap:13px; }
+ .payment-trust { max-width:none;font-size:9px; }
+ .payment-journal-heading h2 { font-size:27px; }
+ .payment-journal-grid { grid-template-columns:minmax(0,1fr);padding:16px;gap:23px; }
+ .payment-progress-card { padding:20px;display:grid;grid-template-columns:120px minmax(0,1fr);gap:0 18px;align-items:center; }
+ .payment-progress-top { grid-column:1/-1;margin-bottom:16px; }
+ .payment-ring { width:118px;height:118px;margin:8px 0;grid-row:2/4; }
+ .payment-ring strong { font-size:34px; }
+ .payment-ring>div>span { font-size:8px; }
+ .payment-progress-totals { flex-direction:column;gap:11px; }
+ .payment-progress-totals>div { flex-direction:row;justify-content:space-between;align-items:center;gap:6px; }
+ .payment-progress-totals>div:last-child { text-align:left; }
+ .payment-progress-totals strong { font-size:10px; }
+ .payment-progress-totals span { font-size:8px; }
+ .payment-balance { gap:6px;margin-top:12px;flex-wrap:wrap; }
+ .payment-balance strong { font-size:17px; }
+ .payment-balance>span { font-size:9px; }
+ .payment-next-action,.payment-settled-note { grid-column:1/-1;margin-top:16px; }
+ .payment-filters { width:100%; }
+ .payment-filters button { flex:1;justify-content:center;padding:8px;font-size:9px; }
+ .payment-filters button>span { min-width:14px;height:14px;font-size:7px; }
+ .payment-record summary { gap:10px;padding:16px 12px;flex-wrap:wrap; }
+ .payment-channel-icon { width:35px;height:35px;border-radius:11px; }
+ .payment-record-main strong { font-size:16px; }
+ .payment-record-main>span { font-size:9px; }
+ .payment-status { font-size:8px;padding:4px 6px; }
+ .payment-expand { margin-left:0; }
+ .payment-record-details { margin:0 10px 10px;padding:15px; }
+ .payment-record-details dl { grid-template-columns:minmax(0,1fr);gap:14px; }
+}
+@media(prefers-reduced-motion:reduce) { .payment-record-details { animation:none; } .payment-ring,.payment-expand svg { transition:none; } }
+@media print { .payment-filters,.payment-copy,.payment-expand,.payment-next-action { display:none!important; } .payment-journal-grid { display:block; } .payment-progress-card { background:white;color:#111; } }
+
+/* A school document on screen and on paper. */
+.report-open-bar{max-width:960px;margin:0 auto 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;border:1px solid #d9e4d9;border-radius:20px;background:#edf4ed}
+.report-open-bar span{font-weight:750;color:#173f35}.report-open-bar p{font-size:12px;color:#66736a;margin:5px 0 0}
+.report-open-bar button,.report-preview-toolbar button{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;background:#194c3e;color:white;padding:12px 16px;font-size:12px;font-weight:700;transition:background .2s,transform .2s}
+.report-open-bar button:hover,.report-preview-toolbar button:hover{background:#27624f;transform:translateY(-1px)}
+.report-open-bar button:focus-visible,.report-preview-toolbar button:focus-visible{outline:3px solid #c58a5f;outline-offset:3px}
+.academic-report{max-width:960px;margin:auto;background:#fffefb;border:1px solid #d9dfd5;border-radius:22px;box-shadow:0 12px 36px #183e3409;overflow:hidden;color:#20382f}
+.academic-report__masthead{padding:30px 28px;display:flex;align-items:center;gap:16px;border-top:7px solid #214e3e}
+.academic-report__crest{width:68px;height:76px;flex-shrink:0;display:grid;place-items:center;background:#214e3e;color:#f5e9c9;border:3px double #c7b585;border-radius:16px 16px 27px 27px}
+.academic-report__crest svg{width:38px;height:38px}
+.academic-report__eyebrow{font-size:9px!important;text-transform:uppercase;letter-spacing:.16em;color:#8c7047!important;margin-bottom:8px!important}
+.academic-report__masthead h2{font-family:Georgia,serif;font-size:26px;line-height:1.2;font-weight:700;color:#214e3e;margin:0 0 8px}
+.academic-report__masthead p{font-size:11px;color:#68746c;margin:0}
+.academic-report__seal{margin-left:auto;font-size:10px;font-weight:750;border:1px solid #b9ceba;color:#28543e;padding:7px 11px;border-radius:99px}
+.academic-report__ribbon{display:flex;justify-content:space-between;gap:12px;background:#214e3e;color:#fff7df;padding:12px 28px;font-size:11px;letter-spacing:.06em}
+.academic-report__ribbon span{text-transform:uppercase}
+.academic-report__identity{padding:25px 28px;margin:0;display:grid;grid-template-columns:2fr 1.5fr 1fr 1fr;gap:20px;border-bottom:1px solid #e4e6db}
+.academic-report dt{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#7b8274;margin-bottom:7px}
+.academic-report dd{font-size:12px;font-weight:700;margin:0;overflow-wrap:anywhere}
+.academic-report__name dd{font-family:Georgia,serif;font-size:20px}
+.academic-report__highlights{display:grid;grid-template-columns:repeat(4,1fr);margin:22px 28px;background:#f1f4eb;border:1px solid #e1e5d7;border-radius:14px}
+.academic-report__highlights>div{padding:18px 15px;border-right:1px solid #dce2d1}
+.academic-report__highlights>div:last-child{border:0}
+.academic-report__highlights span,.academic-report__highlights small{display:block;font-size:10px;color:#687660}
+.academic-report__highlights strong{display:block;font-family:Georgia,serif;font-size:29px;line-height:1.35;margin:6px 0;color:#214e3e}
+.academic-report__highlights em{font-size:13px;font-style:normal;font-family:inherit;font-weight:400}
+.academic-report__performance,.academic-report__appraisal{margin:24px 28px}
+.academic-report__section-title{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.academic-report__section-title>span{font-size:9px;color:#9a7948;border-bottom:1px solid #cbb88c;padding-bottom:3px}
+.academic-report__section-title h3{font-size:13px;font-weight:750;margin:0}
+.academic-report__section-title small{margin-left:auto;font-size:10px;color:#7c8278}
+.academic-report__table-scroll{overflow-x:auto;border:1px solid #dee3d7;border-radius:12px}
+.academic-report table{width:100%;border-collapse:collapse;font-size:11px;min-width:570px}
+.academic-report th,.academic-report td{padding:12px 11px;text-align:center;border-bottom:1px solid #e8eadd}
+.academic-report thead th{background:#eaf0e4;color:#496147;font-size:9px;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em}
+.academic-report tbody th{text-align:left;font-weight:650;min-width:125px}
+.academic-report tbody td:last-child{text-align:left;font-size:10px;color:#72806d}
+.academic-report tbody tr:nth-child(even){background:#f7f8f1}
+.academic-report tbody tr:hover{background:#edf2e5}
+.academic-report__grade{display:inline-grid;place-items:center;min-width:25px;height:25px;border-radius:7px;background:#e2eddc;color:#28553b;font-weight:800}
+.academic-report tfoot{background:#214e3e;color:#fff9e8}
+.academic-report tfoot th{text-align:left}.academic-report tfoot td{font-weight:750}.academic-report tfoot span{font-weight:400;color:#d7e4cc}
+.academic-report__remarks{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.academic-report__remarks>div{padding:18px;background:#f7f5ed;border:1px solid #e6e1d3;border-radius:12px}
+.academic-report__remarks h4{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#8a7048;margin:0 0 12px}
+.academic-report__remarks p{font-family:Georgia,serif;font-style:italic;font-size:13px;line-height:1.65;min-height:45px;color:#4d5b4d}
+.academic-report__remarks span{display:block;font-size:9px;color:#909280;border-top:1px solid #dedfce;margin-top:15px;padding-top:10px}
+.academic-report__footer{display:flex;align-items:center;justify-content:space-between;gap:15px;background:#eff2e7;padding:15px 28px}
+.academic-report__footer>span{display:flex;gap:7px;align-items:center;font-size:19px;font-weight:800;color:#214e3e}.academic-report__footer svg{width:20px}
+.academic-report__footer p{font-size:9px;color:#74816a;text-align:right}
+.academic-report__unpublished{text-align:center;padding:45px 25px}.academic-report__unpublished svg{margin:0 auto 15px;color:#9a7948}.academic-report__unpublished h3{font-weight:700}.academic-report__unpublished p{font-size:12px;margin-top:10px}
+.report-print-root{position:fixed;inset:0;z-index:1000;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:28px 20px}
+.report-preview-backdrop{position:fixed;inset:0;background:#092b24c9;backdrop-filter:blur(5px)}
+.report-preview-dialog{position:relative;z-index:1;width:100%;max-width:1000px;padding:22px;background:#edece4;border-radius:24px;outline:none;animation:report-arrive .25s ease-out}
+.report-preview-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 18px}.report-preview-toolbar h2{font-weight:750;color:#214e3e;font-size:16px}.report-preview-toolbar p{font-size:11px;color:#72806e;margin-top:5px}.report-preview-toolbar>div:last-child{display:flex;gap:8px}.report-preview-toolbar button:last-child{background:#dde2d5;color:#214e3e}
+@keyframes report-arrive{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.report-open-bar{padding:16px;align-items:flex-start;flex-direction:column}.academic-report__masthead{padding:22px 16px;gap:12px;flex-wrap:wrap}.academic-report__crest{width:50px;height:58px}.academic-report__crest svg{width:29px}.academic-report__masthead>div:nth-child(2){flex:1}.academic-report__masthead h2{font-size:21px}.academic-report__seal{margin-left:62px}.academic-report__identity{grid-template-columns:1fr 1fr;padding:20px 16px}.academic-report__name{grid-column:1/-1}.academic-report__ribbon{padding:12px 16px;font-size:9px}.academic-report__highlights{grid-template-columns:1fr 1fr;margin:18px 16px}.academic-report__highlights>div:nth-child(2){border-right:0}.academic-report__highlights>div:nth-child(-n+2){border-bottom:1px solid #dce2d1}.academic-report__performance,.academic-report__appraisal{margin:22px 16px}.academic-report__remarks{grid-template-columns:1fr}.academic-report__footer{padding:14px 16px;align-items:flex-start}.report-print-root{padding:10px}.report-preview-dialog{padding:12px;border-radius:17px}.report-preview-toolbar{align-items:flex-start;flex-direction:column}.report-preview-toolbar>div:last-child{width:100%;justify-content:space-between}}
+@media(prefers-reduced-motion:reduce){.report-preview-dialog{animation:none}.report-open-bar button,.report-preview-toolbar button{transition:none}}
+@media print{
+ @page{size:A4;margin:12mm}
+ body:has(>.report-print-root){overflow:visible!important;background:white!important}
+ body:has(>.report-print-root)>*:not(.report-print-root){display:none!important}
+ .report-print-root{display:block!important;position:static!important;padding:0!important;overflow:visible!important}
+ .report-preview-backdrop,.report-preview-toolbar{display:none!important}
+ .report-preview-dialog{padding:0!important;background:white!important;border-radius:0!important;max-width:none!important;animation:none!important}
+ .academic-report{width:100%;max-width:none;border-radius:0;box-shadow:none;overflow:visible;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+ .academic-report__masthead{padding:20px;flex-wrap:nowrap}.academic-report__masthead h2{font-size:23px}.academic-report__seal{margin-left:auto}
+ .academic-report__identity{grid-template-columns:2fr 1.5fr 1fr 1fr;padding:20px;gap:15px}.academic-report__name{grid-column:auto}
+ .academic-report__highlights{grid-template-columns:repeat(4,1fr);margin:18px 20px}.academic-report__highlights>div{border-bottom:0!important;border-right:1px solid #dce2d1!important;padding:14px 10px}.academic-report__highlights>div:last-child{border-right:0!important}
+ .academic-report__performance,.academic-report__appraisal{margin:20px}.academic-report__table-scroll{overflow:visible}
+ .academic-report table{min-width:0;font-size:10px}.academic-report th,.academic-report td{padding:9px 8px}.academic-report thead{display:table-header-group}.academic-report tfoot{display:table-row-group}
+ .academic-report tr,.academic-report__highlights,.academic-report__masthead,.academic-report__identity,.academic-report__remarks>div{break-inside:avoid}
+ .academic-report__remarks{grid-template-columns:1fr 1fr}.academic-report__remarks p{min-height:35px}
+ .academic-report__footer{padding:12px 20px}
+}

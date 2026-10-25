@@ -1,187 +1,79 @@
-import React from "react";
+"use client";
+
+import React, { useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { GraduationCap, FileText, Printer, X, ArrowUpRight } from "lucide-react";
+import { useSettingsQuery } from "@/lib/query/hooks";
+import type { SchoolSettings } from "@/lib/types/portal";
 import { TermResultRecord } from "@/lib/mockData";
-import StatusBadge from "./StatusBadge";
-import { Award, CheckCircle, FileText, Printer } from "lucide-react";
 
-interface ResultReportProps {
-  result: TermResultRecord;
-  showPrintButton?: boolean;
-}
+interface ResultReportProps { result: TermResultRecord; showPrintButton?: boolean; }
 
-export default function ResultReport({
-  result,
-  showPrintButton = true,
-}: ResultReportProps) {
-  const isPublished = result.status === "Published";
-
-  return (
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-ink-border shadow-sm max-w-4xl mx-auto">
-      {/* Report Header */}
-      <div className="border-b-2 border-forest-100 pb-6 mb-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-forest bg-forest-50 px-3 py-1 rounded-full mb-2">
-              <Award className="w-3.5 h-3.5" />
-              Terminal Academic Progress Sheet
-            </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold font-heading text-ink">
-              Edvora Nursery & Primary School
-            </h2>
-            <p className="text-xs sm:text-sm text-ink-muted mt-0.5">
-              Continuous Assessment & Examination Report · {result.session} ({result.term})
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <StatusBadge status={result.status} />
-            {showPrintButton && isPublished && (
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-ink bg-ivory-100 hover:bg-ivory-200 border border-ink-border rounded-xl transition-colors print:hidden"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                Print Sheet
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Pupil Metadata Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 bg-ivory-50/70 p-4 rounded-2xl border border-ink-border/50 text-xs">
-          <div>
-            <span className="text-ink-muted block text-[11px]">Pupil Name</span>
-            <span className="font-bold text-ink text-sm sm:text-base font-heading">
-              {result.pupilName}
-            </span>
-          </div>
-          <div>
-            <span className="text-ink-muted block text-[11px]">Admission Number</span>
-            <span className="font-semibold text-ink font-mono">
-              {result.admissionNo}
-            </span>
-          </div>
-          <div>
-            <span className="text-ink-muted block text-[11px]">Class & Arm</span>
-            <span className="font-semibold text-ink">{result.classGrade}</span>
-          </div>
-          <div>
-            <span className="text-ink-muted block text-[11px]">Class Position</span>
-            <span className="font-bold text-forest">{result.classPosition}</span>
-          </div>
-        </div>
+function ReportCard({ result, school }: { result: TermResultRecord; school?: SchoolSettings }) {
+  const published = result.status === "Published";
+  return <article className="academic-report" aria-label={result.pupilName + " report card"}>
+    <header className="academic-report__masthead">
+      <div className="academic-report__crest" aria-label="Edvora school logo"><GraduationCap aria-hidden="true" /></div>
+      <div><p className="academic-report__eyebrow">Pupil progress · School report</p><h2>{school?.schoolName || "Edvora Nursery & Primary School"}</h2><p>Terminal academic report · {result.session}</p>{(school?.contactAddress || school?.contactPhone || school?.contactEmail) && <p className="academic-report__contact">{[school.contactAddress, school.contactPhone, school.contactEmail].filter(Boolean).join(" · ")}</p>}</div>
+      <span className="academic-report__seal">{published ? "Published" : result.status}</span>
+    </header>
+    <div className="academic-report__ribbon"><span>Academic progress report</span><strong>{result.term}</strong></div>
+    <dl className="academic-report__identity">
+      <div className="academic-report__name"><dt>Pupil name</dt><dd>{result.pupilName}</dd></div>
+      <div><dt>Admission number</dt><dd>{result.admissionNo}</dd></div>
+      <div><dt>Class</dt><dd>{result.classGrade}</dd></div>
+      <div><dt>Session</dt><dd>{result.session}</dd></div>
+    </dl>
+    {!published ? <div className="academic-report__unpublished"><FileText aria-hidden="true" /><h3>Report awaiting publication</h3><p>Grades will appear once the school has reviewed and published this report.</p></div> : <>
+      <div className="academic-report__highlights">
+        <div><span>Overall average</span><strong>{result.percentage}%</strong><small>Across {result.subjects.length} subjects</small></div>
+        <div><span>Total marks</span><strong>{result.totalMarks}<em> / {result.maxMarks}</em></strong><small>Assessment + examination</small></div>
+        <div><span>Class position</span><strong>{result.classPosition || "—"}</strong><small>As recorded by the school</small></div>
+        <div><span>Attendance</span><strong>{result.attendanceDays}<em> / {result.totalSchoolDays}</em></strong><small>Days present / school days</small></div>
       </div>
-
-      {!isPublished ? (
-        <div className="py-12 text-center bg-amber-50/50 rounded-2xl border border-amber-200 p-6 my-6">
-          <FileText className="w-10 h-10 text-amber-600 mx-auto mb-2" />
-          <h3 className="text-base font-bold text-ink">
-            Report is Currently Under {result.status}
-          </h3>
-          <p className="text-xs text-ink-muted mt-1 max-w-md mx-auto">
-            The school academic committee is updating or reviewing assessments.
-            Official grades will display once reviewed and published by the head of school.
-          </p>
-        </div>
-      ) : (
-        <>
-          {/* Subject Grades Table */}
-          <div className="overflow-x-auto rounded-xl border border-ink-border mb-6">
-            <table className="w-full text-left text-xs sm:text-sm border-collapse">
-              <thead>
-                <tr className="bg-ivory-50 border-b border-ink-border text-ink-muted text-xs font-heading font-semibold uppercase">
-                  <th className="py-3 px-4">Subject</th>
-                  <th className="py-3 px-3 text-center">CA (40)</th>
-                  <th className="py-3 px-3 text-center">Exam (60)</th>
-                  <th className="py-3 px-3 text-center">Total (100)</th>
-                  <th className="py-3 px-3 text-center">Grade</th>
-                  <th className="py-3 px-4">Remarks</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-ink-border/50 text-ink">
-                {result.subjects.map((sub, idx) => (
-                  <tr key={idx} className="hover:bg-ivory-50/40">
-                    <td className="py-3 px-4 font-semibold text-ink">
-                      {sub.subject}
-                    </td>
-                    <td className="py-3 px-3 text-center tabular-nums text-ink-muted">
-                      {sub.continuousAssessment}
-                    </td>
-                    <td className="py-3 px-3 text-center tabular-nums text-ink-muted">
-                      {sub.examScore}
-                    </td>
-                    <td className="py-3 px-3 text-center tabular-nums font-bold text-ink">
-                      {sub.totalScore}%
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className="inline-block px-2 py-0.5 rounded font-bold text-xs bg-mint-light text-forest-700">
-                        {sub.grade}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-xs text-ink-muted">
-                      {sub.remarks}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="bg-forest-50/50 border-t-2 border-forest-100 font-bold text-ink">
-                  <td className="py-3 px-4">Aggregate Summary</td>
-                  <td colSpan={2} className="py-3 px-3 text-center">
-                    Total: {result.totalMarks} / {result.maxMarks}
-                  </td>
-                  <td className="py-3 px-3 text-center text-forest text-sm font-extrabold">
-                    {result.percentage}%
-                  </td>
-                  <td className="py-3 px-3 text-center">
-                    <span className="text-xs bg-forest text-white px-2 py-0.5 rounded font-bold">
-                      Published
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-xs text-forest-700">
-                    Academic summary
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          {/* Qualitative Comments & Signoff */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div className="p-4 rounded-2xl bg-ivory-50 border border-ink-border">
-              <span className="font-bold text-ink uppercase text-[10px] tracking-wider block mb-1">
-                Class Teacher&apos;s Appraisal
-              </span>
-              <p className="text-ink-muted leading-relaxed italic">
-                &ldquo;{result.teacherComment}&rdquo;
-              </p>
-              <div className="mt-4 pt-3 border-t border-ink-border/50 flex justify-between items-center text-[11px]">
-                <span className="text-ink-muted">Class Teacher</span>
-                <span className="text-forest font-semibold flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" /> Teacher remarks
-                </span>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-ivory-50 border border-ink-border">
-              <span className="font-bold text-ink uppercase text-[10px] tracking-wider block mb-1">
-                Head Teacher&apos;s Remark
-              </span>
-              <p className="text-ink-muted leading-relaxed italic">
-                &ldquo;{result.headTeacherComment}&rdquo;
-              </p>
-              <div className="mt-4 pt-3 border-t border-ink-border/50 flex justify-between items-center text-[11px]">
-                <span className="text-ink-muted">School review</span>
-                <span className="text-forest font-semibold flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" /> Head teacher remarks
-                </span>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
-  );
+      <section aria-label="Subject performance" className="academic-report__performance"><div className="academic-report__section-title"><span>01</span><h3>Subject performance</h3><small>CA 40 · Exam 60</small></div>
+        <div className="academic-report__table-scroll"><table><thead><tr><th scope="col">Subject</th><th scope="col">CA /40</th><th scope="col">Exam /60</th><th scope="col">Total /100</th><th scope="col">Grade</th><th scope="col">Remark</th></tr></thead><tbody>
+          {result.subjects.map((subject, index) => <tr key={index}><th scope="row">{subject.subject}</th><td>{subject.continuousAssessment}</td><td>{subject.examScore}</td><td><strong>{subject.totalScore}</strong></td><td><span className="academic-report__grade">{subject.grade}</span></td><td>{subject.remarks || "—"}</td></tr>)}
+        </tbody><tfoot><tr><th scope="row" colSpan={3}>Total academic score</th><td colSpan={3}>{result.totalMarks} / {result.maxMarks} <span>· {result.percentage}% average</span></td></tr></tfoot></table></div>
+      </section>
+      <section className="academic-report__appraisal" aria-label="School remarks"><div className="academic-report__section-title"><span>02</span><h3>Remarks &amp; encouragement</h3></div><div className="academic-report__remarks">
+        <div><h4>Class teacher’s appraisal</h4><p>{result.teacherComment?.trim() || "No teacher remark recorded."}</p><span>Class teacher</span></div>
+        <div><h4>Head teacher’s remark</h4><p>{result.headTeacherComment?.trim() || "No head teacher remark recorded."}</p><span>Head teacher</span></div>
+      </div></section>
+    </>}
+    <footer className="academic-report__footer"><span><GraduationCap aria-hidden="true" /> edvora.</span><p>Academic progress · {result.admissionNo} · {result.term} · {result.session}</p></footer>
+  </article>;
 }
 
-
+export default function ResultReport({ result, showPrintButton = true }: ResultReportProps) {
+  const { data: school } = useSettingsQuery();
+  const [open, setOpen] = useState(false);
+  const dialog = useRef<HTMLDivElement>(null);
+  const opener = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    dialog.current?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+      if (event.key !== "Tab") return;
+      const nodes = dialog.current?.querySelectorAll<HTMLButtonElement>('button:not([disabled])');
+      if (!nodes?.length) return;
+      const first = nodes[0], last = nodes[nodes.length - 1];
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog.current)) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog.current)) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener("keydown", handleKey);
+    return () => { document.body.style.overflow = previousOverflow; document.removeEventListener("keydown", handleKey); opener.current?.focus(); };
+  }, [open]);
+  return <>
+    {showPrintButton && result.status === "Published" && <div className="report-open-bar"><div><span>Your term, beautifully documented</span><p>Open your school report card to print or save a PDF.</p></div><button ref={opener} type="button" onClick={() => setOpen(true)}><FileText size={17} />Open report card<ArrowUpRight size={16} /></button></div>}
+    <ReportCard result={result} school={school} />
+    {open && createPortal(<div className="report-print-root"><div className="report-preview-backdrop" onClick={() => setOpen(false)} /><div ref={dialog} className="report-preview-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
+      <div className="report-preview-toolbar"><div><h2 id={titleId}>Your school report card</h2><p>Print a copy or choose “Save as PDF” in the print window.</p></div><div><button type="button" onClick={() => window.print()}><Printer size={17} />Print / Save PDF</button><button type="button" aria-label="Close report card" onClick={() => setOpen(false)}><X size={20} /></button></div></div>
+      <ReportCard result={result} school={school} />
+    </div></div>, document.body)}
+  </>;
+}
