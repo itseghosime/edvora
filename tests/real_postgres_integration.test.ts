@@ -79,6 +79,7 @@ describe('Real PostgreSQL Integration: Migrations, RLS, Stored Functions & Concu
       await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',studentMigration),'utf8'));
       const passwordSessionMigration=fs.readdirSync(path.join(__dirname,'../supabase/migrations')).find(name=>name.endsWith('_require_student_password_sessions.sql'))!;
       await client.query(fs.readFileSync(path.join(__dirname,'../supabase/migrations',passwordSessionMigration),'utf8'));
+      await client.query(fs.readFileSync(path.join(__dirname,"../supabase/migrations/20261025074740_fee_result_access.sql"),"utf8"));
       // Test-owned prerequisites; never rely on a developer's existing database seed.
       await client.query(`
         INSERT INTO academic_sessions (id,name,start_date,end_date)
@@ -1180,5 +1181,9 @@ describe('Real PostgreSQL Integration: Migrations, RLS, Stored Functions & Concu
     const client=await pool.connect();try{await client.query('BEGIN');await client.query(fs.readFileSync(path.join(__dirname,'fixtures/student_password_access.sql'),'utf8'));}finally{await client.query('ROLLBACK');client.release();}
   });
 
+  it('locks unpaid term reports and enforces admin-only, audited, reversible overrides and automatic payment release',async()=>{
+    const client=await pool.connect();
+    try { await client.query('BEGIN'); await client.query(fs.readFileSync(path.join(__dirname,'fixtures/result_fee_access.sql'),'utf8')); }
+    finally { await client.query('ROLLBACK'); client.release(); }
+  });
 });
-

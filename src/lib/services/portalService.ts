@@ -76,6 +76,7 @@ export async function readPortal(
     logs,
     plans,
     storedSettings,
+    accessRows,
   ] = await Promise.all([
     financial && ids.length ? checked(assignmentQuery) : [],
     financial && ids.length && term
@@ -143,7 +144,12 @@ export async function readPortal(
         .eq("id", "school")
         .limit(1),
     ),
+    (actor.type === "student" || (actor.type === "staff" && actor.role === "admin")) && ids.length && term
+      ? checked(client.rpc("get_result_access", { p_pupil_ids: ids, p_term_id: term.id })) : [],
   ]);
+  const resultAccess = (accessRows as {pupil_id:string;balance_minor:number;locked:boolean;overridden:boolean;has_published:boolean}[]).map(a=>({
+    pupilId:a.pupil_id, balance:Number(a.balance_minor)/100, locked:a.locked, overridden:a.overridden, hasPublished:a.has_published,
+  }));
   const pupils = rawPupils.map((p) => {
     const assignment = assignments.find((a) => a.pupil_id === p.id);
     const charges = Number(assignment?.adjusted_amount_minor ?? 0) / 100;
@@ -201,7 +207,7 @@ export async function readPortal(
       balanceAfter: Number(credit?.running_balance_minor ?? 0) / 100,
     };
   });
-  const results: TermResultRecord[] = reports.map((r) => {
+  const results: TermResultRecord[] = reports.filter(r => actor.type !== "student" || resultAccess.some(a => a.pupilId === r.pupil_id && !a.locked && a.hasPublished)).map((r) => {
     const pupil = pupils.find((p) => p.id === r.pupil_id);
     return {
       id: r.id,
@@ -293,6 +299,7 @@ export async function readPortal(
     pupils,
     payments,
     results,
+    resultAccess,
     settings,
     summary,
     classStats,

@@ -242,6 +242,10 @@ try {
     if (url.pathname === "/api/staff/commands") {
       const body = route.request().postDataJSON();
       requests.push(body);
+      if (body.command === "set_result_fee_override") {
+        snapshot.resultAccess[0].overridden = body.payload.allowAccess;
+        snapshot.resultAccess[0].locked = !body.payload.allowAccess;
+      }
       if (body.command === "register_pupil" && ++enrollAttempts === 1)
         return route.fulfill({
           status: 400,
@@ -363,6 +367,21 @@ try {
     path: "test-results/staff-ui/results-desktop.png",
     fullPage: true,
   });
+
+  snapshot.results=[{id:uid(80),pupilId:uid(20),pupilName:pupil.fullName,admissionNo:pupil.admissionNo,classGrade:pupil.classGrade,session:"2026/2027",term:"First Term",subjects:[],totalMarks:0,maxMarks:100,percentage:0,classPosition:"—",attendanceDays:0,totalSchoolDays:0,teacherComment:"",headTeacherComment:"",status:"Published"}];
+  snapshot.resultAccess=[{pupilId:uid(20),balance:80000,locked:true,overridden:false,hasPublished:true}];
+  await page.goto(base+"/admin/results");
+  await page.getByRole("button",{name:"Allow result access",exact:true}).click();
+  await page.getByLabel("Reason for access change",{exact:true}).fill("Approved installment agreement");
+  await page.getByRole("button",{name:"Confirm access override",exact:true}).click();
+  await page.getByText("Admin override",{exact:true}).waitFor();
+  assert.equal(requests.find(r=>r.command==="set_result_fee_override").payload.allowAccess,true);
+  await page.getByRole("button",{name:"Remove access override",exact:true}).click();
+  await page.getByLabel("Reason for access change",{exact:true}).fill("Agreement no longer applies");
+  await page.getByRole("button",{name:"Confirm remove override",exact:true}).click();
+  await page.getByText("Locked · unpaid fees",{exact:true}).waitFor();
+  await page.screenshot({path:"test-results/staff-ui/result-admin-override.png",fullPage:true});
+
   await page.setViewportSize({ width: 390, height: 844 });
   for (const [path, title] of routes) {
     await page.goto(base + "/admin" + (path ? "/" + path : ""));
@@ -502,6 +521,19 @@ try {
     await page.getByRole("button", { name: "Close payment modal", exact: true }).click();
   }
 
+
+  const publishedReport = snapshot.results[0];
+  snapshot.results=[];
+  snapshot.resultAccess=[{pupilId:uid(20),balance:80000,locked:true,overridden:false,hasPublished:true}];
+  await page.goto(base+"/student/results");
+  await page.getByRole("heading",{name:"Your report is locked",exact:true}).waitFor();
+  assert.equal(await page.getByRole("button",{name:"Open report card",exact:true}).count(),0);
+  assert.equal(await page.locator(".academic-report").count(),0);
+  await page.screenshot({path:"test-results/staff-ui/result-locked-mobile.png",fullPage:true});
+  snapshot.results=[publishedReport];
+  snapshot.resultAccess[0].locked=false;
+  snapshot.resultAccess[0].overridden=true;
+  await page.goto(base+"/student/payments");
   for (const width of [1440,390]) {
     await page.setViewportSize({width,height:900});
     await page.goto(base + "/student/results");

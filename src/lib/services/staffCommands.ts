@@ -11,6 +11,7 @@ const commands = new Set([
   "adjust_fee",
   "save_result",
   "set_result_status",
+  "set_result_fee_override",
   "save_reminder",
   "save_settings",
   "toggle_reminder",
@@ -57,6 +58,10 @@ export function validateStaffCommand(body: unknown) {
     )
       return fail("Enter a valid whole minor-unit amount or day count");
   }
+  if (value.command === "set_result_fee_override" && (
+    typeof payload.allowAccess !== "boolean" || typeof payload.reason !== "string" ||
+    payload.reason.trim().length < 3 || payload.reason.trim().length > 1000 || typeof payload.resultId !== "string"
+  )) return fail("Select a report, choose access and provide a reason (3–1000 characters)");
   if (value.command === "save_result") {
     if (
       !Array.isArray(payload.subjects) ||

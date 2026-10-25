@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   usePupilQuery,
+  useResultAccessQuery,
   usePaymentsQuery,
   useFeeBreakdownQuery,
   useStudentResultQuery,
@@ -25,6 +26,7 @@ export default function StudentAccountView({
   const { data: payments = [] } = usePaymentsQuery();
   const { data: fees = [] } = useFeeBreakdownQuery();
   const { data: result } = useStudentResultQuery();
+  const { data: resultAccess } = useResultAccessQuery();
   const { data: summary } = useSchoolSummaryQuery();
   const [paying, setPaying] = useState(false);
 
@@ -182,7 +184,16 @@ export default function StudentAccountView({
       )}
 
       {view === "results" &&
-        (result ? (
+        (resultAccess?.locked ? (
+          <section className="rounded-3xl border border-amber-200 bg-amber-50/70 p-6 sm:p-10 max-w-3xl mx-auto" aria-labelledby="result-locked-title">
+            <span className="inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-900">Fee clearance required</span>
+            <h2 id="result-locked-title" className="mt-4 font-heading font-bold text-2xl text-ink">Your report is locked</h2>
+            <p className="mt-3 text-sm leading-relaxed text-ink-muted">Your school has published this term’s report. Complete the outstanding term fees to view, print or download it. The school administrator can also approve an exception.</p>
+            <div className="my-6 rounded-2xl bg-white border border-amber-100 p-4"><span className="block text-xs text-ink-muted">Outstanding for this term</span><strong className="block mt-1 text-2xl text-forest">{formatNaira(resultAccess.balance)}</strong></div>
+            <div className="flex flex-wrap gap-3"><Link className="rounded-xl bg-forest px-5 py-3 text-sm font-semibold text-white" href="/student/payments">Go to fees &amp; payments</Link><Link className="rounded-xl border border-forest/20 px-5 py-3 text-sm font-semibold text-forest" href="/contact">Contact the school</Link></div>
+            <p className="mt-5 text-xs text-ink-muted">Access updates automatically after the school verifies full payment.</p>
+          </section>
+        ) : result ? (
           <ResultReport result={result} />
         ) : (
           <section className="rounded-2xl bg-surface-container-lowest border border-outline-variant/30 p-8 shadow-sm">
@@ -191,7 +202,7 @@ export default function StudentAccountView({
             </h2>
             <p className="mt-2 text-sm text-on-surface-variant leading-relaxed">
               The school will make your academic report available here after official review and publication.
-              Published results remain accessible in the Student portal regardless of outstanding fees.
+              Published reports become available after fee clearance or an administrator’s access override.
             </p>
           </section>
         ))}

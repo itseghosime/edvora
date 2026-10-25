@@ -199,6 +199,9 @@ export default function StaffResults() {
   const [classFilter, setClassFilter] = useState("");
   const [correction, setCorrection] = useState("");
   const [reason, setReason] = useState("");
+  const [accessReport, setAccessReport] = useState("");
+  const [allowAccess, setAllowAccess] = useState(false);
+  const [accessReason, setAccessReason] = useState("");
   if (!data) return null;
   const admin = data.staffRole === "admin";
   const rows = data.pupils.filter(
@@ -210,7 +213,7 @@ export default function StaffResults() {
       "set_result_status",
       { resultId: result.id, status },
       status === "published"
-        ? "Report published. It is now available in the Student portal."
+        ? "Report published. Student access follows fee clearance or an administrator override."
         : "Report submitted for administrator review.",
     );
   }
@@ -219,7 +222,7 @@ export default function StaffResults() {
       <div className="space-y-6">
         <PageHeader
           title="Results & grading"
-          subtitle="Draft → administrator review → publication. Published reports remain accessible regardless of unpaid fees."
+          subtitle="Draft → administrator review → publication. Unpaid term fees lock Student access automatically; administrators can approve an exception."
         />
         <Feedback action={action} />
         {!data.currentTerm ? (
@@ -291,10 +294,11 @@ export default function StaffResults() {
             )}
               {rows.length ? (
                 <DataTable
-                  headers={["Pupil", "Class", "Report", "Average", "Actions"]}
+                  headers={["Pupil", "Class", "Report", "Average", ...(admin ? ["Student access"] : []), "Actions"]}
                 >
                   {rows.map((p) => {
                     const r = data.results.find((r) => r.pupilId === p.id);
+                    const access = data.resultAccess?.find(a => a.pupilId === p.id);
                     return (
                       <tr key={p.id}>
                         <td className="font-semibold">{p.fullName}</td>
@@ -303,8 +307,10 @@ export default function StaffResults() {
                           <Badge>{r?.status ?? "Not started"}</Badge>
                         </td>
                         <td>{r ? `${r.percentage}%` : "—"}</td>
+                        {admin && <td><Badge>{r?.status !== "Published" ? "Not published" : access?.overridden ? "Admin override" : access?.locked ? "Locked · unpaid fees" : "Available"}</Badge></td>}
                         <td>
                           <div className="flex flex-wrap gap-2">
+                            {admin && r?.status === "Published" && (access?.locked || access?.overridden) && <button className={secondaryClass} disabled={action.pending} onClick={()=>{setAccessReport(r.id);setAllowAccess(!access?.overridden);setAccessReason("");}}>{access?.overridden ? "Remove access override" : "Allow result access"}</button>}
                             {r && (
                               <button
                                 className={secondaryClass}
@@ -376,6 +382,13 @@ export default function StaffResults() {
                 <Empty>No pupils in this class.</Empty>
               )}
             </Panel>
+            {admin && accessReport && <Panel title={allowAccess ? "Approve result access despite unpaid fees" : "Remove result access override"} description="This exception applies only to the selected pupil’s report for this term. It does not waive fees or publish a draft.">
+              <form className="space-y-4" onSubmit={async e=>{e.preventDefault();if(await action.run("set_result_fee_override",{resultId:accessReport,allowAccess,reason:accessReason},allowAccess ? "Access override saved. The published report is now available to this pupil." : "Override removed. Automatic fee clearance applies again."))setAccessReport("");}}>
+                <p className="font-semibold">{data.results.find(r=>r.id===accessReport)?.pupilName} · {data.currentTerm?.name} · {data.currentTerm?.sessionName}</p>
+                <Field label="Reason for access change"><textarea className={inputClass} required minLength={3} maxLength={1000} value={accessReason} onChange={e=>setAccessReason(e.target.value)} /></Field>
+                <div className="flex gap-3"><button className={buttonClass} disabled={action.pending}>{allowAccess ? "Confirm access override" : "Confirm remove override"}</button><button type="button" className={secondaryClass} disabled={action.pending} onClick={()=>setAccessReport("")}>Cancel access change</button></div>
+              </form>
+            </Panel>}
             {correction && (
               <Panel
                 title="Return report for correction"
