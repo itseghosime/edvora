@@ -140,6 +140,7 @@ export default function StudentAccountView({
           <PaymentTimeline
             payments={payments.filter((p) => p.pupilId === pupil.id)}
             totalCharges={pupil.charges}
+            onPay={() => setPaying(true)}
           />
 
           {view === "payments" && (
