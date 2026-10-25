@@ -29,7 +29,7 @@ function ReportCard({ result, school }: { result: TermResultRecord; school?: Sch
         <div><span>Overall average</span><strong>{result.percentage}%</strong><small>Across {result.subjects.length} subjects</small></div>
         <div><span>Total marks</span><strong>{result.totalMarks}<em> / {result.maxMarks}</em></strong><small>Assessment + examination</small></div>
         <div><span>Class position</span><strong>{result.classPosition || "—"}</strong><small>As recorded by the school</small></div>
-        <div><span>Attendance</span><strong>{result.attendanceDays}<em> / {result.totalSchoolDays}</em></strong><small>Days present / school days</small></div>
+        <div><span>Attendance</span><strong>{result.totalSchoolDays > 0 ? <>{result.attendanceDays}<em> / {result.totalSchoolDays}</em></> : "—"}</strong><small>{result.totalSchoolDays > 0 ? "Days present / school days" : "Attendance not recorded"}</small></div>
       </div>
       <section aria-label="Subject performance" className="academic-report__performance"><div className="academic-report__section-title"><span>01</span><h3>Subject performance</h3><small>CA 40 · Exam 60</small></div>
         <div className="academic-report__table-scroll"><table><thead><tr><th scope="col">Subject</th><th scope="col">CA /40</th><th scope="col">Exam /60</th><th scope="col">Total /100</th><th scope="col">Grade</th><th scope="col">Remark</th></tr></thead><tbody>
