@@ -50,6 +50,7 @@ export interface PortalSnapshot {
   pupils: (Pupil & { classId: string; assignmentId?: string })[];
   payments: PaymentTransaction[];
   results: TermResultRecord[];
+  resultAccess?: { pupilId: string; balance: number; locked: boolean; overridden: boolean; hasPublished: boolean }[];
   rules: ReminderRule[];
   logs: ReminderLog[];
   feeItems: FeeItem[];

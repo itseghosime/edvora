@@ -38,3 +38,5 @@ export function useToggleReminderRuleMutation(){const refresh=useRefresh();retur
 export function useTriggerReminderBatchMutation(){const refresh=useRefresh();return useMutation({mutationFn:(body:{ruleId:string})=>api('/api/portal/actions',{action:'queue_reminders',...body}),onSuccess:refresh});}
 export function useUpdateResultStatusMutation(){const refresh=useRefresh();return useMutation({mutationFn:async({status,resultId}:{status:TermResultRecord['status'];resultId?:string})=>{if(!resultId)throw new Error('Select the result to update.');return api('/api/results/publish',{resultId,status:status.toLowerCase().replaceAll(' ','_')});},onSuccess:refresh});}
 export function useUpdateSettingsMutation(){const refresh=useRefresh();return useMutation({mutationFn:(settings:Partial<SchoolSettings>)=>api('/api/portal/actions',{action:'update_settings',settings}),onSuccess:refresh});}
+
+export const useResultAccessQuery=()=>usePortal(p=>p.resultAccess?.[0]);
