@@ -102,7 +102,7 @@ export default function StudentShell({
     </>
   );
   return (
-    <div className="min-h-screen bg-surface text-on-surface">
+    <div className="portal-shell student-shell min-h-screen bg-surface text-on-surface">
       <aside className="hidden lg:flex fixed inset-y-0 left-0 w-60 p-6 flex-col border-r border-outline-variant/30 bg-surface-container-lowest">
         {navigation}
       </aside>

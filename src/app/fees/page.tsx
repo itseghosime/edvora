@@ -6,7 +6,7 @@ import PublicAccordion from "@/components/public/PublicAccordion";
 
 export const metadata: Metadata = { title: "School Fees | Edvora", description: "Understand fee assignments, verified payments and receipts through the Edvora Student portal." };
 export default function FeesPage() {
- return <div className="public-site min-h-screen flex flex-col bg-surface text-on-surface">
+ return <div data-page="fees" className="public-site min-h-screen flex flex-col bg-surface text-on-surface">
   <PublicNavbar />
   <main id="main-content" className="public-main flex-1">
    <section><div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-10 items-center">

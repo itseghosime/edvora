@@ -57,6 +57,7 @@ export default function StaffShell({ children }: StaffShellProps) {
               return (
                 <Link
                   key={item.href}
+                  aria-current={isActive ? "page" : undefined}
                   href={item.href}
                   className={`flex items-center gap-space-md px-space-md py-space-sm rounded-lg transition-colors font-label-lg text-label-lg ${
                     isActive

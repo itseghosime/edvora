@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PublicEnquiryForm from "@/components/public/PublicEnquiryForm";
 import React from "react";
+import HomeHero from "@/components/public/HomeHero";
 import Link from "next/link";
 import PublicNavbar from "@/components/public/PublicNavbar";
 import PublicFooter from "@/components/public/PublicFooter";
@@ -9,112 +10,12 @@ export const metadata: Metadata = {"title": "Edvora Nursery & Primary School", "
 
 export default function HomePage() {
   return (
-    <div className="public-site min-h-screen flex flex-col bg-surface font-body-md text-on-surface">
+    <div data-page="home" className="public-site min-h-screen flex flex-col bg-surface font-body-md text-on-surface">
       <PublicNavbar />
       <main id="main-content" className="public-main w-full flex-1">
         <div className="flex flex-col w-full">
 {/* SECTION 1: EDITORIAL HERO & BENTO COMPOSITION */}
-<section className="relative w-full overflow-hidden pb-space-xl pt-space-lg">
-{/* Ambient organic gradient glow */}
-<div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[900px] h-[550px] bg-gradient-to-b from-primary-fixed/30 via-secondary-fixed/20 to-transparent blur-3xl rounded-full -z-10"></div>
-<div className="max-w-7xl mx-auto px-margin-mobile lg:px-margin">
-{/* Top Editorial Header Block */}
-<div className="max-w-3xl mx-auto text-center space-y-space-md mb-space-xl">
-<div className="inline-flex items-center gap-space-xs px-3.5 py-1 rounded-full bg-secondary-container/40 text-on-secondary-fixed backdrop-blur-sm shadow-sm">
-<span aria-hidden="true" className="material-symbols-outlined text-[16px] text-secondary">eco</span>
-<span className="font-label-sm text-label-sm uppercase tracking-wider">A Calmer, Thoughtful Learning Environment</span>
-</div>
-<h1 className="font-display-lg text-display-lg text-on-surface tracking-tight">
-          A thoughtful start.<br />
-<span className="text-primary-container font-display-lg">A brighter future.</span>
-</h1>
-<p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
-          A welcoming nursery and primary school in Benin City, where curious children learn, play, and grow with confidence.
-        </p>
-{/* Primary & Secondary Actions */}
-<div className="pt-space-xs flex flex-wrap items-center justify-center gap-space-md">
-<a className="inline-flex items-center gap-space-xs px-6 py-3.5 rounded-xl bg-primary-container text-on-primary hover:bg-primary font-label-lg text-label-lg shadow-md transition-all" href="#visit-booking">
-<span aria-hidden="true" className="material-symbols-outlined text-[20px]">calendar_month</span>
-<span className="">Schedule a School Visit</span>
-</a>
-<a className="inline-flex items-center gap-space-xs px-6 py-3.5 rounded-xl bg-surface-container-lowest text-primary hover:bg-surface-container-low font-label-lg text-label-lg shadow-sm transition-all" href="#programmes">
-<span className="">Explore Our Programmes</span>
-<span aria-hidden="true" className="material-symbols-outlined text-[18px]">arrow_forward</span>
-</a>
-</div>
-</div>
-{/* Hero Bento Photography & Trust Grid */}
-<div className="grid grid-cols-1 md:grid-cols-12 gap-space-md items-stretch">
-{/* Bento Tile 1: Primary Large Image (Classroom Engagement) */}
-<div className="md:col-span-7 relative group overflow-hidden rounded-2xl shadow-sm min-h-[360px] md:min-h-[440px] flex flex-col justify-end p-space-lg text-on-primary bg-primary-container">
-<div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Modern bright Nigerian classroom in Benin City with vibrant natural daylight, happy elementary school pupils wearing clean emerald and cream uniforms gathered attentively around an inspiring teacher reading an illustrated book, warm editorial documentary photography with dignified tone." style={{ backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuBjkVZ2_oFpwU2yW0tkUH9W55sbsICJgpiS5ZcVzc77QuL6zPO0HO0PBP2bH_tX9v8-o-6UVqOmwkZaTi2g7zVrrNBl3qk33dTtREROxrxbd-XiLL-XoFpyYLe4ccNDZM_a3LxggDZzMZ_Vjdv44o9xRaMUTKOcf3HXrywyAjSF5hmSNXyCBPyJtrcG3zrwE13cQHwpFwNUN0PJEqwkftz6mYZAzBQVYyMKulp5CHZqm7EMwYZkGDxD")` }}>
-</div>
-<div className="absolute inset-0 bg-gradient-to-t from-inverse-surface/90 via-inverse-surface/40 to-transparent"></div>
-<div className="relative z-10 space-y-space-xs">
-<div className="inline-flex items-center gap-space-xs px-2.5 py-1 rounded-full bg-surface-container-lowest/20 backdrop-blur-md text-on-primary font-label-sm text-label-sm">
-<span className="w-2 h-2 rounded-full bg-secondary-container"></span>
-<span className="">Foundation Years &amp; Key Stage 1</span>
-</div>
-<h3 className="font-headline-lg text-headline-lg text-on-primary">Room to learn. Space to grow.</h3>
-<p className="font-body-md text-body-md text-primary-fixed max-w-md">Every school morning begins with shared stories, vocabulary discovery, and phonemic confidence.</p>
-</div>
-</div>
-{/* Bento Right Column: 2 stacked cards */}
-<div className="md:col-span-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-space-md">
-{/* Science & Discovery Station */}
-<div className="relative group overflow-hidden rounded-2xl shadow-sm min-h-[200px] flex flex-col justify-end p-space-md text-on-primary bg-surface-container">
-<div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Two cheerful young Nigerian pupils conducting a safe, colorful botanical leaf experiment with magnifying glasses at a clean wooden discovery bench, soft sunlight, vibrant leaves, joyful natural expressions, high-end school photography." style={{ backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuD8Gtr0HmNB_nSfF7Aj_ofVHnXxh0MYqF51Pbw4zXlTs30MHqLi420PFoOunW2tboAX1H3tUzZK0zA22m7oRUgagNng6_zE-WnzNEc8Z3TcZDm5gInzGx2P44-7GHvOqWdXfeFFCnUJOp51PEB5EgdgA1eStj6ATfOQZwO7nkizrLDy_f8pbOtSdlMpbR4fj1M2YKQYFWixxxlfD1wfzpLNlj9y0VrfmMTCguxVCcMnJGMir8YUVL9_")` }}>
-</div>
-<div className="absolute inset-0 bg-gradient-to-t from-inverse-surface/85 via-inverse-surface/30 to-transparent"></div>
-<div className="relative z-10">
-<span className="font-label-sm text-label-sm uppercase tracking-wider text-secondary-container font-semibold">Practical Curiosity</span>
-<h4 className="font-headline-sm text-headline-sm text-on-primary">Sensory &amp; Natural Science</h4>
-</div>
-</div>
-{/* Creative Arts & Craft Studio */}
-<div className="relative group overflow-hidden rounded-2xl shadow-sm min-h-[200px] flex flex-col justify-end p-space-md text-on-primary bg-surface-container">
-<div className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105" data-alt="Children in an early childhood art studio working on vibrant paintings with tempera colors on easels, sunlit serene room, warm wood furniture, joyful smiles and creative focus, documentary high quality." style={{ backgroundImage: `url("https://lh3.googleusercontent.com/aida-public/AB6AXuDFfz_nR3gr3H64qIqGTU_mryjzt4JuqdglLQqf8mBx3LTUaHIBcBn5KDTu5vpBB56ApAiye-IotFjYq9hhSVN5vxyrveCojhcNJEoH3JIG5YVHT9L7jwi56I48DtzjyRporLieHWAM2KlWX4fm9idbabzDfr08F3VmjzazCh9eaXmu80PBmEUj9ywd1gyMYe2ZymIhAUa3zpVBgcQzEJtzSRUQEt503oJTmYnOmUrVRBHu8wd3xU86")` }}>
-</div>
-<div className="absolute inset-0 bg-gradient-to-t from-inverse-surface/85 via-inverse-surface/30 to-transparent"></div>
-<div className="relative z-10">
-<span className="font-label-sm text-label-sm uppercase tracking-wider text-primary-fixed font-semibold">Self-Expression</span>
-<h4 className="font-headline-sm text-headline-sm text-on-primary">Expressive Arts &amp; Fine Motor Craft</h4>
-</div>
-</div>
-</div>
-{/* Bottom Bento Stat / Value Ribbon */}
-<div className="md:col-span-12 grid grid-cols-1 sm:grid-cols-3 gap-space-md pt-space-xs">
-<div className="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex items-center gap-space-md">
-<div className="w-12 h-12 rounded-xl bg-primary-fixed/50 flex items-center justify-center text-primary shrink-0">
-<span aria-hidden="true" className="material-symbols-outlined text-[26px]">groups</span>
-</div>
-<div>
-<div className="font-headline-md text-headline-md text-on-surface">1 : 12</div>
-<div className="font-body-sm text-body-sm text-on-surface-variant">Early Years Teacher Ratio</div>
-</div>
-</div>
-<div className="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex items-center gap-space-md">
-<div className="w-12 h-12 rounded-xl bg-secondary-fixed/50 flex items-center justify-center text-secondary shrink-0">
-<span aria-hidden="true" className="material-symbols-outlined text-[26px]">psychology</span>
-</div>
-<div>
-<div className="font-headline-md text-headline-md text-on-surface">Integrated</div>
-<div className="font-body-sm text-body-sm text-on-surface-variant">Nigerian &amp; International Standards</div>
-</div>
-</div>
-<div className="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex items-center gap-space-md">
-<div className="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary-container shrink-0">
-<span aria-hidden="true" className="material-symbols-outlined text-[26px]">family_restroom</span>
-</div>
-<div>
-<div className="font-headline-md text-headline-md text-on-surface">Clear fee information</div>
-<div className="font-body-sm text-body-sm text-on-surface-variant">Parent Ledger &amp; Observation Care</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</section>
+<HomeHero />
 {/* SECTION 2: LEADERSHIP EDITORIAL WELCOME */}
 <section className="w-full py-space-xl bg-surface-container-low/50">
 <div className="max-w-7xl mx-auto px-margin-mobile lg:px-margin">

@@ -21,7 +21,7 @@ export function Panel({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5 sm:p-6 space-y-4">
+    <section className="edvora-panel rounded-2xl border border-outline-variant/30 bg-surface-container-lowest p-5 sm:p-6 space-y-4">
       {title && (
         <div>
           <h2 className="font-bold text-lg">{title}</h2>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import SiteExperience from "@/components/shared/SiteExperience";
 import QueryProvider from "@/components/providers/QueryProvider";
 
 export const metadata: Metadata = {
@@ -29,7 +30,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-surface font-body-md text-on-surface min-h-screen selection:bg-primary-fixed selection:text-primary">
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>{children}<SiteExperience /></QueryProvider>
       </body>
     </html>
   );
