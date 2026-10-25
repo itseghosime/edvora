@@ -12,12 +12,12 @@ BEGIN
  INSERT INTO staff_profiles(id,user_id,full_name,email,role) VALUES
  (a,au,'Lock Admin',a||'@test.invalid','admin'),(t,gen_random_uuid(),'Lock Teacher',t||'@test.invalid','teacher'),(b,gen_random_uuid(),'Lock Bursar',b||'@test.invalid','bursar');
  INSERT INTO school_classes(id,name,stage) VALUES(c,'Lock '||substr(c::text,1,8),'primary');
- INSERT INTO academic_sessions(id,name,start_date,end_date) VALUES(sess,'Lock '||sess,'2026-09-01','2027-07-01');
+ INSERT INTO academic_sessions(id,name,start_date,end_date) VALUES(sess,'Lock '||substr(sess::text,1,8),'2026-09-01','2027-07-01');
  INSERT INTO academic_terms(id,session_id,name,term_code,start_date,end_date) VALUES
- (term,sess,'Lock Term','L-'||term,'2026-09-01','2026-12-01'),(term2,sess,'Other Term','L-'||term2,'2027-01-01','2027-04-01');
+ (term,sess,'Lock Term','L-'||substr(term::text,1,8),'2026-09-01','2026-12-01'),(term2,sess,'Other Term','L-'||substr(term2::text,1,8),'2027-01-01','2027-04-01');
  INSERT INTO guardians(id,user_id,full_name,phone_number) VALUES(g,gu,'Lock Guardian','+2348012345678');
  INSERT INTO pupils(id,admission_number,first_name,last_name,gender,class_id,guardian_id)
- VALUES(p,'LOCK-'||p,'Fee','Pupil','female',c,g),(other,'LOCK-'||other,'Other','Pupil','male',c,NULL);
+ VALUES(p,'LOCK-'||substr(p::text,1,12),'Fee','Pupil','female',c,g),(other,'LOCK-'||substr(other::text,1,12),'Other','Pupil','male',c,NULL);
  INSERT INTO pupil_guardians(pupil_id,guardian_id,can_view_results,can_pay_fees) VALUES(p,g,true,true);
  INSERT INTO fee_plans(id,term_id,class_id,name,total_amount_minor) VALUES(plan,term,c,'Lock fees',10000);
  INSERT INTO fee_assignments(pupil_id,term_id,fee_plan_id,base_amount_minor,adjusted_amount_minor) VALUES(p,term,plan,10000,10000);
